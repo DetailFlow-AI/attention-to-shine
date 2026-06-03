@@ -1,16 +1,54 @@
-import { Resend } from 'resend';
+import { NextRequest, NextResponse } from "next/server";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export async function POST(req: NextRequest) {
+  try {
+    const { name, email, phone, subject, message } = await req.json();
 
-export async function POST(req: Request) {
-  const { name, email, message } = await req.json();
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-  await resend.emails.send({
-    from: 'onboarding@resend.dev',
-    to: 'lilllechris06@gmail.com',
-    subject: `New message from ${name}`,
-    text: `Email: ${email}\n\nMessage: ${message}`,
-  });
+    // Only send email if RESEND_API_KEY is configured in .env.local
+    const apiKey = process.env.RESEND_API_KEY;
+    if (apiKey) {
+      // Lazy import so the module doesn't crash at build time
+      const { Resend } = await import("resend");
+      const resend = new Resend(apiKey);
 
-  return Response.json({ success: true });
+      await resend.emails.send({
+        from:    "noreply@attentiontoshinedetailing.com",
+        to:      process.env.CONTACT_EMAIL ?? "Clillie08@outlook.com",
+        replyTo: email,
+        subject: subject
+          ? `[Attention to Shine] ${subject} — from ${name}`
+          : `[Attention to Shine] New message from ${name}`,
+        text: [
+          `Name:    ${name}`,
+          `Email:   ${email}`,
+          phone   ? `Phone:   ${phone}`   : "",
+          subject ? `Subject: ${subject}` : "",
+          "",
+          message,
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      });
+    } else {
+      // No key yet — log to console so you can see submissions during development
+      console.log("📬 Contact form submission (RESEND_API_KEY not set):", {
+        name, email, phone, subject, message,
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Contact route error:", error);
+    return NextResponse.json(
+      { error: "Failed to send message" },
+      { status: 500 }
+    );
+  }
 }
