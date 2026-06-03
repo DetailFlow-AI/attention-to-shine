@@ -14,8 +14,8 @@ const contactInfo = [
   {
     icon: <Mail size={18} />,
     label: "Email",
-    value: "Clillie08@outlook.com",
-    href: "mailto:Clillie08@outlook.com",
+    value: "lilliechris06@gmail.com",
+    href: "mailto:lilliechris06@gmail.com",
   },
   {
     icon: <MapPin size={18} />,
@@ -48,10 +48,17 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("sending");
-    // TODO: Wire up to your email service (e.g. Resend, SendGrid, or Formspree)
-    // For now, simulate a short delay
-    await new Promise((r) => setTimeout(r, 1200));
-    setStatus("success");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed to send");
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
   };
 
   const inputClass =
@@ -149,6 +156,31 @@ export default function ContactPage() {
                       Thanks for reaching out. We'll get back to you within one
                       business day.
                     </p>
+                  </div>
+                ) : status === "error" ? (
+                  <div className="flex flex-col items-center text-center py-10">
+                    <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                      <span className="text-red-500 text-2xl">✕</span>
+                    </div>
+                    <h3 className="text-2xl font-semibold text-apple-text-primary mb-2">
+                      Something went wrong
+                    </h3>
+                    <p className="text-apple-text-secondary text-sm mb-4">
+                      Your message couldn't be sent. Please try calling us directly at{" "}
+                      <a href="tel:+18639349779" className="text-gold font-medium">
+                        (863) 934-9779
+                      </a>{" "}
+                      or emailing{" "}
+                      <a href="mailto:lilliechris06@gmail.com" className="text-gold font-medium">
+                        lilliechris06@gmail.com
+                      </a>.
+                    </p>
+                    <button
+                      onClick={() => setStatus("idle")}
+                      className="btn-outline text-sm"
+                    >
+                      Try again
+                    </button>
                   </div>
                 ) : (
                   <>
