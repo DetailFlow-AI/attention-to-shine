@@ -1,0 +1,378 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { CheckCircle2, ArrowRight, Info } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Clear, honest pricing for all Attention to Shine mobile detailing packages in Lakeland, FL. No hidden fees, no surprises.",
+};
+
+const packages = [
+  {
+    id: "exterior",
+    name: "Exterior Detail",
+    price: "$79.99",
+    description:
+      "A thorough, paint-safe exterior clean from top to bottom. Foam pre-wash, full hand wash, wheel and rim cleaning, windows, tire dressing, and a protective sealant. Perfect for routine upkeep or before a special occasion.",
+    features: [
+      "Foam pre-wash and full hand wash",
+      "Wheel and rim cleaning",
+      "Window and glass cleaning",
+      "Tire dressing and shine",
+      "Protective paint sealant",
+      "Door jamb wipe-down",
+    ],
+    cta: "Book Exterior",
+    highlight: false,
+  },
+  {
+    id: "full",
+    name: "Full Detail Package",
+    price: "$159.99",
+    description:
+      "Everything in both the exterior and interior services, completed in one appointment. This is our most requested service and our best overall value. Ideal for any vehicle that's due for a full reset.",
+    features: [
+      "Complete exterior detail",
+      "Complete interior detail",
+      "Best value — bundled rate",
+    ],
+    cta: "Book Full Detail",
+    highlight: true,
+    badge: "Most Popular",
+  },
+  {
+    id: "interior",
+    name: "Interior Detail",
+    price: "$119.99",
+    description:
+      "A proper deep clean of your entire interior. Steam treatment, full vacuuming, surface wipe-down, UV-protective dressing on all plastics and vinyl, leather care where applicable, and odor treatment. Adjusted to your vehicle's specific condition.",
+    features: [
+      "Steam treatment on surfaces and vents",
+      "Full vacuum — seats, carpet, trunk",
+      "Dashboard, console, and door panels",
+      "UV-protective dressing on plastics",
+      "Leather conditioning (where applicable)",
+      "Odor treatment",
+    ],
+    cta: "Book Interior",
+    highlight: false,
+  },
+];
+
+const monthlyPlans = [
+  {
+    name: "Essential Plan",
+    price: "$120",
+    details: "1 full detail per month",
+    features: [
+      "Interior & exterior each visit",
+      "Priority scheduling",
+      "Reserved weekly time slot",
+      "Complimentary leather care",
+    ],
+  },
+  {
+    name: "Premium Plan",
+    price: "$200",
+    details: "2 full details per month",
+    features: [
+      "Everything in the Essential Plan",
+      "Two visits per month",
+      "Complimentary paint protection refresh",
+      "Dedicated detailer assigned to your vehicle",
+    ],
+  },
+];
+
+export default function PricingPage() {
+  return (
+    <>
+      {/* Hero */}
+      <section className="bg-navy pt-36 pb-20 px-6 text-center">
+        <span className="label-tag">Pricing</span>
+        <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
+          Clear, honest pricing.
+        </h1>
+        <p className="text-xl text-white/60 max-w-xl mx-auto mb-8">
+          No hidden fees. No surprises. Just quality work at fair prices.
+        </p>
+        <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
+          🌞 Summer Special: 15% off any package over $200 — use code{" "}
+          <span className="font-mono font-bold bg-gold/20 px-2 py-0.5 rounded">
+            SUMMER26
+          </span>
+        </div>
+      </section>
+
+      {/* One-time packages */}
+      <section className="section-pad bg-apple-gray">
+        <div className="container-wide">
+          <div className="text-center mb-12">
+            <span className="label-tag">Single Visit</span>
+            <h2 className="text-4xl font-bold text-apple-text-primary tracking-tight">
+              One-time packages
+            </h2>
+            <p className="text-apple-text-secondary mt-3 text-sm">
+              All prices are starting rates for standard sedans and coupes.
+              Larger vehicles are adjusted — see below.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {packages.map((pkg) => (
+              <div
+                key={pkg.id}
+                className={`rounded-3xl flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
+                  pkg.highlight
+                    ? "bg-navy text-white shadow-xl"
+                    : "bg-white border border-apple-gray-2"
+                }`}
+              >
+                {pkg.badge && (
+                  <div className="bg-gold text-white text-xs font-semibold text-center py-2 tracking-wide">
+                    {pkg.badge}
+                  </div>
+                )}
+
+                <div className="p-8 flex-1 flex flex-col">
+                  <h2
+                    className={`text-xl font-semibold mb-1 ${
+                      pkg.highlight ? "text-white" : "text-apple-text-primary"
+                    }`}
+                  >
+                    {pkg.name}
+                  </h2>
+
+                  {/* Price shown once, clearly */}
+                  <div className="my-5">
+                    <span
+                      className={`text-xs uppercase tracking-wider ${
+                        pkg.highlight ? "text-white/40" : "text-apple-text-tertiary"
+                      }`}
+                    >
+                      Starting at
+                    </span>
+                    <p
+                      className={`text-5xl font-bold mt-1 ${
+                        pkg.highlight ? "text-white" : "text-apple-text-primary"
+                      }`}
+                    >
+                      {pkg.price}
+                    </p>
+                  </div>
+
+                  <p
+                    className={`text-sm mb-6 leading-relaxed flex-1 ${
+                      pkg.highlight ? "text-white/60" : "text-apple-text-secondary"
+                    }`}
+                  >
+                    {pkg.description}
+                  </p>
+
+                  <ul className="space-y-2.5 mb-8">
+                    {pkg.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm">
+                        <CheckCircle2
+                          size={15}
+                          className="text-gold shrink-0 mt-0.5"
+                        />
+                        <span
+                          className={
+                            pkg.highlight ? "text-white/70" : "text-apple-text-secondary"
+                          }
+                        >
+                          {f}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href={`/booking?service=${pkg.id}`}
+                    className={
+                      pkg.highlight
+                        ? "btn-gold w-full justify-center"
+                        : "btn-outline w-full justify-center"
+                    }
+                  >
+                    {pkg.cta}
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Vehicle sizing */}
+      <section className="py-14 px-6 bg-white border-y border-apple-gray-2">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-start gap-3 mb-6">
+            <Info size={18} className="text-gold shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-apple-text-primary mb-1">
+                Pricing adjusts for larger vehicles
+              </h3>
+              <p className="text-sm text-apple-text-secondary">
+                Larger vehicles take more time and product. All prices below are
+                starting rates — final pricing is based on vehicle size and
+                condition.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { size: "Sedan / Coupe", adj: "Starting at base price" },
+              { size: "SUV / Minivan", adj: "Starting at +$20" },
+              { size: "Large Truck / Van", adj: "Starting at +$40" },
+            ].map((row) => (
+              <div
+                key={row.size}
+                className="bg-apple-gray rounded-2xl p-5 text-center border border-apple-gray-2"
+              >
+                <p className="font-medium text-sm text-apple-text-primary mb-1">
+                  {row.size}
+                </p>
+                <p className="text-lg font-bold text-gold">{row.adj}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-apple-text-tertiary mt-4 text-center">
+            Have an oversized or specialty vehicle? Call{" "}
+            <a href="tel:+18639349779" className="text-gold hover:underline">
+              (863) 934-9779
+            </a>{" "}
+            for a custom quote.
+          </p>
+        </div>
+      </section>
+
+      {/* Monthly plans */}
+      <section className="section-pad bg-navy">
+        <div className="container-wide">
+          <div className="text-center mb-12">
+            <span className="label-tag">Subscription</span>
+            <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
+              Checkup Detailing Plan
+            </h2>
+            <p className="text-white/60 max-w-xl mx-auto">
+              A recurring monthly service for customers who want their vehicle
+              consistently maintained — no scheduling headaches, just results
+              every time.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {monthlyPlans.map((plan) => (
+              <div
+                key={plan.name}
+                className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/8 transition-colors"
+              >
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  {plan.name}
+                </h3>
+                <p className="text-sm text-white/50 mb-4">{plan.details}</p>
+                <div className="flex items-end gap-1 mb-6">
+                  <span className="text-4xl font-bold text-white">
+                    {plan.price}
+                  </span>
+                  <span className="text-white/40 text-sm mb-1">/month</span>
+                </div>
+                <ul className="space-y-2.5 mb-8">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-center gap-2 text-sm text-white/70"
+                    >
+                      <CheckCircle2 size={14} className="text-gold shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 w-full justify-center border border-gold/40 text-gold px-6 py-3 rounded-full text-sm font-medium hover:bg-gold hover:text-white hover:border-gold transition-all duration-200"
+                >
+                  Inquire About This Plan
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-white/30 text-xs mt-8">
+            * The Checkup Plan requires an initial full detail. Contact us to
+            get started.
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="section-pad bg-apple-gray">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="label-tag">FAQ</span>
+            <h2 className="text-4xl font-bold text-apple-text-primary tracking-tight">
+              Common questions
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: "Do prices include all vehicle types?",
+                a: "Base prices apply to standard sedans and coupes. SUVs and minivans add $20, and large trucks or vans add $40 to any service.",
+              },
+              {
+                q: "What payment methods do you accept?",
+                a: "You can pay securely by card through our online booking form, or pay cash on the day of your appointment — just let us know when booking.",
+              },
+              {
+                q: "How do I use the SUMMER26 discount?",
+                a: "Enter the code SUMMER26 at checkout during online booking. The 15% discount applies to any package totaling over $200.",
+              },
+              {
+                q: "Do I need to be home during the detail?",
+                a: "Not necessarily. As long as we can access your vehicle and reach you by phone, we can complete the service while you go about your day.",
+              },
+              {
+                q: "How long does each service take?",
+                a: "Exterior details typically take 45 minutes to an hour, interior details take 2–3 hours, and full details take 2–4 hours — depending on vehicle size and condition.",
+              },
+            ].map((item) => (
+              <div
+                key={item.q}
+                className="bg-white rounded-2xl p-6 border border-apple-gray-2"
+              >
+                <h3 className="font-semibold text-apple-text-primary mb-2">
+                  {item.q}
+                </h3>
+                <p className="text-sm text-apple-text-secondary leading-relaxed">
+                  {item.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-gold py-16 px-6 text-center">
+        <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
+          Ready to book?
+        </h2>
+        <p className="text-white/80 mb-8">
+          Online booking takes under 2 minutes. Select your service, pick a
+          time, and pay securely.
+        </p>
+        <Link
+          href="/booking"
+          className="inline-flex items-center gap-2 bg-white text-gold px-8 py-4 rounded-full font-semibold text-sm hover:bg-white/90 transition-colors"
+        >
+          Book Now
+          <ArrowRight size={16} />
+        </Link>
+      </section>
+    </>
+  );
+}

@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply font-sans text-apple-text-primary bg-white;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .section-heading {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-apple-text-primary;
+  }
+
+  .section-subheading {
+    @apply text-lg md:text-xl text-apple-text-secondary font-normal leading-relaxed;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-navy text-white px-7 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-200 hover:bg-navy-light hover:shadow-lg active:scale-95;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 bg-gold text-white px-7 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-200 hover:bg-gold-light hover:shadow-lg active:scale-95;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 border border-navy text-navy px-7 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-200 hover:bg-navy hover:text-white active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-3xl p-8 shadow-sm border border-apple-gray-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  .section-pad {
+    @apply py-24 md:py-32 px-6;
+  }
+
+  .container-wide {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .label-tag {
+    @apply inline-block text-xs font-semibold uppercase tracking-widest text-gold mb-4;
+  }
+}
+
+/* Frosted glass nav */
+.nav-blur {
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #0B1D36 0%, #C9A84C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Smooth scroll for anchor links */
+:target {
+  scroll-margin-top: 80px;
+}
+
+/* Gallery lightbox overlay */
+.gallery-overlay {
+  background: rgba(0, 0, 0, 0.92);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9a84c;
+  border-radius: 3px;
+}
+
+/* Stripe input styling */
+.StripeElement {
+  @apply w-full px-4 py-3.5 border border-gray-200 rounded-xl text-sm bg-white transition-all duration-200;
+}
+
+.StripeElement--focus {
+  @apply border-navy outline-none ring-2 ring-navy/10;
+}
+
+.StripeElement--invalid {
+  @apply border-red-400;
+}
