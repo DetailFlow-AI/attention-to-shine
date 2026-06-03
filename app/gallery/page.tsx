@@ -121,7 +121,6 @@ const tabs: { key: Category; label: string }[] = [
   { key: "all",          label: "All Work" },
   { key: "exterior",     label: "Exterior" },
   { key: "interior",     label: "Interior" },
-  { key: "before-after", label: "Before & After" },
 ];
 
 export default function GalleryPage() {
@@ -143,7 +142,6 @@ export default function GalleryPage() {
 
   const showExterior    = active === "all" || active === "exterior";
   const showInterior    = active === "all" || active === "interior";
-  const showBeforeAfter = active === "all" || active === "before-after";
 
   return (
     <>
