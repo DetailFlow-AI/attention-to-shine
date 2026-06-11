@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import ReviewsCarousel from "@/components/ReviewsCarousel";
 import {
   ArrowRight,
   Shield,
@@ -91,6 +92,31 @@ const reviews = [
     quote: "Wow! It looks like new again!",
     name: "John Travis",
     initials: "JT",
+    detail: "Lakeland, FL — Full Detail Package",
+  },
+  {
+    quote: "My car hasn't looked this good since the day I bought it!",
+    name: "Mike L.",
+    initials: "ML",
+    detail: "Lakeland, FL — Full Detail Package",
+  },
+  {
+    quote: "It looks like it should be in a showroom.",
+    name: "Mr. David",
+    initials: "MD",
+    detail: "Lakeland, FL — Full Detail Package",
+  },
+  {
+    quote:
+      "I almost feel bad taking my car out of the driveway now — I don't want it to get dirty!",
+    name: "Steve B.",
+    initials: "SB",
+    detail: "Lakeland, FL — Checkup Detailing Plan",
+  },
+  {
+    quote: "I'll definitely be calling them out again. Highly recommend!",
+    name: "Eric K.",
+    initials: "EK",
     detail: "Lakeland, FL — Full Detail Package",
   },
 ];
@@ -475,31 +501,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {reviews.map((review) => (
-              <div
-                key={review.name}
-                className="bg-white rounded-3xl p-8 border border-apple-gray-2 flex flex-col"
-              >
-                <blockquote className="text-apple-text-primary leading-relaxed flex-1 mb-6">
-                  "{review.quote}"
-                </blockquote>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-navy flex items-center justify-center text-white font-bold text-sm shrink-0">
-                    {review.initials}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-apple-text-primary">
-                      {review.name}
-                    </p>
-                    <p className="text-xs text-apple-text-tertiary">
-                      {review.detail}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ReviewsCarousel reviews={reviews} />
         </div>
       </section>
 
