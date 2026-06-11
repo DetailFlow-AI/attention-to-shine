@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Star,
   Shield,
   Sparkles,
   Clock,
@@ -130,11 +129,10 @@ export default function HomePage() {
           </div>
 
           {/* Stats row — no vehicle count */}
-          <div className="mt-20 grid grid-cols-3 gap-8 md:gap-16 w-full max-w-2xl border-t border-white/10 pt-12">
+          <div className="mt-20 grid grid-cols-2 gap-8 md:gap-16 w-full max-w-2xl border-t border-white/10 pt-12">
             {[
-              { value: "5★", label: "Average Rating" },
               { value: "3 hrs", label: "Avg. Service Time" },
-              { value: "100%", label: "Satisfaction Goal" },
+              { value: "100%", label: "Satisfaction Guaranteed" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-3xl font-bold text-white mb-1">
@@ -417,11 +415,6 @@ export default function HomePage() {
       <section className="section-pad bg-apple-gray">
         <div className="container-wide">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="flex justify-center gap-1 mb-8">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={20} className="text-gold fill-gold" />
-              ))}
-            </div>
             <blockquote className="text-3xl md:text-4xl font-semibold text-apple-text-primary tracking-tight leading-snug mb-8">
               "Wow! It looks like new again!"
             </blockquote>
