@@ -73,6 +73,35 @@ GOOGLE_CALENDAR_API_KEY=YOUR_API_KEY_HERE
 If these aren't set, the form simply shows every slot as available — nothing
 breaks.
 
+### 6. Auto-create calendar events for new bookings
+
+When a customer books (online payment or pay-in-person), the site can
+automatically add the appointment to your Google Calendar with their name,
+service, vehicle, address, and payment status. This needs a **service
+account** (the read-only API key above can't create events):
+
+1. Go to https://console.cloud.google.com → same project as before →
+   **IAM & Admin → Service Accounts → Create service account**. Name it
+   anything (e.g. `website-bookings`), skip the optional role steps.
+2. Open the new service account → **Keys → Add key → Create new key → JSON**
+   — a JSON file downloads.
+3. From that file, copy the `client_email` and `private_key` values.
+4. In Google Calendar (calendar.google.com): Settings → your calendar →
+   **Share with specific people or groups** → add the `client_email` address
+   with permission **"Make changes to events"**.
+5. Add to `.env.local` and Vercel's environment variables:
+
+```
+GOOGLE_SERVICE_ACCOUNT_EMAIL=website-bookings@your-project.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+> Paste the private key exactly as it appears in the JSON file (with the
+> `\n` sequences). Keep the quotes in `.env.local`.
+
+If these aren't set, bookings still work — the calendar event is simply
+skipped (and logged).
+
 ---
 
 ## Deploy to Vercel

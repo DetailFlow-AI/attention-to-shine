@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { easternOffset } from "@/lib/googleCalendar";
 
 // Returns the busy time ranges from the owner's Google Calendar for a given
 // date so the booking form can grey out taken slots.
@@ -9,20 +10,6 @@ import { NextRequest, NextResponse } from "next/server";
 // The calendar's free/busy visibility must be public for API-key access.
 //
 // If not configured, every slot is reported available so booking still works.
-
-function easternOffset(date: string): string {
-  const probe = new Date(`${date}T12:00:00Z`);
-  const tz = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    timeZoneName: "shortOffset",
-  })
-    .formatToParts(probe)
-    .find((p) => p.type === "timeZoneName")?.value;
-  const match = tz?.match(/GMT([+-]\d+)/);
-  const hours = match ? parseInt(match[1], 10) : -5;
-  const sign = hours < 0 ? "-" : "+";
-  return `${sign}${String(Math.abs(hours)).padStart(2, "0")}:00`;
-}
 
 export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get("date");
