@@ -282,7 +282,7 @@ function PaymentForm({
   onSuccess,
   total,
 }: {
-  onSuccess: () => void;
+  onSuccess: (paymentIntentId?: string) => void;
   total: number;
 }) {
   const stripe   = useStripe();
@@ -303,7 +303,7 @@ function PaymentForm({
       return;
     }
 
-    const { error: confirmError } = await stripe.confirmPayment({
+    const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: { return_url: `${window.location.origin}/booking/success` },
       redirect: "if_required",
@@ -313,7 +313,7 @@ function PaymentForm({
       setError(confirmError.message ?? "Payment failed.");
       setProcessing(false);
     } else {
-      onSuccess();
+      onSuccess(paymentIntent?.id);
     }
   };
 
@@ -477,6 +477,14 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           notes:         data.notes,        // ← passed for server-side upcharge detection
           customerName:  data.name,
           customerEmail: data.email,
+          customerPhone: data.phone,
+          date:          data.date,
+          time:          data.time,
+          address:       data.address,
+          city:          data.city,
+          zip:           data.zip,
+          vehicleMake:   data.vehicleMake,
+          vehicleColor:  data.vehicleColor,
         }),
       });
       const json = await res.json();
@@ -1111,7 +1119,21 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               },
             }}
           >
-            <PaymentForm onSuccess={() => setSuccess(true)} total={intentAmount} />
+            <PaymentForm
+              onSuccess={(paymentIntentId) => {
+                setSuccess(true);
+                // Add the appointment to the owner's calendar — fire and
+                // forget so the success screen is never blocked on it
+                if (paymentIntentId) {
+                  fetch("/api/confirm-booking", {
+                    method:  "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body:    JSON.stringify({ paymentIntentId }),
+                  }).catch(() => {});
+                }
+              }}
+              total={intentAmount}
+            />
           </Elements>
 
           <button

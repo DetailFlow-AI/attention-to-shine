@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createBookingEvent } from "@/lib/googleCalendar";
 
 // ── Base prices (cents) — mirrors create-payment-intent exactly ───────────────
 
@@ -93,6 +94,19 @@ export async function POST(req: NextRequest) {
       ``,
       `Estimated total (collect on site): $${(amount / 100).toFixed(2)}`,
     ].filter(Boolean);
+
+    // Put the appointment on the owner's Google Calendar
+    const serviceLabels: Record<string, string> = {
+      exterior: "Exterior Detail",
+      interior: "Interior Detail",
+      full:     "Full Detail Package",
+    };
+    await createBookingEvent({
+      summary: `${serviceLabels[service] ?? service} — ${name} (pay in person)`,
+      description: summaryLines.join("\n"),
+      date,
+      time,
+    });
 
     // Email the owner if Resend is configured — same pattern as the contact route
     const apiKey = process.env.RESEND_API_KEY;

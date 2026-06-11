@@ -75,6 +75,14 @@ export async function POST(req: NextRequest) {
       notes,
       customerName,
       customerEmail,
+      customerPhone,
+      date,
+      time,
+      address,
+      city,
+      zip,
+      vehicleMake,
+      vehicleColor,
     } = body;
 
     if (!service || !vehicleSize) {
@@ -123,6 +131,14 @@ export async function POST(req: NextRequest) {
         promoCode:         promoCode    ?? "",
         customerName:      customerName ?? "",
         customerEmail:     customerEmail ?? "",
+        customerPhone:     customerPhone ?? "",
+        date:              date         ?? "",
+        time:              time         ?? "",
+        address:           (address ?? "").slice(0, 200),
+        city:              city         ?? "",
+        zip:               zip          ?? "",
+        vehicleMake:       vehicleMake  ?? "",
+        vehicleColor:      vehicleColor ?? "",
         notes:             (notes ?? "").slice(0, 500), // truncate for metadata limit
         upcharge_petHair:  String(noteUpcharges.petHair / 100),
         upcharge_stains:   String(noteUpcharges.stains  / 100),
