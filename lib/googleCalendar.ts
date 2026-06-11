@@ -37,6 +37,25 @@ export function slotToStartISO(date: string, time: string): string {
   return `${date}T${String(hour).padStart(2, "0")}:00:00${easternOffset(date)}`;
 }
 
+// Tolerates the common ways a private key gets mangled when pasted into an
+// env var: surrounding quotes, literal \n sequences instead of newlines.
+function normalizePrivateKey(raw: string): string {
+  let key = raw.trim();
+  if (
+    (key.startsWith('"') && key.endsWith('"')) ||
+    (key.startsWith("'") && key.endsWith("'"))
+  ) {
+    key = key.slice(1, -1);
+  }
+  key = key.replace(/\\n/g, "\n");
+  if (!key.includes("BEGIN PRIVATE KEY")) {
+    throw new Error(
+      "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY doesn't look like a PEM key — paste the full private_key value from the service account JSON file, including the -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY----- lines"
+    );
+  }
+  return key;
+}
+
 async function getAccessToken(email: string, privateKey: string): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header = Buffer.from(
@@ -54,9 +73,8 @@ async function getAccessToken(email: string, privateKey: string): Promise<string
 
   const signer = crypto.createSign("RSA-SHA256");
   signer.update(`${header}.${claims}`);
-  // Vercel env vars store the key with literal \n sequences
   const signature = signer
-    .sign(privateKey.replace(/\\n/g, "\n"))
+    .sign(normalizePrivateKey(privateKey))
     .toString("base64url");
 
   const res = await fetch(TOKEN_URL, {
@@ -87,8 +105,15 @@ export async function createBookingEvent(ev: BookingEvent): Promise<boolean> {
   const saKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
 
   if (!calendarId || !saEmail || !saKey) {
+    const missing = [
+      !calendarId && "GOOGLE_CALENDAR_ID",
+      !saEmail && "GOOGLE_SERVICE_ACCOUNT_EMAIL",
+      !saKey && "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY",
+    ]
+      .filter(Boolean)
+      .join(", ");
     console.log(
-      "📅 Calendar event skipped (service account not configured):",
+      `📅 Calendar event skipped — missing env var(s): ${missing} —`,
       ev.summary
     );
     return false;
