@@ -60,6 +60,21 @@ const packages = [
   },
 ];
 
+const comparisonRows = [
+  { feature: "Foam pre-wash & full hand wash", exterior: true, interior: false, full: true },
+  { feature: "Wheel & rim cleaning", exterior: true, interior: false, full: true },
+  { feature: "Window & glass cleaning", exterior: true, interior: false, full: true },
+  { feature: "Tire dressing & shine", exterior: true, interior: false, full: true },
+  { feature: "Protective paint sealant", exterior: true, interior: false, full: true },
+  { feature: "Door jamb wipe-down", exterior: true, interior: false, full: true },
+  { feature: "Steam treatment on surfaces & vents", exterior: false, interior: true, full: true },
+  { feature: "Full vacuum — seats, carpet, trunk", exterior: false, interior: true, full: true },
+  { feature: "Dashboard, console & door panels", exterior: false, interior: true, full: true },
+  { feature: "UV-protective dressing on plastics", exterior: false, interior: true, full: true },
+  { feature: "Leather conditioning (where applicable)", exterior: false, interior: true, full: true },
+  { feature: "Odor treatment", exterior: false, interior: true, full: true },
+];
+
 const monthlyPlans = [
   {
     name: "Essential Plan",
@@ -203,6 +218,88 @@ export default function PricingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Package comparison */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="label-tag">Compare</span>
+            <h2 className="text-4xl font-bold text-apple-text-primary tracking-tight mb-3">
+              What's included in each package
+            </h2>
+            <p className="text-apple-text-secondary text-sm max-w-xl mx-auto">
+              Every service, side by side — so you know exactly what you're
+              getting before you book.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-3xl border border-apple-gray-2">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-navy text-white">
+                  <th className="text-left font-semibold px-5 py-4">
+                    Service
+                  </th>
+                  <th className="font-semibold px-4 py-4 text-center">
+                    Exterior
+                    <span className="block text-xs font-normal text-white/50">
+                      $79.99
+                    </span>
+                  </th>
+                  <th className="font-semibold px-4 py-4 text-center">
+                    Interior
+                    <span className="block text-xs font-normal text-white/50">
+                      $119.99
+                    </span>
+                  </th>
+                  <th className="font-semibold px-4 py-4 text-center bg-gold/90">
+                    Full Detail
+                    <span className="block text-xs font-normal text-white/80">
+                      $159.99
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonRows.map((row, i) => (
+                  <tr
+                    key={row.feature}
+                    className={i % 2 === 0 ? "bg-white" : "bg-apple-gray"}
+                  >
+                    <td className="px-5 py-3.5 text-apple-text-primary font-medium">
+                      {row.feature}
+                    </td>
+                    {[row.exterior, row.interior, row.full].map(
+                      (included, col) => (
+                        <td
+                          key={col}
+                          className={`px-4 py-3.5 text-center ${
+                            col === 2 ? "bg-gold/5" : ""
+                          }`}
+                        >
+                          {included ? (
+                            <CheckCircle2
+                              size={17}
+                              className="text-gold inline-block"
+                            />
+                          ) : (
+                            <span className="text-apple-text-tertiary">—</span>
+                          )}
+                        </td>
+                      )
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-xs text-apple-text-tertiary mt-4 text-center">
+            The Full Detail Package bundles every exterior and interior service
+            at our best rate — saving $40 versus booking separately.
+          </p>
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import {
   ArrowRight,
   Shield,
@@ -69,6 +70,28 @@ const features = [
     title: "Flexible Scheduling",
     description:
       "Monday through Saturday, 7 AM to 7 PM. Book online in minutes and pick a time that actually works for you.",
+  },
+];
+
+const beforeAfters = [
+  {
+    title: "Sedan Interior Detail — Lakeland, FL",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    title: "Interior Deep Clean — Lakeland, FL",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
+
+const reviews = [
+  {
+    quote: "Wow! It looks like new again!",
+    name: "John Travis",
+    initials: "JT",
+    detail: "Lakeland, FL — Full Detail Package",
   },
 ];
 
@@ -411,26 +434,71 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIAL ── */}
+      {/* ── BEFORE & AFTER ── */}
+      <section className="section-pad bg-white">
+        <div className="container-wide">
+          <div className="text-center mb-14">
+            <span className="label-tag">Before & After</span>
+            <h2 className="section-heading mb-4">
+              See the difference for yourself.
+            </h2>
+            <p className="section-subheading max-w-2xl mx-auto">
+              Real vehicles, real results. Drag the slider to compare each
+              vehicle before and after our detail.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {beforeAfters.map((pair) => (
+              <div key={pair.title}>
+                <BeforeAfterSlider
+                  beforeSrc={pair.before}
+                  afterSrc={pair.after}
+                  alt={pair.title}
+                />
+                <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
+                  {pair.title}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── REVIEWS ── */}
       <section className="section-pad bg-apple-gray">
         <div className="container-wide">
-          <div className="max-w-3xl mx-auto text-center">
-            <blockquote className="text-3xl md:text-4xl font-semibold text-apple-text-primary tracking-tight leading-snug mb-8">
-              "Wow! It looks like new again!"
-            </blockquote>
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-navy flex items-center justify-center text-white font-bold text-sm">
-                JT
+          <div className="text-center mb-14">
+            <span className="label-tag">Reviews</span>
+            <h2 className="section-heading mb-4">
+              What our customers say.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {reviews.map((review) => (
+              <div
+                key={review.name}
+                className="bg-white rounded-3xl p-8 border border-apple-gray-2 flex flex-col"
+              >
+                <blockquote className="text-apple-text-primary leading-relaxed flex-1 mb-6">
+                  "{review.quote}"
+                </blockquote>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-navy flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {review.initials}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-apple-text-primary">
+                      {review.name}
+                    </p>
+                    <p className="text-xs text-apple-text-tertiary">
+                      {review.detail}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="text-left">
-                <p className="font-semibold text-sm text-apple-text-primary">
-                  John Travis
-                </p>
-                <p className="text-xs text-apple-text-tertiary">
-                  Lakeland, FL — Full Detail Package
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
