@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Valid date (YYYY-MM-DD) required" }, { status: 400 });
   }
 
-  const calendarId = process.env.GOOGLE_CALENDAR_ID;
+  const calendarId = process.env.GOOGLE_CALENDAR_ID ?? "lilliechris06@gmail.com";
   const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
   if (!calendarId || !apiKey) {
     return NextResponse.json({ configured: false, busy: [] });

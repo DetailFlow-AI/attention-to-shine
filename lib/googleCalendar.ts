@@ -100,13 +100,12 @@ export interface BookingEvent {
 }
 
 export async function createBookingEvent(ev: BookingEvent): Promise<boolean> {
-  const calendarId = process.env.GOOGLE_CALENDAR_ID;
+  const calendarId = process.env.GOOGLE_CALENDAR_ID ?? "lilliechris06@gmail.com";
   const saEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const saKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
 
-  if (!calendarId || !saEmail || !saKey) {
+  if (!saEmail || !saKey) {
     const missing = [
-      !calendarId && "GOOGLE_CALENDAR_ID",
       !saEmail && "GOOGLE_SERVICE_ACCOUNT_EMAIL",
       !saKey && "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY",
     ]
