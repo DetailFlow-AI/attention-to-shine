@@ -132,7 +132,7 @@ export default function HomePage() {
           <div className="mt-20 grid grid-cols-2 gap-8 md:gap-16 w-full max-w-2xl border-t border-white/10 pt-12">
             {[
               { value: "3 hrs", label: "Avg. Service Time" },
-              { value: "100%", label: "Satisfaction Goal" },
+              { value: "100%", label: "Satisfaction Guaranteed" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-3xl font-bold text-white mb-1">

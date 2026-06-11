@@ -226,19 +226,52 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ── Add-On: Coating Options ── */}
+      {/* ── Things That Can Impact the Price ── */}
       <section className="py-20 px-6 bg-white border-t border-apple-gray-2">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <span className="label-tag">Add-On Service</span>
+            <span className="label-tag">Pricing</span>
             <h2 className="text-4xl font-bold text-apple-text-primary tracking-tight mb-4">
-              Coating Options
+              Things that can impact the price of the detail
             </h2>
             <p className="text-apple-text-secondary max-w-2xl mx-auto">
-              Take your detail a step further with a protective coating. This
-              optional add-on can be applied to any exterior or full detail
-              service.
+              Every vehicle is different. These factors can adjust the final
+              price of your detail — we'll always confirm your total before any
+              work begins.
             </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+            {[
+              {
+                factor: "Vehicle Size",
+                adj: "+$20 – $40",
+                note: "SUVs and minivans add $20, large trucks and vans add $40 to the base price.",
+              },
+              {
+                factor: "Pet Hair",
+                adj: "+$20",
+                note: "Heavy pet hair removal takes extra time and specialized tools.",
+              },
+              {
+                factor: "Heavy Staining",
+                adj: "+$30",
+                note: "Deep-set stains require additional treatment and extraction.",
+              },
+            ].map((row) => (
+              <div
+                key={row.factor}
+                className="bg-apple-gray rounded-2xl p-6 border border-apple-gray-2 text-center"
+              >
+                <p className="font-semibold text-apple-text-primary mb-1">
+                  {row.factor}
+                </p>
+                <p className="text-lg font-bold text-gold mb-2">{row.adj}</p>
+                <p className="text-xs text-apple-text-secondary leading-relaxed">
+                  {row.note}
+                </p>
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
