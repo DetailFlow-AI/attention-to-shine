@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -16,6 +16,7 @@ import {
   Calendar,
   User,
   CreditCard,
+  Banknote,
   Tag,
   Info,
   AlertCircle,
@@ -360,6 +361,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const [loading,         setLoading]        = useState(false);
   const [error,           setError]          = useState("");
   const [step2Attempted,  setStep2Attempted] = useState(false); // tracks if user tried to advance with missing fields
+  const [payMethod,       setPayMethod]      = useState<"online" | "in_person">("online");
+  const [busyRanges,      setBusyRanges]     = useState<{ start: string; end: string }[]>([]);
 
   const [data, setData] = useState<BookingData>({
     service:      (defaultService as Service) || "",
@@ -394,9 +397,71 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     "12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM",
   ];
 
+  // Check the owner's Google Calendar whenever the chosen date changes
+  useEffect(() => {
+    if (!data.date) {
+      setBusyRanges([]);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/availability?date=${data.date}`)
+      .then((r) => (r.ok ? r.json() : { busy: [] }))
+      .then((j) => {
+        if (!cancelled) setBusyRanges(j.busy ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setBusyRanges([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [data.date]);
+
+  // A slot is unavailable if its one-hour window overlaps any calendar event
+  const isSlotBusy = (slot: string) => {
+    if (!data.date || busyRanges.length === 0) return false;
+    const [hm, ap] = slot.split(" ");
+    let hour = parseInt(hm, 10);
+    if (ap === "PM" && hour !== 12) hour += 12;
+    const slotStart = new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
+    const slotEnd   = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    return busyRanges.some((b) => {
+      const busyStart = new Date(b.start);
+      const busyEnd   = new Date(b.end);
+      return slotStart < busyEnd && slotEnd > busyStart;
+    });
+  };
+
+  // If the picked time becomes unavailable after a date change, clear it
+  useEffect(() => {
+    if (data.time && isSlotBusy(data.time)) {
+      set("time", "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busyRanges]);
+
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
+
+  const submitPayLater = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/book", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to submit booking");
+      setSuccess(true);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const goToPayment = async () => {
     setLoading(true);
@@ -467,6 +532,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           You'll receive a confirmation email at {data.email}. We'll text you
           30 minutes before arrival.
         </p>
+        {payMethod === "in_person" && (
+          <p className="text-sm text-apple-text-secondary bg-apple-gray border border-apple-gray-2 rounded-xl px-4 py-3 mt-4 max-w-sm">
+            💵 You chose to pay in person — cash or card accepted once your
+            detail is complete.
+          </p>
+        )}
       </div>
     );
   }
@@ -632,9 +703,14 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 className={ic(data.time, true)}
               >
                 <option value="">Select a time</option>
-                {timeSlots.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+                {timeSlots.map((t) => {
+                  const busy = isSlotBusy(t);
+                  return (
+                    <option key={t} value={t} disabled={busy}>
+                      {busy ? `${t} — unavailable` : t}
+                    </option>
+                  );
+                })}
               </select>
               <RequiredMsg value={data.time} />
             </div>
@@ -899,7 +975,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
             {/* Total */}
             <div className="flex justify-between font-bold text-apple-text-primary border-t border-apple-gray-2 pt-2 mt-1">
-              <span>Total due today</span>
+              <span>{payMethod === "in_person" ? "Estimated total — due after service" : "Total due today"}</span>
               <span>${pricing.total.toFixed(2)}</span>
             </div>
 
@@ -918,6 +994,54 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             )}
           </div>
 
+          {/* ── Payment method choice ── */}
+          <div>
+            <label className="block text-xs font-medium text-apple-text-secondary mb-2">
+              How would you like to pay?
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setPayMethod("online")}
+                className={`rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
+                  payMethod === "online"
+                    ? "border-navy bg-navy/5"
+                    : "border-apple-gray-2 bg-white hover:border-navy/30"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <CreditCard size={16} className="text-navy" />
+                  <span className="font-semibold text-sm text-apple-text-primary">
+                    Pay online now
+                  </span>
+                </div>
+                <p className="text-xs text-apple-text-secondary">
+                  Secure card payment through Stripe. Your booking is locked in
+                  instantly.
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPayMethod("in_person")}
+                className={`rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
+                  payMethod === "in_person"
+                    ? "border-navy bg-navy/5"
+                    : "border-apple-gray-2 bg-white hover:border-navy/30"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Banknote size={16} className="text-navy" />
+                  <span className="font-semibold text-sm text-apple-text-primary">
+                    Pay in person
+                  </span>
+                </div>
+                <p className="text-xs text-apple-text-secondary">
+                  Book now, pay by cash or card after your detail is finished.
+                </p>
+              </button>
+            </div>
+          </div>
+
           {error && (
             <div className="flex items-start gap-2 text-red-600 text-sm bg-red-50 border border-red-100 rounded-xl px-4 py-3">
               <AlertCircle size={15} className="mt-0.5 shrink-0" />
@@ -930,7 +1054,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               <ArrowLeft size={16} /> Back
             </button>
             <button
-              onClick={goToPayment}
+              onClick={payMethod === "online" ? goToPayment : submitPayLater}
               disabled={!data.name || !data.email || !data.phone || loading}
               className="btn-gold flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -939,8 +1063,10 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Loading…
                 </>
-              ) : (
+              ) : payMethod === "online" ? (
                 <>Proceed to Payment <ArrowRight size={16} /></>
+              ) : (
+                <>Confirm Booking <CheckCircle2 size={16} /></>
               )}
             </button>
           </div>

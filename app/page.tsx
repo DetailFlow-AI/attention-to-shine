@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import ReviewsCarousel from "@/components/ReviewsCarousel";
 import {
   ArrowRight,
   Shield,
@@ -69,6 +71,53 @@ const features = [
     title: "Flexible Scheduling",
     description:
       "Monday through Saturday, 7 AM to 7 PM. Book online in minutes and pick a time that actually works for you.",
+  },
+];
+
+const beforeAfters = [
+  {
+    title: "Sedan Interior Detail — Lakeland, FL",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    title: "Interior Deep Clean — Lakeland, FL",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
+
+const reviews = [
+  {
+    quote: "Wow! It looks like new again!",
+    name: "John Travis",
+    initials: "JT",
+    detail: "Lakeland, FL — Full Detail Package",
+  },
+  {
+    quote: "My car hasn't looked this good since the day I bought it!",
+    name: "Mike L.",
+    initials: "ML",
+    detail: "Lakeland, FL — Full Detail Package",
+  },
+  {
+    quote: "It looks like it should be in a showroom.",
+    name: "Mr. David",
+    initials: "MD",
+    detail: "Lakeland, FL — Full Detail Package",
+  },
+  {
+    quote:
+      "I almost feel bad taking my car out of the driveway now — I don't want it to get dirty!",
+    name: "Steve B.",
+    initials: "SB",
+    detail: "Lakeland, FL — Checkup Detailing Plan",
+  },
+  {
+    quote: "I'll definitely be calling them out again. Highly recommend!",
+    name: "Eric K.",
+    initials: "EK",
+    detail: "Lakeland, FL — Full Detail Package",
   },
 ];
 
@@ -411,27 +460,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIAL ── */}
+      {/* ── BEFORE & AFTER ── */}
+      <section className="section-pad bg-white">
+        <div className="container-wide">
+          <div className="text-center mb-14">
+            <span className="label-tag">Before & After</span>
+            <h2 className="section-heading mb-4">
+              See the difference for yourself.
+            </h2>
+            <p className="section-subheading max-w-2xl mx-auto">
+              Real vehicles, real results. Drag the slider to compare each
+              vehicle before and after our detail.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {beforeAfters.map((pair) => (
+              <div key={pair.title}>
+                <BeforeAfterSlider
+                  beforeSrc={pair.before}
+                  afterSrc={pair.after}
+                  alt={pair.title}
+                />
+                <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
+                  {pair.title}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── REVIEWS ── */}
       <section className="section-pad bg-apple-gray">
         <div className="container-wide">
-          <div className="max-w-3xl mx-auto text-center">
-            <blockquote className="text-3xl md:text-4xl font-semibold text-apple-text-primary tracking-tight leading-snug mb-8">
-              "Wow! It looks like new again!"
-            </blockquote>
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-navy flex items-center justify-center text-white font-bold text-sm">
-                JT
-              </div>
-              <div className="text-left">
-                <p className="font-semibold text-sm text-apple-text-primary">
-                  John Travis
-                </p>
-                <p className="text-xs text-apple-text-tertiary">
-                  Lakeland, FL — Full Detail Package
-                </p>
-              </div>
-            </div>
+          <div className="text-center mb-14">
+            <span className="label-tag">Reviews</span>
+            <h2 className="section-heading mb-4">
+              What our customers say.
+            </h2>
           </div>
+
+          <ReviewsCarousel reviews={reviews} />
         </div>
       </section>
 

@@ -226,13 +226,13 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ── Things That Can Impact the Price ── */}
+      {/* ── Factors That Can Impact the Quote ── */}
       <section className="py-20 px-6 bg-white border-t border-apple-gray-2">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <span className="label-tag">Pricing</span>
             <h2 className="text-4xl font-bold text-apple-text-primary tracking-tight mb-4">
-              Things that can impact the price of the detail
+              Factors that can impact your quote
             </h2>
             <p className="text-apple-text-secondary max-w-2xl mx-auto">
               Every vehicle is different. These factors can adjust the final

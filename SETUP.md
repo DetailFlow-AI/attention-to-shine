@@ -48,6 +48,31 @@ The contact form in `app/contact/page.tsx` currently simulates a send (for demo)
 - **[Formspree](https://formspree.io)** — no code needed for simple forms
 - **[SendGrid](https://sendgrid.com)** — powerful, free tier
 
+### 5. Connect your Google Calendar (live availability)
+
+The booking form checks your Google Calendar and greys out time slots where
+you already have an event, so customers can't book (or pay) for a time you
+aren't available.
+
+1. Go to https://console.cloud.google.com → create a project (free)
+2. APIs & Services → Library → enable the **Google Calendar API**
+3. APIs & Services → Credentials → **Create credentials → API key** — copy it
+4. In Google Calendar (calendar.google.com): Settings → your calendar →
+   **Access permissions** → check **"Make available to public"** and set it to
+   **"See only free/busy (hide details)"** — this exposes only busy times,
+   never event names or details
+5. In the same settings page, copy your **Calendar ID** (usually your Gmail
+   address)
+6. Add both to `.env.local` (and to Vercel's environment variables):
+
+```
+GOOGLE_CALENDAR_ID=lilliechris06@gmail.com
+GOOGLE_CALENDAR_API_KEY=YOUR_API_KEY_HERE
+```
+
+If these aren't set, the form simply shows every slot as available — nothing
+breaks.
+
 ---
 
 ## Deploy to Vercel
