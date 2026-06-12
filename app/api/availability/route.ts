@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { easternOffset, resolveCalendarId } from "@/lib/googleCalendar";
+import {
+  easternOffset,
+  getBusyTimes,
+  resolveCalendarId,
+} from "@/lib/googleCalendar";
 
 // Returns the busy time ranges from the owner's Google Calendar for a given
 // date so the booking form can grey out taken slots.
 //
-// Requires two env vars (see SETUP.md):
-//   GOOGLE_CALENDAR_ID      — the calendar's ID (usually your Gmail address)
-//   GOOGLE_CALENDAR_API_KEY — a Google API key with the Calendar API enabled
-// The calendar's free/busy visibility must be public for API-key access.
-//
-// If not configured, every slot is reported available so booking still works.
+// Primary path: reads the calendar directly as the service account (the same
+// credentials that create booking events), so booked appointments always
+// block their slots. Fallback: the public free/busy API-key lookup.
+// If neither is configured, every slot is reported available so booking
+// still works.
 
 export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get("date");
@@ -17,9 +20,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Valid date (YYYY-MM-DD) required" }, { status: 400 });
   }
 
+  // Service-account path — sees the calendar directly, no public sharing needed
+  const saBusy = await getBusyTimes(date);
+  if (saBusy !== null) {
+    return NextResponse.json({ configured: true, busy: saBusy });
+  }
+
+  // Fallback: public free/busy via API key
   const calendarId = resolveCalendarId();
   const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
-  if (!calendarId || !apiKey) {
+  if (!apiKey) {
     return NextResponse.json({ configured: false, busy: [] });
   }
 

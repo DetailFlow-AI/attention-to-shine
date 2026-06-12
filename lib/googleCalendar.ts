@@ -115,6 +115,62 @@ export interface CalendarResult {
   error?: string;
 }
 
+// Returns the busy intervals on the business calendar for a given date,
+// reading directly as the service account. Fails open (empty list) so the
+// booking form never breaks if the calendar can't be reached.
+export async function getBusyTimes(
+  date: string
+): Promise<{ start: string; end: string }[] | null> {
+  const saEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const saKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+  if (!saEmail || !saKey) return null;
+
+  try {
+    const calendarId = resolveCalendarId();
+    const offset = easternOffset(date);
+    const token = await getAccessToken(saEmail, saKey);
+    const params = new URLSearchParams({
+      timeMin: `${date}T00:00:00${offset}`,
+      timeMax: `${date}T23:59:59${offset}`,
+      singleEvents: "true",
+      orderBy: "startTime",
+      maxResults: "50",
+    });
+
+    const res = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) {
+      console.error("Busy-times fetch failed:", res.status, await res.text());
+      return [];
+    }
+
+    const json = await res.json();
+    return (json.items ?? [])
+      .filter(
+        (e: { status?: string; transparency?: string }) =>
+          e.status !== "cancelled" && e.transparency !== "transparent"
+      )
+      .map(
+        (e: {
+          start?: { dateTime?: string; date?: string };
+          end?: { dateTime?: string; date?: string };
+        }) => ({
+          // All-day events have only a date — treat them as blocking the whole day
+          start: e.start?.dateTime ?? `${date}T00:00:00${offset}`,
+          end: e.end?.dateTime ?? `${date}T23:59:59${offset}`,
+        })
+      );
+  } catch (error) {
+    console.error("Busy-times error:", error);
+    return [];
+  }
+}
+
 export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResult> {
   const calendarId = resolveCalendarId();
   const saEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
