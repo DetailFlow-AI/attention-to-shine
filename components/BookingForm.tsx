@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import DatePicker from "@/components/DatePicker";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -363,6 +364,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const [step2Attempted,  setStep2Attempted] = useState(false); // tracks if user tried to advance with missing fields
   const [payMethod,       setPayMethod]      = useState<"online" | "in_person">("online");
   const [busyRanges,      setBusyRanges]     = useState<{ start: string; end: string }[]>([]);
+  const [nextAvailable,   setNextAvailable]  = useState<string>("");
 
   const [data, setData] = useState<BookingData>({
     service:      (defaultService as Service) || "",
@@ -397,17 +399,23 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     "12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM",
   ];
 
-  // Check the owner's Google Calendar whenever the chosen date changes
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
+
+  // Check the owner's Google Calendar whenever the chosen date changes.
+  // Each response also carries the soonest date with an open slot.
   useEffect(() => {
-    if (!data.date) {
-      setBusyRanges([]);
-      return;
-    }
     let cancelled = false;
-    fetch(`/api/availability?date=${data.date}`)
+    const query = data.date
+      ? `date=${data.date}`
+      : `start=${minDate}&days=1`; // no date picked yet — still fetch nextAvailable
+    fetch(`/api/availability?${query}`)
       .then((r) => (r.ok ? r.json() : { busy: [] }))
       .then((j) => {
-        if (!cancelled) setBusyRanges(j.busy ?? []);
+        if (cancelled) return;
+        setBusyRanges(j.busy ?? []);
+        if (j.nextAvailable) setNextAvailable(j.nextAvailable);
       })
       .catch(() => {
         if (!cancelled) setBusyRanges([]);
@@ -415,6 +423,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
   // A slot is unavailable if its one-hour window overlaps any calendar event
@@ -439,10 +448,6 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busyRanges]);
-
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
 
   const submitPayLater = async () => {
     setLoading(true);
@@ -689,17 +694,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
                 Preferred Date *
               </label>
-              <input
-                type="date"
-                min={minDate}
+              <DatePicker
                 value={data.date}
-                onChange={(e) => set("date", e.target.value)}
-                className={ic(data.date, true)}
+                minDate={minDate}
+                onChange={(d) => set("date", d)}
               />
               <RequiredMsg value={data.date} />
-              {!step2Attempted || data.date.trim() ? (
-                <p className="text-xs text-apple-text-tertiary mt-1">Mon – Sat only.</p>
-              ) : null}
             </div>
             <div>
               <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
@@ -721,6 +721,22 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 })}
               </select>
               <RequiredMsg value={data.time} />
+              {nextAvailable && (
+                <p className="text-xs text-apple-text-secondary mt-1.5">
+                  Next available date:{" "}
+                  <button
+                    type="button"
+                    onClick={() => set("date", nextAvailable)}
+                    className="font-semibold text-gold hover:underline"
+                  >
+                    {new Date(`${nextAvailable}T12:00:00`).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </button>
+                </p>
+              )}
             </div>
           </div>
 

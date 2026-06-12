@@ -1,68 +1,94 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  easternOffset,
-  getBusyTimes,
-  resolveCalendarId,
+  addDays,
+  getBusyWindow,
+  openSlotCount,
+  type BusyInterval,
 } from "@/lib/googleCalendar";
 
-// Returns the busy time ranges from the owner's Google Calendar for a given
-// date so the booking form can grey out taken slots.
+// Availability for the booking form, read from the owner's Google Calendar.
 //
-// Primary path: reads the calendar directly as the service account (the same
-// credentials that create booking events), so booked appointments always
-// block their slots. Fallback: the public free/busy API-key lookup.
-// If neither is configured, every slot is reported available so booking
-// still works.
+// Modes:
+//   ?date=YYYY-MM-DD            → busy intervals for that day (time dropdown)
+//   ?start=YYYY-MM-DD&days=N    → open-slot count per day (date picker grid)
+//
+// Every response also includes `nextAvailable`: the soonest upcoming date
+// with at least one open slot, scanned over the next 45 days.
+// Fails open — if the calendar can't be reached, everything reports available
+// so customers are never blocked from booking.
+
+const SCAN_DAYS = 45;
+
+function todayEastern(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+  }).format(new Date());
+}
+
+function nextAvailableDate(busy: BusyInterval[]): string | null {
+  const tomorrow = addDays(todayEastern(), 1);
+  for (let i = 0; i < SCAN_DAYS; i++) {
+    const d = addDays(tomorrow, i);
+    if (openSlotCount(d, busy) > 0) return d;
+  }
+  return null;
+}
 
 export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get("date");
-  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    return NextResponse.json({ error: "Valid date (YYYY-MM-DD) required" }, { status: 400 });
-  }
+  const start = req.nextUrl.searchParams.get("start");
+  const daysParam = parseInt(req.nextUrl.searchParams.get("days") ?? "0", 10);
 
-  // Service-account path — sees the calendar directly, no public sharing needed
-  const saBusy = await getBusyTimes(date);
-  if (saBusy !== null) {
-    return NextResponse.json({ configured: true, busy: saBusy });
-  }
+  const tomorrow = addDays(todayEastern(), 1);
+  const scanEnd = addDays(tomorrow, SCAN_DAYS);
 
-  // Fallback: public free/busy via API key
-  const calendarId = resolveCalendarId();
-  const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ configured: false, busy: [] });
-  }
+  // ── Range mode: per-day open slot counts for the date picker ──
+  if (start && /^\d{4}-\d{2}-\d{2}$/.test(start) && daysParam > 0) {
+    const days = Math.min(daysParam, 62);
+    const rangeEnd = addDays(start, days - 1);
+    const windowStart = start < tomorrow ? start : tomorrow;
+    const windowEnd = rangeEnd > scanEnd ? rangeEnd : scanEnd;
 
-  try {
-    const offset = easternOffset(date);
-    const res = await fetch(
-      `https://www.googleapis.com/calendar/v3/freeBusy?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          timeMin: `${date}T00:00:00${offset}`,
-          timeMax: `${date}T23:59:59${offset}`,
-          timeZone: "America/New_York",
-          items: [{ id: calendarId }],
-        }),
-        cache: "no-store",
-      }
-    );
+    const { configured, busy } = await getBusyWindow(windowStart, windowEnd);
 
-    if (!res.ok) {
-      console.error("Calendar freeBusy error:", res.status, await res.text());
-      return NextResponse.json({ configured: true, busy: [] });
+    const openByDay: Record<string, number> = {};
+    for (let i = 0; i < days; i++) {
+      const d = addDays(start, i);
+      openByDay[d] = openSlotCount(d, busy);
     }
 
-    const json = await res.json();
-    const busy: { start: string; end: string }[] =
-      json.calendars?.[calendarId]?.busy ?? [];
-
-    return NextResponse.json({ configured: true, busy });
-  } catch (error) {
-    console.error("Availability route error:", error);
-    // Fail open — never block bookings because the calendar check failed
-    return NextResponse.json({ configured: true, busy: [] });
+    return NextResponse.json({
+      configured,
+      days: openByDay,
+      nextAvailable: nextAvailableDate(busy),
+    });
   }
+
+  // ── Single-date mode: busy intervals for the time dropdown ──
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const windowStart = date < tomorrow ? date : tomorrow;
+    const windowEnd = date > scanEnd ? date : scanEnd;
+
+    const { configured, busy } = await getBusyWindow(windowStart, windowEnd);
+
+    // Only the requested day's intervals matter to the time dropdown
+    const dayStart = new Date(`${date}T00:00:00-05:00`).getTime() - 60 * 60 * 1000;
+    const dayEnd = new Date(`${date}T23:59:59-04:00`).getTime() + 60 * 60 * 1000;
+    const dayBusy = busy.filter((b) => {
+      const s = new Date(b.start).getTime();
+      const e = new Date(b.end).getTime();
+      return s < dayEnd && e > dayStart;
+    });
+
+    return NextResponse.json({
+      configured,
+      busy: dayBusy,
+      nextAvailable: nextAvailableDate(busy),
+    });
+  }
+
+  return NextResponse.json(
+    { error: "Provide ?date=YYYY-MM-DD or ?start=YYYY-MM-DD&days=N" },
+    { status: 400 }
+  );
 }

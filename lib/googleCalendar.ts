@@ -115,59 +115,129 @@ export interface CalendarResult {
   error?: string;
 }
 
-// Returns the busy intervals on the business calendar for a given date,
-// reading directly as the service account. Fails open (empty list) so the
-// booking form never breaks if the calendar can't be reached.
-export async function getBusyTimes(
-  date: string
-): Promise<{ start: string; end: string }[] | null> {
+export interface BusyInterval {
+  start: string;
+  end: string;
+}
+
+// Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
+export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+export function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+// How many of the bookable slots on a date are free of calendar events.
+// Sundays are closed, so they always report zero.
+export function openSlotCount(date: string, busy: BusyInterval[]): number {
+  if (new Date(`${date}T12:00:00Z`).getUTCDay() === 0) return 0;
+  const offset = easternOffset(date);
+  let open = 0;
+  for (const hour of BOOKING_SLOT_HOURS) {
+    const slotStart = new Date(
+      `${date}T${String(hour).padStart(2, "0")}:00:00${offset}`
+    );
+    const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    const taken = busy.some(
+      (b) => slotStart < new Date(b.end) && slotEnd > new Date(b.start)
+    );
+    if (!taken) open++;
+  }
+  return open;
+}
+
+// Returns the busy intervals on the business calendar across a date window.
+// Prefers reading directly as the service account; falls back to the public
+// free/busy API-key lookup; fails open (configured: false, no busy times) so
+// the booking form never breaks if the calendar can't be reached.
+export async function getBusyWindow(
+  startDate: string,
+  endDate: string
+): Promise<{ configured: boolean; busy: BusyInterval[] }> {
+  const calendarId = resolveCalendarId();
+  const timeMin = `${startDate}T00:00:00${easternOffset(startDate)}`;
+  const timeMax = `${endDate}T23:59:59${easternOffset(endDate)}`;
+
   const saEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const saKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
-  if (!saEmail || !saKey) return null;
+
+  if (saEmail && saKey) {
+    try {
+      const token = await getAccessToken(saEmail, saKey);
+      const params = new URLSearchParams({
+        timeMin,
+        timeMax,
+        singleEvents: "true",
+        orderBy: "startTime",
+        maxResults: "250",
+      });
+      const res = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }
+      );
+      if (!res.ok) {
+        console.error("Busy-window fetch failed:", res.status, await res.text());
+        return { configured: true, busy: [] };
+      }
+      const json = await res.json();
+      const busy = (json.items ?? [])
+        .filter(
+          (e: { status?: string; transparency?: string }) =>
+            e.status !== "cancelled" && e.transparency !== "transparent"
+        )
+        .map(
+          (e: {
+            start?: { dateTime?: string; date?: string };
+            end?: { dateTime?: string; date?: string };
+          }) => ({
+            // All-day events have only a date — they block their whole day(s)
+            start: e.start?.dateTime ?? `${e.start?.date}T00:00:00${easternOffset(e.start?.date ?? startDate)}`,
+            end: e.end?.dateTime ?? `${e.end?.date}T00:00:00${easternOffset(e.end?.date ?? endDate)}`,
+          })
+        );
+      return { configured: true, busy };
+    } catch (error) {
+      console.error("Busy-window error:", error);
+      return { configured: true, busy: [] };
+    }
+  }
+
+  // Fallback: public free/busy via API key
+  const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
+  if (!apiKey) return { configured: false, busy: [] };
 
   try {
-    const calendarId = resolveCalendarId();
-    const offset = easternOffset(date);
-    const token = await getAccessToken(saEmail, saKey);
-    const params = new URLSearchParams({
-      timeMin: `${date}T00:00:00${offset}`,
-      timeMax: `${date}T23:59:59${offset}`,
-      singleEvents: "true",
-      orderBy: "startTime",
-      maxResults: "50",
-    });
-
     const res = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+      `https://www.googleapis.com/calendar/v3/freeBusy?key=${apiKey}`,
       {
-        headers: { Authorization: `Bearer ${token}` },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          timeMin,
+          timeMax,
+          timeZone: "America/New_York",
+          items: [{ id: calendarId }],
+        }),
         cache: "no-store",
       }
     );
     if (!res.ok) {
-      console.error("Busy-times fetch failed:", res.status, await res.text());
-      return [];
+      console.error("Calendar freeBusy error:", res.status, await res.text());
+      return { configured: true, busy: [] };
     }
-
     const json = await res.json();
-    return (json.items ?? [])
-      .filter(
-        (e: { status?: string; transparency?: string }) =>
-          e.status !== "cancelled" && e.transparency !== "transparent"
-      )
-      .map(
-        (e: {
-          start?: { dateTime?: string; date?: string };
-          end?: { dateTime?: string; date?: string };
-        }) => ({
-          // All-day events have only a date — treat them as blocking the whole day
-          start: e.start?.dateTime ?? `${date}T00:00:00${offset}`,
-          end: e.end?.dateTime ?? `${date}T23:59:59${offset}`,
-        })
-      );
+    return {
+      configured: true,
+      busy: json.calendars?.[calendarId]?.busy ?? [],
+    };
   } catch (error) {
-    console.error("Busy-times error:", error);
-    return [];
+    console.error("Availability fallback error:", error);
+    return { configured: true, busy: [] };
   }
 }
 
