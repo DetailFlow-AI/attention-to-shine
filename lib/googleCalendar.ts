@@ -110,7 +110,12 @@ export function resolveCalendarId(): string {
   return raw;
 }
 
-export async function createBookingEvent(ev: BookingEvent): Promise<boolean> {
+export interface CalendarResult {
+  ok: boolean;
+  error?: string;
+}
+
+export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResult> {
   const calendarId = resolveCalendarId();
   const saEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const saKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
@@ -126,7 +131,7 @@ export async function createBookingEvent(ev: BookingEvent): Promise<boolean> {
       `📅 Calendar event skipped — missing env var(s): ${missing} —`,
       ev.summary
     );
-    return false;
+    return { ok: false, error: `Missing env var(s): ${missing}` };
   }
 
   try {
@@ -154,16 +159,20 @@ export async function createBookingEvent(ev: BookingEvent): Promise<boolean> {
     );
 
     if (!res.ok) {
+      const body = await res.text();
       console.error(
         `Calendar event creation failed (calendar: ${calendarId}):`,
         res.status,
-        await res.text()
+        body
       );
-      return false;
+      return {
+        ok: false,
+        error: `Calendar API ${res.status} (calendar: ${calendarId}): ${body}`,
+      };
     }
-    return true;
+    return { ok: true };
   } catch (error) {
     console.error("Calendar event error:", error);
-    return false;
+    return { ok: false, error: String(error) };
   }
 }
