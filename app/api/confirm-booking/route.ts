@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       m.promoCode ? `Promo:    ${m.promoCode}` : "",
     ].filter(Boolean).join("\n");
 
-    const created = await createBookingEvent({
+    const { ok: created } = await createBookingEvent({
       summary: `${SERVICE_LABELS[m.service] ?? m.service} — ${m.customerName} (paid online)`,
       description,
       date: m.date,
