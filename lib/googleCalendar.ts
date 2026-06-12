@@ -99,8 +99,19 @@ export interface BookingEvent {
   durationHours?: number;
 }
 
+// Resolves the calendar to write to. Falls back to the business calendar when
+// the env var is unset, empty, quoted, or set to "primary" — which for a
+// service account would mean the robot's own (invisible) calendar.
+export function resolveCalendarId(): string {
+  const raw = (process.env.GOOGLE_CALENDAR_ID ?? "")
+    .trim()
+    .replace(/^['"]|['"]$/g, "");
+  if (!raw || raw === "primary") return "lilliechris06@gmail.com";
+  return raw;
+}
+
 export async function createBookingEvent(ev: BookingEvent): Promise<boolean> {
-  const calendarId = process.env.GOOGLE_CALENDAR_ID ?? "lilliechris06@gmail.com";
+  const calendarId = resolveCalendarId();
   const saEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const saKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
 
@@ -144,7 +155,7 @@ export async function createBookingEvent(ev: BookingEvent): Promise<boolean> {
 
     if (!res.ok) {
       console.error(
-        "Calendar event creation failed:",
+        `Calendar event creation failed (calendar: ${calendarId}):`,
         res.status,
         await res.text()
       );

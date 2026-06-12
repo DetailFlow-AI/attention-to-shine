@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { easternOffset } from "@/lib/googleCalendar";
+import { easternOffset, resolveCalendarId } from "@/lib/googleCalendar";
 
 // Returns the busy time ranges from the owner's Google Calendar for a given
 // date so the booking form can grey out taken slots.
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Valid date (YYYY-MM-DD) required" }, { status: 400 });
   }
 
-  const calendarId = process.env.GOOGLE_CALENDAR_ID ?? "lilliechris06@gmail.com";
+  const calendarId = resolveCalendarId();
   const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
   if (!calendarId || !apiKey) {
     return NextResponse.json({ configured: false, busy: [] });
