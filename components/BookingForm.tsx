@@ -426,14 +426,18 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // A slot is unavailable if its one-hour window overlaps any calendar event
+  // TASK 1 (5-hour booking time blocks) — DONE 2026-06-13
+  // Every booking reserves a 5-hour window, so a slot is unavailable if a
+  // 5-hour appointment starting there would overlap any calendar event.
+  // Mirrors BOOKING_BLOCK_HOURS in lib/googleCalendar.ts.
+  const BOOKING_BLOCK_HOURS = 5;
   const isSlotBusy = (slot: string) => {
     if (!data.date || busyRanges.length === 0) return false;
     const [hm, ap] = slot.split(" ");
     let hour = parseInt(hm, 10);
     if (ap === "PM" && hour !== 12) hour += 12;
     const slotStart = new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
-    const slotEnd   = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    const slotEnd   = new Date(slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000);
     return busyRanges.some((b) => {
       const busyStart = new Date(b.start);
       const busyEnd   = new Date(b.end);
