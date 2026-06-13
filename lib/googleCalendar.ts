@@ -123,6 +123,13 @@ export interface BusyInterval {
 // Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
 export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
+// TASK 1 (5-hour booking time blocks) — DONE 2026-06-13
+// Every booking reserves this many hours on the calendar, and the
+// availability check treats a slot as taken if a block of this length
+// starting at the slot would overlap any existing event. A 10:00 AM
+// booking blocks 10:00 AM – 3:00 PM.
+export const BOOKING_BLOCK_HOURS = 5;
+
 export function addDays(date: string, days: number): string {
   const d = new Date(`${date}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
@@ -139,7 +146,9 @@ export function openSlotCount(date: string, busy: BusyInterval[]): number {
     const slotStart = new Date(
       `${date}T${String(hour).padStart(2, "0")}:00:00${offset}`
     );
-    const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    const slotEnd = new Date(
+      slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000
+    );
     const taken = busy.some(
       (b) => slotStart < new Date(b.end) && slotEnd > new Date(b.start)
     );
@@ -264,7 +273,8 @@ export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResu
     const token = await getAccessToken(saEmail, saKey);
     const start = slotToStartISO(ev.date, ev.time);
     const end = new Date(
-      new Date(start).getTime() + (ev.durationHours ?? 3) * 60 * 60 * 1000
+      new Date(start).getTime() +
+        (ev.durationHours ?? BOOKING_BLOCK_HOURS) * 60 * 60 * 1000
     ).toISOString();
 
     const res = await fetch(
