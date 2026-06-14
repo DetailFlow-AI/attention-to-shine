@@ -96,7 +96,7 @@ export interface BookingEvent {
   description: string;
   date: string; // YYYY-MM-DD
   time: string; // e.g. "1:00 PM"
-  durationHours?: number;
+  durationHours?: number; // length of the booking in hours from the start (default 3)
 }
 
 // Resolves the calendar to write to. Falls back to the business calendar when
@@ -123,12 +123,21 @@ export interface BusyInterval {
 // Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
 export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
-// TASK 1 (5-hour booking time blocks) — DONE 2026-06-13
-// Every booking reserves this many hours on the calendar, and the
-// availability check treats a slot as taken if a block of this length
-// starting at the slot would overlap any existing event. A 10:00 AM
-// booking blocks 10:00 AM – 3:00 PM.
-export const BOOKING_BLOCK_HOURS = 5;
+// Each booking reserves the 3 hours starting at the booked time — the length
+// of a detail. A 12:00 PM booking blocks 12:00 PM – 3:00 PM; nothing before
+// the start time is blocked. The availability check uses the same window: a
+// slot is taken if the 3-hour detail starting there would overlap an existing
+// event, so a slot stays open only when a full detail fits before the next
+// booking.
+export const BOOKING_BLOCK_HOURS = 3;
+
+// Given the start time of a slot, returns the [start, end) window it blocks.
+export function blockWindow(slotStart: Date): { start: Date; end: Date } {
+  return {
+    start: slotStart,
+    end: new Date(slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000),
+  };
+}
 
 export function addDays(date: string, days: number): string {
   const d = new Date(`${date}T12:00:00Z`);
@@ -146,11 +155,9 @@ export function openSlotCount(date: string, busy: BusyInterval[]): number {
     const slotStart = new Date(
       `${date}T${String(hour).padStart(2, "0")}:00:00${offset}`
     );
-    const slotEnd = new Date(
-      slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000
-    );
+    const { start: blockStart, end: blockEnd } = blockWindow(slotStart);
     const taken = busy.some(
-      (b) => slotStart < new Date(b.end) && slotEnd > new Date(b.start)
+      (b) => blockStart < new Date(b.end) && blockEnd > new Date(b.start)
     );
     if (!taken) open++;
   }
@@ -271,9 +278,12 @@ export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResu
 
   try {
     const token = await getAccessToken(saEmail, saKey);
-    const start = slotToStartISO(ev.date, ev.time);
+    // Reserve the 3 hours starting at the booked time (the detail itself).
+    // A 12:00 PM booking blocks 12:00 PM – 3:00 PM on the calendar.
+    const slotStart = new Date(slotToStartISO(ev.date, ev.time));
+    const start = slotStart.toISOString();
     const end = new Date(
-      new Date(start).getTime() +
+      slotStart.getTime() +
         (ev.durationHours ?? BOOKING_BLOCK_HOURS) * 60 * 60 * 1000
     ).toISOString();
 

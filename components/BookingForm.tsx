@@ -426,32 +426,56 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // TASK 1 (5-hour booking time blocks) — DONE 2026-06-13
-  // Every booking reserves a 5-hour window, so a slot is unavailable if a
-  // 5-hour appointment starting there would overlap any calendar event.
-  // Mirrors BOOKING_BLOCK_HOURS in lib/googleCalendar.ts.
-  const BOOKING_BLOCK_HOURS = 5;
-  const isSlotBusy = (slot: string) => {
-    if (!data.date || busyRanges.length === 0) return false;
+  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
+  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
+  // a slot is bookable only if a full 3-hour detail starting there fits before
+  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
+  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
+  const DETAIL_HOURS = 3;
+
+  // Parses a slot label like "12:00 PM" into a Date on the selected date.
+  const slotToDate = (slot: string): Date | null => {
+    if (!data.date) return null;
     const [hm, ap] = slot.split(" ");
     let hour = parseInt(hm, 10);
     if (ap === "PM" && hour !== 12) hour += 12;
-    const slotStart = new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
-    const slotEnd   = new Date(slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000);
-    return busyRanges.some((b) => {
-      const busyStart = new Date(b.start);
-      const busyEnd   = new Date(b.end);
-      return slotStart < busyEnd && slotEnd > busyStart;
-    });
+    if (ap === "AM" && hour === 12) hour = 0;
+    return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  // If the picked time becomes unavailable after a date change, clear it
-  useEffect(() => {
-    if (data.time && isSlotBusy(data.time)) {
-      set("time", "");
+  // The soonest existing booking whose window overlaps the 3-hour detail that
+  // would start at `slot`, or null if a detail fits. Drives both the disabled
+  // slots and the "detail at …" explanation.
+  const conflictingBooking = (slot: string): Date | null => {
+    if (!data.date || busyRanges.length === 0) return null;
+    const slotStart = slotToDate(slot);
+    if (!slotStart) return null;
+    const detailEnd = new Date(slotStart.getTime() + DETAIL_HOURS * 60 * 60 * 1000);
+    let earliest: Date | null = null;
+    for (const b of busyRanges) {
+      const busyStart = new Date(b.start);
+      const busyEnd   = new Date(b.end);
+      if (slotStart < busyEnd && detailEnd > busyStart) {
+        if (!earliest || busyStart < earliest) earliest = busyStart;
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [busyRanges]);
+    return earliest;
+  };
+
+  const isSlotBusy = (slot: string) => conflictingBooking(slot) !== null;
+
+  // Formats a booking's start time in the business's timezone, e.g. "12:00 PM".
+  const fmtBookingTime = (d: Date): string =>
+    d.toLocaleTimeString("en-US", {
+      timeZone: "America/New_York",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+  // The chosen time is valid only when a full detail fits before the next
+  // booking. The Continue/Book buttons stay disabled until then.
+  const selectedConflict = data.time ? conflictingBooking(data.time) : null;
+  const timeIsValid      = !!data.time && selectedConflict === null;
 
   const submitPayLater = async () => {
     setLoading(true);
@@ -716,15 +740,23 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               >
                 <option value="">Select a time</option>
                 {timeSlots.map((t) => {
-                  const busy = isSlotBusy(t);
+                  const conflict = conflictingBooking(t);
                   return (
-                    <option key={t} value={t} disabled={busy}>
-                      {busy ? `${t} — unavailable` : t}
+                    <option key={t} value={t} disabled={conflict !== null}>
+                      {conflict ? `${t} — detail at ${fmtBookingTime(conflict)}` : t}
                     </option>
                   );
                 })}
               </select>
               <RequiredMsg value={data.time} />
+              {selectedConflict && (
+                <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
+                  <AlertCircle size={11} className="mt-0.5 shrink-0" />
+                  A detail is scheduled at {fmtBookingTime(selectedConflict)}.
+                  Please select a time with at least 3 hours before that
+                  appointment.
+                </p>
+              )}
               {nextAvailable && (
                 <p className="text-xs text-apple-text-secondary mt-1.5">
                   Next available date:{" "}
@@ -850,10 +882,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <button
               onClick={() => {
                 setStep2Attempted(true);
-                // Only advance if every required field is filled
+                // Only advance if every required field is filled and the
+                // chosen time has a valid 3-hour runway after it
                 if (
                   data.date.trim() &&
                   data.time.trim() &&
+                  timeIsValid &&
                   data.address.trim() &&
                   data.city.trim() &&
                   data.zip.trim()
@@ -864,7 +898,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 // If validation fails, the red fields + "Required" messages
                 // appear automatically via step2Attempted = true
               }}
-              className="btn-primary flex-1 justify-center"
+              disabled={!!selectedConflict}
+              className="btn-primary flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Continue <ArrowRight size={16} />
             </button>
@@ -1083,7 +1118,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </button>
             <button
               onClick={payMethod === "online" ? goToPayment : submitPayLater}
-              disabled={!data.name || !data.email || !data.phone || loading}
+              disabled={!data.name || !data.email || !data.phone || !timeIsValid || loading}
               className="btn-gold flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? (
