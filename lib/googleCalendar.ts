@@ -96,7 +96,7 @@ export interface BookingEvent {
   description: string;
   date: string; // YYYY-MM-DD
   time: string; // e.g. "1:00 PM"
-  durationHours?: number; // hours reserved AFTER the start time (default 3)
+  durationHours?: number; // length of the booking in hours from the start (default 3)
 }
 
 // Resolves the calendar to write to. Falls back to the business calendar when
@@ -123,20 +123,19 @@ export interface BusyInterval {
 // Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
 export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
-// Every booking reserves a window that runs 2 hours BEFORE the start time
-// (travel + setup) through 3 hours AFTER it (the detail itself), so a single
-// booking blocks 5 hours total. A 9:00 AM booking blocks 7:00 AM – 12:00 PM.
-// The availability check uses the same window: a slot is taken if its
-// would-be block overlaps any existing calendar event.
-export const BLOCK_HOURS_BEFORE = 2;
-export const BLOCK_HOURS_AFTER = 3;
-export const BOOKING_BLOCK_HOURS = BLOCK_HOURS_BEFORE + BLOCK_HOURS_AFTER;
+// Each booking reserves the 3 hours starting at the booked time — the length
+// of a detail. A 12:00 PM booking blocks 12:00 PM – 3:00 PM; nothing before
+// the start time is blocked. The availability check uses the same window: a
+// slot is taken if the 3-hour detail starting there would overlap an existing
+// event, so a slot stays open only when a full detail fits before the next
+// booking.
+export const BOOKING_BLOCK_HOURS = 3;
 
 // Given the start time of a slot, returns the [start, end) window it blocks.
 export function blockWindow(slotStart: Date): { start: Date; end: Date } {
   return {
-    start: new Date(slotStart.getTime() - BLOCK_HOURS_BEFORE * 60 * 60 * 1000),
-    end: new Date(slotStart.getTime() + BLOCK_HOURS_AFTER * 60 * 60 * 1000),
+    start: slotStart,
+    end: new Date(slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000),
   };
 }
 
@@ -279,15 +278,13 @@ export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResu
 
   try {
     const token = await getAccessToken(saEmail, saKey);
-    // Reserve 2 hours before the booked time through 3 hours after it.
-    // A 9:00 AM booking blocks 7:00 AM – 12:00 PM on the calendar.
+    // Reserve the 3 hours starting at the booked time (the detail itself).
+    // A 12:00 PM booking blocks 12:00 PM – 3:00 PM on the calendar.
     const slotStart = new Date(slotToStartISO(ev.date, ev.time));
-    const start = new Date(
-      slotStart.getTime() - BLOCK_HOURS_BEFORE * 60 * 60 * 1000
-    ).toISOString();
+    const start = slotStart.toISOString();
     const end = new Date(
       slotStart.getTime() +
-        (ev.durationHours ?? BLOCK_HOURS_AFTER) * 60 * 60 * 1000
+        (ev.durationHours ?? BOOKING_BLOCK_HOURS) * 60 * 60 * 1000
     ).toISOString();
 
     const res = await fetch(

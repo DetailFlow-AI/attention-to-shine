@@ -426,15 +426,14 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // Every booking reserves the window from 2 hours BEFORE the start time
-  // through 3 hours AFTER it (5 hours total) — a 9:00 AM booking blocks
-  // 7:00 AM–12:00 PM. Mirrors the calendar block in lib/googleCalendar.ts.
-  // A slot is unavailable if that window would overlap an existing event.
-  const BLOCK_HOURS_BEFORE = 2;
-  const BLOCK_HOURS_AFTER  = 3;
-  const DETAIL_HOURS       = 3; // a detail takes ~3 hours of open time
+  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
+  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
+  // a slot is bookable only if a full 3-hour detail starting there fits before
+  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
+  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
+  const DETAIL_HOURS = 3;
 
-  // Parses a slot label like "9:00 AM" into a Date on the selected date.
+  // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
     if (!data.date) return null;
     const [hm, ap] = slot.split(" ");
@@ -444,50 +443,39 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  const isSlotBusy = (slot: string) => {
-    if (!data.date || busyRanges.length === 0) return false;
+  // The soonest existing booking whose window overlaps the 3-hour detail that
+  // would start at `slot`, or null if a detail fits. Drives both the disabled
+  // slots and the "detail at …" explanation.
+  const conflictingBooking = (slot: string): Date | null => {
+    if (!data.date || busyRanges.length === 0) return null;
     const slotStart = slotToDate(slot);
-    if (!slotStart) return false;
-    const blockStart = new Date(slotStart.getTime() - BLOCK_HOURS_BEFORE * 60 * 60 * 1000);
-    const blockEnd   = new Date(slotStart.getTime() + BLOCK_HOURS_AFTER  * 60 * 60 * 1000);
-    return busyRanges.some((b) => {
+    if (!slotStart) return null;
+    const detailEnd = new Date(slotStart.getTime() + DETAIL_HOURS * 60 * 60 * 1000);
+    let earliest: Date | null = null;
+    for (const b of busyRanges) {
       const busyStart = new Date(b.start);
       const busyEnd   = new Date(b.end);
-      return blockStart < busyEnd && blockEnd > busyStart;
-    });
-  };
-
-  // A detail takes ~3 hours. A selected time is only valid if there are at
-  // least 3 hours of open availability after it before the next unavailable
-  // slot. Returns true when there's enough runway (or nothing blocked after).
-  const hasThreeHourRunway = (slot: string): boolean => {
-    const idx = timeSlots.indexOf(slot);
-    if (idx === -1) return false;
-    const selStart = slotToDate(slot);
-    if (!selStart) return false;
-    for (let j = idx + 1; j < timeSlots.length; j++) {
-      if (isSlotBusy(timeSlots[j])) {
-        const nextStart = slotToDate(timeSlots[j]);
-        if (!nextStart) continue;
-        const gapHours = (nextStart.getTime() - selStart.getTime()) / (60 * 60 * 1000);
-        return gapHours >= DETAIL_HOURS;
+      if (slotStart < busyEnd && detailEnd > busyStart) {
+        if (!earliest || busyStart < earliest) earliest = busyStart;
       }
     }
-    return true; // no blocked slot after the selection
+    return earliest;
   };
 
-  // The chosen time passes validation only when it's open AND has a 3-hour
-  // runway after it. The Book/Continue buttons stay disabled until then.
-  const timeIsValid       = !!data.time && !isSlotBusy(data.time) && hasThreeHourRunway(data.time);
-  const showRunwayWarning = !!data.time && !isSlotBusy(data.time) && !hasThreeHourRunway(data.time);
+  const isSlotBusy = (slot: string) => conflictingBooking(slot) !== null;
 
-  // If the picked time becomes unavailable after a date change, clear it
-  useEffect(() => {
-    if (data.time && isSlotBusy(data.time)) {
-      set("time", "");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [busyRanges]);
+  // Formats a booking's start time in the business's timezone, e.g. "12:00 PM".
+  const fmtBookingTime = (d: Date): string =>
+    d.toLocaleTimeString("en-US", {
+      timeZone: "America/New_York",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+  // The chosen time is valid only when a full detail fits before the next
+  // booking. The Continue/Book buttons stay disabled until then.
+  const selectedConflict = data.time ? conflictingBooking(data.time) : null;
+  const timeIsValid      = !!data.time && selectedConflict === null;
 
   const submitPayLater = async () => {
     setLoading(true);
@@ -752,20 +740,21 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               >
                 <option value="">Select a time</option>
                 {timeSlots.map((t) => {
-                  const busy = isSlotBusy(t);
+                  const conflict = conflictingBooking(t);
                   return (
-                    <option key={t} value={t} disabled={busy}>
-                      {busy ? `${t} — unavailable` : t}
+                    <option key={t} value={t} disabled={conflict !== null}>
+                      {conflict ? `${t} — detail at ${fmtBookingTime(conflict)}` : t}
                     </option>
                   );
                 })}
               </select>
               <RequiredMsg value={data.time} />
-              {showRunwayWarning && (
+              {selectedConflict && (
                 <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
                   <AlertCircle size={11} className="mt-0.5 shrink-0" />
-                  Details take an average of 3 hours — please select a time with
-                  at least 3 hours of availability.
+                  A detail is scheduled at {fmtBookingTime(selectedConflict)}.
+                  Please select a time with at least 3 hours before that
+                  appointment.
                 </p>
               )}
               {nextAvailable && (
@@ -909,7 +898,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 // If validation fails, the red fields + "Required" messages
                 // appear automatically via step2Attempted = true
               }}
-              disabled={showRunwayWarning}
+              disabled={!!selectedConflict}
               className="btn-primary flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Continue <ArrowRight size={16} />
