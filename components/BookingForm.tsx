@@ -426,24 +426,60 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // TASK 1 (5-hour booking time blocks) — DONE 2026-06-13
-  // Every booking reserves a 5-hour window, so a slot is unavailable if a
-  // 5-hour appointment starting there would overlap any calendar event.
-  // Mirrors BOOKING_BLOCK_HOURS in lib/googleCalendar.ts.
-  const BOOKING_BLOCK_HOURS = 5;
-  const isSlotBusy = (slot: string) => {
-    if (!data.date || busyRanges.length === 0) return false;
+  // Every booking reserves the window from 2 hours BEFORE the start time
+  // through 3 hours AFTER it (5 hours total) — a 9:00 AM booking blocks
+  // 7:00 AM–12:00 PM. Mirrors the calendar block in lib/googleCalendar.ts.
+  // A slot is unavailable if that window would overlap an existing event.
+  const BLOCK_HOURS_BEFORE = 2;
+  const BLOCK_HOURS_AFTER  = 3;
+  const DETAIL_HOURS       = 3; // a detail takes ~3 hours of open time
+
+  // Parses a slot label like "9:00 AM" into a Date on the selected date.
+  const slotToDate = (slot: string): Date | null => {
+    if (!data.date) return null;
     const [hm, ap] = slot.split(" ");
     let hour = parseInt(hm, 10);
     if (ap === "PM" && hour !== 12) hour += 12;
-    const slotStart = new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
-    const slotEnd   = new Date(slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000);
+    if (ap === "AM" && hour === 12) hour = 0;
+    return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
+  };
+
+  const isSlotBusy = (slot: string) => {
+    if (!data.date || busyRanges.length === 0) return false;
+    const slotStart = slotToDate(slot);
+    if (!slotStart) return false;
+    const blockStart = new Date(slotStart.getTime() - BLOCK_HOURS_BEFORE * 60 * 60 * 1000);
+    const blockEnd   = new Date(slotStart.getTime() + BLOCK_HOURS_AFTER  * 60 * 60 * 1000);
     return busyRanges.some((b) => {
       const busyStart = new Date(b.start);
       const busyEnd   = new Date(b.end);
-      return slotStart < busyEnd && slotEnd > busyStart;
+      return blockStart < busyEnd && blockEnd > busyStart;
     });
   };
+
+  // A detail takes ~3 hours. A selected time is only valid if there are at
+  // least 3 hours of open availability after it before the next unavailable
+  // slot. Returns true when there's enough runway (or nothing blocked after).
+  const hasThreeHourRunway = (slot: string): boolean => {
+    const idx = timeSlots.indexOf(slot);
+    if (idx === -1) return false;
+    const selStart = slotToDate(slot);
+    if (!selStart) return false;
+    for (let j = idx + 1; j < timeSlots.length; j++) {
+      if (isSlotBusy(timeSlots[j])) {
+        const nextStart = slotToDate(timeSlots[j]);
+        if (!nextStart) continue;
+        const gapHours = (nextStart.getTime() - selStart.getTime()) / (60 * 60 * 1000);
+        return gapHours >= DETAIL_HOURS;
+      }
+    }
+    return true; // no blocked slot after the selection
+  };
+
+  // The chosen time passes validation only when it's open AND has a 3-hour
+  // runway after it. The Book/Continue buttons stay disabled until then.
+  const timeIsValid       = !!data.time && !isSlotBusy(data.time) && hasThreeHourRunway(data.time);
+  const showRunwayWarning = !!data.time && !isSlotBusy(data.time) && !hasThreeHourRunway(data.time);
 
   // If the picked time becomes unavailable after a date change, clear it
   useEffect(() => {
@@ -725,6 +761,13 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 })}
               </select>
               <RequiredMsg value={data.time} />
+              {showRunwayWarning && (
+                <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
+                  <AlertCircle size={11} className="mt-0.5 shrink-0" />
+                  Details take an average of 3 hours — please select a time with
+                  at least 3 hours of availability.
+                </p>
+              )}
               {nextAvailable && (
                 <p className="text-xs text-apple-text-secondary mt-1.5">
                   Next available date:{" "}
@@ -850,10 +893,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <button
               onClick={() => {
                 setStep2Attempted(true);
-                // Only advance if every required field is filled
+                // Only advance if every required field is filled and the
+                // chosen time has a valid 3-hour runway after it
                 if (
                   data.date.trim() &&
                   data.time.trim() &&
+                  timeIsValid &&
                   data.address.trim() &&
                   data.city.trim() &&
                   data.zip.trim()
@@ -864,7 +909,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 // If validation fails, the red fields + "Required" messages
                 // appear automatically via step2Attempted = true
               }}
-              className="btn-primary flex-1 justify-center"
+              disabled={showRunwayWarning}
+              className="btn-primary flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Continue <ArrowRight size={16} />
             </button>
@@ -1083,7 +1129,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </button>
             <button
               onClick={payMethod === "online" ? goToPayment : submitPayLater}
-              disabled={!data.name || !data.email || !data.phone || loading}
+              disabled={!data.name || !data.email || !data.phone || !timeIsValid || loading}
               className="btn-gold flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? (
