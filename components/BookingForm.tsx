@@ -426,12 +426,14 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
-  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
-  // a slot is bookable only if a full 3-hour detail starting there fits before
-  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
-  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
-  const DETAIL_HOURS = 3;
+  // A detail reserves 5 hours (detail + buffer). Each booking blocks the 5
+  // hours starting at its time (a 10:00 AM booking blocks 10:00 AM–3:00 PM) —
+  // nothing before it. So a slot is bookable only if a full 5-hour window
+  // starting there fits before the next booking, i.e. its [X, X+5) window
+  // doesn't overlap any existing detail. Mirrors BOOKING_BLOCK_HOURS in
+  // lib/googleCalendar.ts.
+  // TASK 1 (5-hour time blocking) — DONE 2026-06-19
+  const DETAIL_HOURS = 5;
 
   // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
@@ -753,7 +755,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
                   <AlertCircle size={11} className="mt-0.5 shrink-0" />
                   A detail is scheduled at {fmtBookingTime(selectedConflict)}.
-                  Please select a time with at least 3 hours before that
+                  Please select a time with at least 5 hours before that
                   appointment.
                 </p>
               )}
@@ -883,7 +885,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               onClick={() => {
                 setStep2Attempted(true);
                 // Only advance if every required field is filled and the
-                // chosen time has a valid 3-hour runway after it
+                // chosen time has a valid 5-hour runway after it
                 if (
                   data.date.trim() &&
                   data.time.trim() &&
