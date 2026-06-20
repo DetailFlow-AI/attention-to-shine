@@ -17,10 +17,11 @@ const contactInfo = [
     value: "lilliechris06@gmail.com",
     href: "mailto:lilliechris06@gmail.com",
   },
+  // TASK 4 — DONE 2026-06-20: physical address removed; mobile-service line.
   {
     icon: <MapPin size={18} />,
-    label: "Location",
-    value: "Lakeland, FL 33809",
+    label: "Service Area",
+    value: "Stationed in Lakeland, Florida — We come to you.",
     href: null,
   },
   {

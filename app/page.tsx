@@ -387,15 +387,49 @@ export default function HomePage() {
       <section className="section-pad bg-navy">
         <div className="container-wide">
           <div className="max-w-4xl mx-auto text-center">
+            {/* TASK 5 — DONE 2026-06-20: detailed Checkup Plan description +
+                specific maintenance services; framed for already-clean cars. */}
             <span className="label-tag">Premium Subscription</span>
             <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">
               The Checkup Detailing Plan
             </h2>
-            <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Designed for those who want their vehicle looking its best at all
-              times — without thinking about it. Reserve a recurring slot and
-              we'll handle everything on a consistent schedule.
+            <p className="text-lg text-white/60 mb-6 max-w-2xl mx-auto leading-relaxed">
+              The Checkup Plan is our maintenance service for vehicles that are
+              <span className="text-white/80"> already in great shape</span> and
+              just need consistent upkeep to stay that way. It's not a deep
+              restoration — it's a recurring refresh that keeps an already-clean
+              car looking sharp week after week, without you ever having to
+              think about it. Reserve a recurring slot and we handle the rest.
             </p>
+
+            {/* What every Checkup visit includes */}
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl mx-auto mb-10 text-left">
+              <p className="text-xs uppercase tracking-widest text-gold font-semibold mb-4 text-center">
+                What every Checkup visit includes
+              </p>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
+                {[
+                  "Exterior rinse and gentle hand wash",
+                  "Tire shine and dressing",
+                  "Full window and glass wipe-down",
+                  "Interior vacuum — seats, carpets, and mats",
+                  "Dashboard and console wipe-down",
+                  "Door panels and interior surfaces refreshed",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-sm text-white/70"
+                  >
+                    <CheckCircle2 size={14} className="text-gold shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-white/40 mt-5 text-center leading-relaxed">
+                A maintenance package built for already-clean vehicles — designed
+                to preserve the results of your full detail, not replace it.
+              </p>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mb-10">
               {[
