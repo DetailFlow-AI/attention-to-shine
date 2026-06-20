@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 
-type Category = "all" | "exterior" | "interior";
+type Category = "all" | "beforeafter" | "exterior" | "interior";
 
 interface GalleryItem {
   id: number;
@@ -11,6 +11,37 @@ interface GalleryItem {
   src: string;
   alt: string;
 }
+
+// TASK 2 — DONE 2026-06-20: matched before/after pairs.
+// Each entry is one vehicle shot from the same angle before and after our
+// detail. Left = before, Right = after.
+//
+// NOTE FOR OWNER: only the two pairs below are confirmed matched before/after
+// shots (the same ones used on the homepage). To add more, drop the matching
+// "before" and "after" image paths here — every other photo in the gallery is a
+// single completed result, not a verified before/after pair, so it would be
+// misleading to auto-pair them.
+interface BeforeAfterPair {
+  id: number;
+  title: string;
+  before: string;
+  after: string;
+}
+
+const beforeAfterPairs: BeforeAfterPair[] = [
+  {
+    id: 1,
+    title: "Sedan Interior Detail — Lakeland, FL",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 2,
+    title: "Interior Deep Clean — Lakeland, FL",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
 
 const exteriorPhotos: GalleryItem[] = [
   { id: 1, category: "exterior", src: "/images/exterior/IMG_1941.PNG", alt: "Exterior detail 1" },
@@ -64,6 +95,7 @@ const allPhotos: GalleryItem[] = [...exteriorPhotos, ...interiorPhotos];
 
 const tabs: { key: Category; label: string }[] = [
   { key: "all", label: "All Work" },
+  { key: "beforeafter", label: "Before & After" },
   { key: "exterior", label: "Exterior" },
   { key: "interior", label: "Interior" },
 ];
@@ -76,7 +108,9 @@ export default function GalleryPage() {
       ? allPhotos
       : active === "exterior"
       ? exteriorPhotos
-      : interiorPhotos;
+      : active === "interior"
+      ? interiorPhotos
+      : [];
 
   return (
     <>
@@ -108,21 +142,60 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((photo) => (
-              <div
-                key={photo.id}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10"
-              >
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            ))}
-          </div>
+          {/* TASK 2: Before & After matched pairs — side by side, labeled */}
+          {active === "beforeafter" ? (
+            <div className="space-y-12 max-w-5xl mx-auto">
+              {beforeAfterPairs.map((pair) => (
+                <div key={pair.id}>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-5">
+                    {/* Before */}
+                    <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10">
+                      <Image
+                        src={pair.before}
+                        alt={`${pair.title} — before`}
+                        fill
+                        className="object-cover"
+                      />
+                      <span className="absolute top-3 left-3 bg-navy/85 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        Before
+                      </span>
+                    </div>
+                    {/* After */}
+                    <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10">
+                      <Image
+                        src={pair.after}
+                        alt={`${pair.title} — after`}
+                        fill
+                        className="object-cover"
+                      />
+                      <span className="absolute top-3 left-3 bg-gold text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        After
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
+                    {pair.title}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filtered.map((photo) => (
+                <div
+                  key={photo.id}
+                  className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10"
+                >
+                  <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>
