@@ -96,7 +96,7 @@ export interface BookingEvent {
   description: string;
   date: string; // YYYY-MM-DD
   time: string; // e.g. "1:00 PM"
-  durationHours?: number; // length of the booking in hours from the start (default 3)
+  durationHours?: number; // length of the booking in hours from the start (default 5)
 }
 
 // Resolves the calendar to write to. Falls back to the business calendar when
@@ -123,13 +123,14 @@ export interface BusyInterval {
 // Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
 export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
-// Each booking reserves the 3 hours starting at the booked time — the length
-// of a detail. A 12:00 PM booking blocks 12:00 PM – 3:00 PM; nothing before
-// the start time is blocked. The availability check uses the same window: a
-// slot is taken if the 3-hour detail starting there would overlap an existing
-// event, so a slot stays open only when a full detail fits before the next
-// booking.
-export const BOOKING_BLOCK_HOURS = 3;
+// Each booking reserves the 5 hours starting at the booked time — the length
+// of a detail plus buffer, to prevent double bookings. A 10:00 AM booking
+// blocks 10:00 AM – 3:00 PM; nothing before the start time is blocked. The
+// availability check uses the same window: a slot is taken if the 5-hour
+// detail starting there would overlap an existing event, so a slot stays open
+// only when a full detail fits before the next booking.
+// TASK 1 (time blocking) — DONE 2026-06-20: extended block window to 5 hours.
+export const BOOKING_BLOCK_HOURS = 5;
 
 // Given the start time of a slot, returns the [start, end) window it blocks.
 export function blockWindow(slotStart: Date): { start: Date; end: Date } {
@@ -278,8 +279,8 @@ export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResu
 
   try {
     const token = await getAccessToken(saEmail, saKey);
-    // Reserve the 3 hours starting at the booked time (the detail itself).
-    // A 12:00 PM booking blocks 12:00 PM – 3:00 PM on the calendar.
+    // Reserve the 5 hours starting at the booked time (the detail + buffer).
+    // A 10:00 AM booking blocks 10:00 AM – 3:00 PM on the calendar.
     const slotStart = new Date(slotToStartISO(ev.date, ev.time));
     const start = slotStart.toISOString();
     const end = new Date(
