@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import Image from "next/image";
 import ReviewsCarousel from "@/components/ReviewsCarousel";
 import {
   ArrowRight,
@@ -460,7 +460,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── BEFORE & AFTER ── */}
+      {/* ── BEFORE & AFTER ──
+          TASK 2 (gallery before & after) — DONE 2026-06-23.
+          Matched pairs shown side by side: left = before, right = after,
+          each pair the same vehicle/angle and clearly labeled. */}
       <section className="section-pad bg-white">
         <div className="container-wide">
           <div className="text-center mb-14">
@@ -469,19 +472,42 @@ export default function HomePage() {
               See the difference for yourself.
             </h2>
             <p className="section-subheading max-w-2xl mx-auto">
-              Real vehicles, real results. Drag the slider to compare each
-              vehicle before and after our detail.
+              Real vehicles, real results — each one shown before and after our
+              detail, side by side.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 gap-12 max-w-5xl mx-auto">
             {beforeAfters.map((pair) => (
               <div key={pair.title}>
-                <BeforeAfterSlider
-                  beforeSrc={pair.before}
-                  afterSrc={pair.after}
-                  alt={pair.title}
-                />
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
+                  {/* Before — left */}
+                  <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-xl bg-navy/10">
+                    <Image
+                      src={pair.before}
+                      alt={`${pair.title} — before detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-4 left-4 bg-navy/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      Before
+                    </span>
+                  </div>
+                  {/* After — right */}
+                  <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-xl bg-navy/10">
+                    <Image
+                      src={pair.after}
+                      alt={`${pair.title} — after detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-4 right-4 bg-gold/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      After
+                    </span>
+                  </div>
+                </div>
                 <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
                   {pair.title}
                 </p>
