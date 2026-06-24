@@ -84,6 +84,56 @@ const COATING_PRICES: Record<string, number> = {
   truck: 200,
 };
 
+// ── TASK 7 — DONE 2026-06-20: selectable booking add-ons ───────────────────────
+// Customers pick add-ons from a list instead of typing them into the notes.
+// Each option's `keyword` is appended to the notes payload sent to the server
+// so the existing server-side keyword detection (create-payment-intent, book,
+// confirm-booking) charges exactly the same amount — keeping the client and
+// server totals in sync without changing the pricing routes.
+
+type AddOnId = "petHair" | "stains" | "coating";
+
+const ADDON_OPTIONS: {
+  id: AddOnId;
+  label: string;
+  price: string;
+  desc: string;
+  keyword: string; // canonical phrase the server keyword detection recognizes
+}[] = [
+  {
+    id: "petHair",
+    label: "Pet Hair Removal",
+    price: "+$20",
+    desc: "Deep removal of embedded pet hair from seats and carpet.",
+    keyword: "pet hair",
+  },
+  {
+    id: "stains",
+    label: "Stain Treatment",
+    price: "+$30",
+    desc: "Targeted treatment and extraction of deep-set stains.",
+    keyword: "heavy staining",
+  },
+  {
+    id: "coating",
+    label: "1-Year Protection Coating",
+    price: "+$100–$200",
+    desc: "Long-lasting protective coating — price varies by vehicle size.",
+    keyword: "protection coating",
+  },
+];
+
+// Builds the notes string actually sent to the server: the customer's free-text
+// notes plus a readable line listing any selected add-ons (whose labels contain
+// the keywords the server prices on).
+function buildEffectiveNotes(notes: string, addOns: AddOnId[]): string {
+  const labels = addOns
+    .map((id) => ADDON_OPTIONS.find((o) => o.id === id)?.label)
+    .filter(Boolean);
+  const addOnLine = labels.length ? `Selected add-ons: ${labels.join(", ")}` : "";
+  return [notes.trim(), addOnLine].filter(Boolean).join("\n\n");
+}
+
 // ── Keyword detection ──────────────────────────────────────────────────────────
 
 interface DetectedUpcharges {
@@ -239,7 +289,7 @@ function UpchargeCallout({
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-3">
       <p className="text-xs font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
         <Info size={12} />
-        Additional charges detected from your notes
+        Add-ons &amp; additional charges
       </p>
       <ul className="space-y-1.5">
         {upcharges.hasPetHair && (
@@ -365,6 +415,13 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const [payMethod,       setPayMethod]      = useState<"online" | "in_person">("online");
   const [busyRanges,      setBusyRanges]     = useState<{ start: string; end: string }[]>([]);
   const [nextAvailable,   setNextAvailable]  = useState<string>("");
+  // TASK 7: selected optional add-ons (empty array = "No Add-Ons")
+  const [addOns,          setAddOns]         = useState<AddOnId[]>([]);
+
+  const toggleAddOn = (id: AddOnId) =>
+    setAddOns((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+    );
 
   const [data, setData] = useState<BookingData>({
     service:      (defaultService as Service) || "",
@@ -386,11 +443,16 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const set = (field: keyof BookingData, val: string) =>
     setData((d) => ({ ...d, [field]: val }));
 
+  // Notes string actually sent to the server — free-text notes plus selected
+  // add-ons. Both client pricing and server pricing read from this, so totals
+  // always match.
+  const effectiveNotes = buildEffectiveNotes(data.notes, addOns);
+
   // Live pricing — recalculates whenever any relevant field changes
   const pricing = calcPricing(
     data.service,
     data.vehicleSize,
-    data.notes,
+    effectiveNotes,
     data.promoCode,
   );
 
@@ -426,12 +488,13 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
-  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
-  // a slot is bookable only if a full 3-hour detail starting there fits before
-  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
-  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
-  const DETAIL_HOURS = 3;
+  // TASK 1 — DONE 2026-06-24: 5-hour block per booking.
+  // Each booking reserves the 5 hours starting at its time (a 10:00 AM booking
+  // blocks 10:00 AM–3:00 PM) — nothing before it. So a slot is bookable only if
+  // a full 5-hour window starting there fits before the next booking, i.e. its
+  // [X, X+5) window doesn't overlap any existing detail. Mirrors the calendar
+  // block (BOOKING_BLOCK_HOURS) in lib/googleCalendar.ts.
+  const DETAIL_HOURS = 5;
 
   // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
@@ -443,8 +506,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  // The soonest existing booking whose window overlaps the 3-hour detail that
-  // would start at `slot`, or null if a detail fits. Drives both the disabled
+  // The soonest existing booking whose window overlaps the 5-hour block that
+  // would start at `slot`, or null if it fits. Drives both the disabled
   // slots and the "detail at …" explanation.
   const conflictingBooking = (slot: string): Date | null => {
     if (!data.date || busyRanges.length === 0) return null;
@@ -484,7 +547,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
       const res = await fetch("/api/book", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(data),
+        body:    JSON.stringify({ ...data, notes: effectiveNotes }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to submit booking");
@@ -507,7 +570,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           service:       data.service,
           vehicleSize:   data.vehicleSize,
           promoCode:     data.promoCode,
-          notes:         data.notes,        // ← passed for server-side upcharge detection
+          notes:         effectiveNotes,    // ← notes + selected add-ons for server-side upcharge detection
           customerName:  data.name,
           customerEmail: data.email,
           customerPhone: data.phone,
@@ -753,7 +816,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
                   <AlertCircle size={11} className="mt-0.5 shrink-0" />
                   A detail is scheduled at {fmtBookingTime(selectedConflict)}.
-                  Please select a time with at least 3 hours before that
+                  Please select a time with at least 5 hours before that
                   appointment.
                 </p>
               )}
@@ -843,6 +906,82 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </div>
           </div>
 
+          {/* TASK 7 — DONE 2026-06-20: optional add-ons selector */}
+          <div>
+            <label className="block text-xs font-medium text-apple-text-secondary mb-2">
+              Optional Add-Ons
+            </label>
+            <div className="space-y-2.5">
+              {ADDON_OPTIONS.map((opt) => {
+                const selected = addOns.includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => toggleAddOn(opt.id)}
+                    className={`w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 ${
+                      selected
+                        ? "border-navy bg-navy/5"
+                        : "border-apple-gray-2 bg-white hover:border-navy/30"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`w-5 h-5 rounded-md border-2 mt-0.5 shrink-0 flex items-center justify-center ${
+                          selected ? "border-navy bg-navy" : "border-apple-gray-2"
+                        }`}
+                      >
+                        {selected && <CheckCircle2 size={14} className="text-white" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-sm text-apple-text-primary">
+                            {opt.label}
+                          </span>
+                          <span className="font-bold text-navy text-sm shrink-0">
+                            {opt.price}
+                          </span>
+                        </div>
+                        <p className="text-xs text-apple-text-secondary mt-0.5">
+                          {opt.desc}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* No Add-Ons option — clears all selections */}
+              <button
+                type="button"
+                onClick={() => setAddOns([])}
+                className={`w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 ${
+                  addOns.length === 0
+                    ? "border-navy bg-navy/5"
+                    : "border-apple-gray-2 bg-white hover:border-navy/30"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-5 h-5 rounded-md border-2 shrink-0 flex items-center justify-center ${
+                      addOns.length === 0 ? "border-navy bg-navy" : "border-apple-gray-2"
+                    }`}
+                  >
+                    {addOns.length === 0 && <CheckCircle2 size={14} className="text-white" />}
+                  </div>
+                  <span className="font-semibold text-sm text-apple-text-primary">
+                    No Add-Ons
+                  </span>
+                </div>
+              </button>
+            </div>
+            <p className="text-[11px] text-apple-text-tertiary mt-2">
+              The 1-Year Protection Coating is priced by vehicle size ($100 for
+              sedans, $150 for SUVs, $200 for trucks/vans). Selected add-ons are
+              added to your total automatically.
+            </p>
+          </div>
+
           {/* Notes with live upcharge detection */}
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
@@ -851,14 +990,14 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <textarea
               rows={4}
               placeholder={
-                "Describe your vehicle's condition — e.g. pet hair, stains, or if you'd like the 1-Year Protection Coating added.\n\nOther details: access instructions, gate codes, etc."
+                "Anything we should know about your vehicle or the visit — access instructions, gate codes, parking, specific problem areas, etc."
               }
               value={data.notes}
               onChange={(e) => set("notes", e.target.value)}
               className={`${inputClass} resize-none`}
             />
 
-            {/* Auto-upcharge callout — appears as user types */}
+            {/* Add-on / upcharge callout — reflects your selections above */}
             <UpchargeCallout
               upcharges={pricing.upcharges}
               vehicleSize={data.vehicleSize}
@@ -866,9 +1005,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
             {/* Helper hint */}
             <p className="text-[11px] text-apple-text-tertiary mt-2">
-              Mentioning pet hair (+$20), stains (+$30), or protection coating
-              (+$100–$200 depending on vehicle) will automatically add those
-              charges to your total.
+              Need an add-on? Select it above — no need to type it here.
             </p>
           </div>
 
@@ -883,7 +1020,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               onClick={() => {
                 setStep2Attempted(true);
                 // Only advance if every required field is filled and the
-                // chosen time has a valid 3-hour runway after it
+                // chosen time has a valid 5-hour runway after it
                 if (
                   data.date.trim() &&
                   data.time.trim() &&
