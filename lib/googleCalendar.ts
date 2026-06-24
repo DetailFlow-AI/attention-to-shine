@@ -123,13 +123,15 @@ export interface BusyInterval {
 // Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
 export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
+// TASK 1 — DONE 2026-06-24: each booking reserves a 5-hour buffer.
 // Each booking reserves the 5 hours starting at the booked time — the length
-// of a detail plus buffer. A 10:00 AM booking blocks 10:00 AM – 3:00 PM;
-// nothing before the start time is blocked. The availability check uses the
-// same window: a slot is taken if the 5-hour block starting there would
-// overlap an existing event, so a slot stays open only when a full 5-hour
-// window fits before the next booking. This prevents double bookings.
-// TASK 1 (5-hour time blocking) — DONE 2026-06-24
+// of a detail plus a setup/travel buffer that prevents double bookings. A
+// 10:00 AM booking blocks 10:00 AM – 3:00 PM; nothing before the start time is
+// blocked. The availability check uses the same window: a slot is taken if the
+// 5-hour window starting there would overlap an existing event, so a slot stays
+// open only when a full 5-hour block fits before the next booking. This single
+// constant is the source of truth for both the calendar event duration
+// (createBookingEvent) and the server-side availability math (openSlotCount).
 export const BOOKING_BLOCK_HOURS = 5;
 
 // Given the start time of a slot, returns the [start, end) window it blocks.
@@ -279,7 +281,7 @@ export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResu
 
   try {
     const token = await getAccessToken(saEmail, saKey);
-    // Reserve the 5 hours starting at the booked time (detail + buffer).
+    // Reserve the 5 hours starting at the booked time (the detail plus buffer).
     // A 10:00 AM booking blocks 10:00 AM – 3:00 PM on the calendar.
     const slotStart = new Date(slotToStartISO(ev.date, ev.time));
     const start = slotStart.toISOString();

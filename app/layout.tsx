@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ShinePlaceholder from "@/components/ShinePlaceholder";
 
 export const metadata: Metadata = {
   title: {
@@ -42,6 +43,9 @@ export default function RootLayout({
         <Navbar />
         <main>{children}</main>
         <Footer />
+        {/* TASK 8: reserved bottom-right slot for the future "Shine" chatbot
+            (hidden on the booking page). Not built yet. */}
+        <ShinePlaceholder />
       </body>
     </html>
   );
