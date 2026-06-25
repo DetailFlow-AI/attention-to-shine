@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+// TASK 8 — reserves the bottom-right chatbot slot ("Shine") on every page except /booking: DONE 2026-06-25
+import ShinePlaceholder from "@/components/ShinePlaceholder";
 
 export const metadata: Metadata = {
   title: {
@@ -42,6 +44,8 @@ export default function RootLayout({
         <Navbar />
         <main>{children}</main>
         <Footer />
+        {/* Future AI chatbot "Shine" mounts in this reserved bottom-right slot (not on /booking). */}
+        <ShinePlaceholder />
       </body>
     </html>
   );
