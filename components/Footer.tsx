@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Phone, Mail, MapPin, Clock, Instagram, Facebook } from "lucide-react";
+import { Phone, Mail, MapPin, Clock } from "lucide-react";
 
 const footerLinks = {
   Services: [
@@ -32,28 +32,10 @@ export default function Footer() {
                 Attention to Shine
               </span>
             </div>
-            <p className="text-sm text-white/60 leading-relaxed mb-6">
+            <p className="text-sm text-white/60 leading-relaxed">
               Bringing show-quality results to your driveway. Mobile detailing
               that comes to you — no appointment hassle, just a perfect shine.
             </p>
-            <div className="flex gap-3">
-              <a
-                href="https://www.instagram.com/attentiontoshinedetailing"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow us on Instagram"
-                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold transition-colors duration-200"
-              >
-                <Instagram size={16} />
-              </a>
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold transition-colors duration-200"
-              >
-                <Facebook size={16} />
-              </a>
-            </div>
           </div>
 
           {/* Links */}
@@ -101,13 +83,10 @@ export default function Footer() {
                   lilliechris06@gmail.com
                 </a>
               </li>
+              {/* Task 4 — location replaced with mobile-service tagline. DONE 2026-06-26 */}
               <li className="flex items-start gap-2.5 text-sm text-white/60">
                 <MapPin size={14} className="mt-0.5 shrink-0" />
-                Lakeland, FL 33809
-                <br />
-                <span className="text-white/40 text-xs">
-                  We come to you — mobile service
-                </span>
+                <span>Stationed in Lakeland, Florida — We come to you.</span>
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/60">
                 <Clock size={14} className="mt-0.5 shrink-0" />

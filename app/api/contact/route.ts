@@ -20,6 +20,9 @@ export async function POST(req: NextRequest) {
 
       await resend.emails.send({
         from:    "Attention to Shine <onboarding@resend.dev>",
+        // Task 4 — submissions go to lilliechris06@gmail.com (override only via
+        // CONTACT_EMAIL env if ever needed). Live delivery requires RESEND_API_KEY
+        // set in Vercel. DONE 2026-06-26
         to:      process.env.CONTACT_EMAIL ?? "lilliechris06@gmail.com",
         replyTo: email,
         subject: subject
