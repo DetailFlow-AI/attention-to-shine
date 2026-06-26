@@ -84,6 +84,19 @@ const COATING_PRICES: Record<string, number> = {
   truck: 200,
 };
 
+// ── Selectable add-ons (Task 7) ─────────────────────────────────────────────────
+// Each add-on maps to a keyword the server already prices on (see /api/book and
+// /api/create-payment-intent). Selecting an add-on folds its keyword into the
+// notes payload, so the client preview and the server total stay in sync without
+// any server change. Task 7 — DONE 2026-06-26
+const ADD_ONS = [
+  { key: "petHair", label: "Pet Hair Removal",          price: "+$20",       keyword: "pet hair" },
+  { key: "stains",  label: "Stain Treatment",           price: "+$30",       keyword: "heavy staining" },
+  { key: "coating", label: "1-Year Protection Coating", price: "+$100–$200", keyword: "protection coating" },
+] as const;
+
+type AddOnKey = (typeof ADD_ONS)[number]["key"];
+
 // ── Keyword detection ──────────────────────────────────────────────────────────
 
 interface DetectedUpcharges {
@@ -365,6 +378,11 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const [payMethod,       setPayMethod]      = useState<"online" | "in_person">("online");
   const [busyRanges,      setBusyRanges]     = useState<{ start: string; end: string }[]>([]);
   const [nextAvailable,   setNextAvailable]  = useState<string>("");
+  const [addOns,          setAddOns]         = useState<Record<AddOnKey, boolean>>({
+    petHair: false,
+    stains:  false,
+    coating: false,
+  });
 
   const [data, setData] = useState<BookingData>({
     service:      (defaultService as Service) || "",
@@ -386,11 +404,27 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const set = (field: keyof BookingData, val: string) =>
     setData((d) => ({ ...d, [field]: val }));
 
+  const toggleAddOn = (key: AddOnKey) =>
+    setAddOns((a) => ({ ...a, [key]: !a[key] }));
+  const clearAddOns = () =>
+    setAddOns({ petHair: false, stains: false, coating: false });
+  const anyAddOn = ADD_ONS.some((a) => addOns[a.key]);
+
+  // Selected add-ons are folded into the notes payload using the keywords the
+  // server prices on — keeps the client preview and server total identical, and
+  // a keyword appearing twice (selected + typed) still charges once.
+  const effectiveNotes = [
+    data.notes.trim(),
+    ...ADD_ONS.filter((a) => addOns[a.key]).map((a) => a.keyword),
+  ]
+    .filter(Boolean)
+    .join(". ");
+
   // Live pricing — recalculates whenever any relevant field changes
   const pricing = calcPricing(
     data.service,
     data.vehicleSize,
-    data.notes,
+    effectiveNotes,
     data.promoCode,
   );
 
@@ -426,12 +460,13 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
-  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
-  // a slot is bookable only if a full 3-hour detail starting there fits before
-  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
-  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
-  const DETAIL_HOURS = 3;
+  // Each booking reserves a 5-hour block starting at its time (a 10:00 AM
+  // booking blocks 10:00 AM–3:00 PM) — nothing before it. So a slot is
+  // bookable only if a full 5-hour block starting there fits before the next
+  // booking, i.e. its [X, X+5) window doesn't overlap any existing detail.
+  // Mirrors the calendar block in lib/googleCalendar.ts.
+  // Task 1 (booking time blocks) — DONE 2026-06-26
+  const DETAIL_HOURS = 5;
 
   // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
@@ -443,7 +478,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  // The soonest existing booking whose window overlaps the 3-hour detail that
+  // The soonest existing booking whose window overlaps the 5-hour block that
   // would start at `slot`, or null if a detail fits. Drives both the disabled
   // slots and the "detail at …" explanation.
   const conflictingBooking = (slot: string): Date | null => {
@@ -484,7 +519,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
       const res = await fetch("/api/book", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(data),
+        body:    JSON.stringify({ ...data, notes: effectiveNotes }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to submit booking");
@@ -507,7 +542,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           service:       data.service,
           vehicleSize:   data.vehicleSize,
           promoCode:     data.promoCode,
-          notes:         data.notes,        // ← passed for server-side upcharge detection
+          notes:         effectiveNotes,    // ← notes + selected add-ons, for server-side upcharge detection
           customerName:  data.name,
           customerEmail: data.email,
           customerPhone: data.phone,
@@ -753,7 +788,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
                   <AlertCircle size={11} className="mt-0.5 shrink-0" />
                   A detail is scheduled at {fmtBookingTime(selectedConflict)}.
-                  Please select a time with at least 3 hours before that
+                  Please select a time with at least 5 hours before that
                   appointment.
                 </p>
               )}
@@ -843,6 +878,70 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </div>
           </div>
 
+          {/* ── Optional add-ons selector (Task 7) ── */}
+          <div>
+            <label className="block text-xs font-medium text-apple-text-secondary mb-2">
+              Optional Add-Ons
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {ADD_ONS.map((addOn) => {
+                const selected = addOns[addOn.key];
+                return (
+                  <button
+                    key={addOn.key}
+                    type="button"
+                    onClick={() => toggleAddOn(addOn.key)}
+                    className={`flex items-center justify-between gap-2 px-4 py-3 rounded-xl border text-left transition-all duration-200 ${
+                      selected
+                        ? "border-gold bg-gold/10 ring-2 ring-gold/30"
+                        : "border-apple-gray-2 bg-white hover:border-navy/30"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ${
+                          selected ? "bg-gold border-gold" : "border-apple-gray-2"
+                        }`}
+                      >
+                        {selected && <CheckCircle2 size={12} className="text-white" />}
+                      </span>
+                      <span className="text-sm font-medium text-apple-text-primary">
+                        {addOn.label}
+                      </span>
+                    </span>
+                    <span className="text-sm font-semibold text-gold shrink-0">
+                      {addOn.price}
+                    </span>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={clearAddOns}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-left transition-all duration-200 ${
+                  !anyAddOn
+                    ? "border-navy bg-navy/5 ring-2 ring-navy/20"
+                    : "border-apple-gray-2 bg-white hover:border-navy/30"
+                }`}
+              >
+                <span
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                    !anyAddOn ? "bg-navy border-navy" : "border-apple-gray-2"
+                  }`}
+                >
+                  {!anyAddOn && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                </span>
+                <span className="text-sm font-medium text-apple-text-primary">
+                  No Add-Ons
+                </span>
+              </button>
+            </div>
+            <p className="text-[11px] text-apple-text-tertiary mt-2">
+              Coating pricing varies by vehicle size ($100 sedan / $150 SUV / $200
+              truck). Selections are added to your total automatically.
+            </p>
+          </div>
+
           {/* Notes with live upcharge detection */}
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
@@ -851,14 +950,14 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <textarea
               rows={4}
               placeholder={
-                "Describe your vehicle's condition — e.g. pet hair, stains, or if you'd like the 1-Year Protection Coating added.\n\nOther details: access instructions, gate codes, etc."
+                "Anything we should know? Access instructions, gate codes, where the vehicle is parked, etc."
               }
               value={data.notes}
               onChange={(e) => set("notes", e.target.value)}
               className={`${inputClass} resize-none`}
             />
 
-            {/* Auto-upcharge callout — appears as user types */}
+            {/* Upcharge callout — reflects selected add-ons (and any typed) */}
             <UpchargeCallout
               upcharges={pricing.upcharges}
               vehicleSize={data.vehicleSize}
@@ -866,9 +965,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
             {/* Helper hint */}
             <p className="text-[11px] text-apple-text-tertiary mt-2">
-              Mentioning pet hair (+$20), stains (+$30), or protection coating
-              (+$100–$200 depending on vehicle) will automatically add those
-              charges to your total.
+              Need pet hair removal, stain treatment, or the protection coating?
+              Select them above — they'll be added to your total automatically.
             </p>
           </div>
 
@@ -883,7 +981,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               onClick={() => {
                 setStep2Attempted(true);
                 // Only advance if every required field is filled and the
-                // chosen time has a valid 3-hour runway after it
+                // chosen time has a valid 5-hour runway after it
                 if (
                   data.date.trim() &&
                   data.time.trim() &&

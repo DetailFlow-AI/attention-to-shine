@@ -72,22 +72,24 @@ const services = [
     popular: true,
   },
   {
+    // Task 5 — maintenance-package description for already-clean vehicles. DONE 2026-06-26
     id: "checkup",
     label: "Checkup Detailing Plan",
-    tagline: "Always clean. No effort required.",
+    tagline: "Stay showroom-fresh between full details.",
     price: "$120 – $200 / month",
     intro:
-      "The Checkup Plan is a monthly subscription for customers who want their vehicle maintained on a consistent basis. You book once, lock in your preferred time slot, and we show up on schedule — every time. It's built for people who value their vehicle and don't want to think about when it was last detailed.",
+      "The Checkup Detailing Plan is a recurring maintenance package built for vehicles that are already clean and just need to stay that way. It is not a deep clean or a recovery service — it's the smart, affordable way to protect the investment you made in your last full detail and keep your car looking sharp week after week, with zero effort on your part.",
     body:
-      "Each visit includes a full interior and exterior service. With the Essential Plan, we come out once a month. The Premium Plan gets you two visits. Both plans include priority scheduling, leather care, and a dedicated approach to keeping your vehicle in top shape year-round. Since we're seeing the same vehicle regularly, we know exactly what it needs each time.",
+      "Each checkup visit is a focused refresh designed to knock down the everyday dust, dirt, and grime before it ever has a chance to build up. We give the exterior a thorough rinse, dress and shine the tires, and wipe down all the glass for a clear, streak-free finish. Inside, we vacuum the carpets and seats and wipe down the dashboard and console so the cabin always feels fresh. Because we're seeing your vehicle on a regular schedule, it never reaches the point of needing another full detail — saving you time and money in the long run.",
     included: [
-      "1 or 2 full details per month (your choice of plan)",
-      "Priority scheduling with a reserved weekly time slot",
-      "Interior and exterior service every visit",
-      "Complimentary leather care and conditioning",
-      "Consistent care from the same detailer",
+      "Exterior rinse to remove fresh dust, dirt, and road film",
+      "Tire shine and dressing for a clean, finished look",
+      "Window and glass wipe-down, inside and out",
+      "Interior vacuum — carpets, seats, and floor mats",
+      "Dashboard and console wipe-down",
+      "Priority scheduling with a reserved recurring time slot",
     ],
-    note: "Available only after your vehicle's first full detail with Attention to Shine.",
+    note: "A maintenance package for already-clean vehicles — designed to keep an already-detailed car looking its best, not to deep-clean a neglected one. Best paired with an initial full detail.",
     gradient: "from-gold-dark to-gold",
   },
 ];
@@ -241,7 +243,8 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+          {/* Task 6 — added "Extreme Dirtiness" custom-quote factor. DONE 2026-06-26 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             {[
               {
                 factor: "Vehicle Size",
@@ -257,6 +260,11 @@ export default function ServicesPage() {
                 factor: "Heavy Staining",
                 adj: "+$30",
                 note: "Deep-set stains require additional treatment and extraction.",
+              },
+              {
+                factor: "Extreme Dirtiness",
+                adj: "Custom Quote",
+                note: "Applies only to severely neglected vehicles. The condition is assessed before service and priced individually — no set rate.",
               },
             ].map((row) => (
               <div

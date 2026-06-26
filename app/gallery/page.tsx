@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 
-type Category = "all" | "exterior" | "interior";
+type Category = "all" | "beforeAfter" | "exterior" | "interior";
 
 interface GalleryItem {
   id: number;
@@ -11,6 +11,30 @@ interface GalleryItem {
   src: string;
   alt: string;
 }
+
+// Task 2 — matched before/after pairs (same vehicle, same angle). DONE 2026-06-26
+// Only confirmed matched shots are paired; add more pairs here as they're shot.
+interface BeforeAfterPair {
+  id: number;
+  title: string;
+  before: string;
+  after: string;
+}
+
+const beforeAfterPairs: BeforeAfterPair[] = [
+  {
+    id: 201,
+    title: "Sedan Interior Detail — Lakeland, FL",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 202,
+    title: "Interior Deep Clean — Lakeland, FL",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
 
 const exteriorPhotos: GalleryItem[] = [
   { id: 1, category: "exterior", src: "/images/exterior/IMG_1941.PNG", alt: "Exterior detail 1" },
@@ -64,6 +88,7 @@ const allPhotos: GalleryItem[] = [...exteriorPhotos, ...interiorPhotos];
 
 const tabs: { key: Category; label: string }[] = [
   { key: "all", label: "All Work" },
+  { key: "beforeAfter", label: "Before & After" },
   { key: "exterior", label: "Exterior" },
   { key: "interior", label: "Interior" },
 ];
@@ -72,11 +97,11 @@ export default function GalleryPage() {
   const [active, setActive] = useState<Category>("all");
 
   const filtered: GalleryItem[] =
-    active === "all"
-      ? allPhotos
-      : active === "exterior"
+    active === "exterior"
       ? exteriorPhotos
-      : interiorPhotos;
+      : active === "interior"
+      ? interiorPhotos
+      : allPhotos;
 
   return (
     <>
@@ -108,21 +133,65 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((photo) => (
-              <div
-                key={photo.id}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10"
-              >
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            ))}
-          </div>
+          {/* Task 2 — matched before/after pairs, side by side. DONE 2026-06-26 */}
+          {active === "beforeAfter" ? (
+            <div className="space-y-12">
+              {beforeAfterPairs.map((pair) => (
+                <div key={pair.id}>
+                  <h3 className="text-lg font-semibold text-navy text-center mb-4">
+                    {pair.title}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 md:gap-5 max-w-4xl mx-auto">
+                    {([
+                      { label: "Before", src: pair.before },
+                      { label: "After", src: pair.after },
+                    ] as const).map((shot) => (
+                      <div
+                        key={shot.label}
+                        className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10"
+                      >
+                        <Image
+                          src={shot.src}
+                          alt={`${pair.title} — ${shot.label}`}
+                          fill
+                          className="object-cover"
+                        />
+                        <span
+                          className={`absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full ${
+                            shot.label === "Before"
+                              ? "bg-navy/80 text-white"
+                              : "bg-gold text-navy"
+                          }`}
+                        >
+                          {shot.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <p className="text-center text-sm text-apple-text-tertiary">
+                Each pair is the same vehicle, same angle — left is before our
+                detail, right is after.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filtered.map((photo) => (
+                <div
+                  key={photo.id}
+                  className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10"
+                >
+                  <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>
