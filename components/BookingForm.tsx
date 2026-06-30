@@ -426,12 +426,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
-  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
-  // a slot is bookable only if a full 3-hour detail starting there fits before
-  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
-  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
-  const DETAIL_HOURS = 3;
+  // Each booking reserves the 5 hours starting at its time (a 10:00 AM booking
+  // blocks 10:00 AM–3:00 PM) — nothing before it. So a slot is bookable only if
+  // a full 5-hour reservation starting there fits before the next booking, i.e.
+  // its [X, X+5) window doesn't overlap any existing detail. Mirrors
+  // BOOKING_BLOCK_HOURS in lib/googleCalendar.ts.
+  const DETAIL_HOURS = 5;
 
   // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
@@ -443,8 +443,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  // The soonest existing booking whose window overlaps the 3-hour detail that
-  // would start at `slot`, or null if a detail fits. Drives both the disabled
+  // The soonest existing booking whose window overlaps the 5-hour reservation
+  // that would start at `slot`, or null if it fits. Drives both the disabled
   // slots and the "detail at …" explanation.
   const conflictingBooking = (slot: string): Date | null => {
     if (!data.date || busyRanges.length === 0) return null;
