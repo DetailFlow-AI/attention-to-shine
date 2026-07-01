@@ -60,6 +60,32 @@ const interiorPhotos: GalleryItem[] = [
   { id: 118, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 18" },
 ];
 
+// TASK 2 — GALLERY: BEFORE & AFTER PHOTOS — DONE 2026-07-01
+// Matched before/after pairs shown side by side (left = before, right = after),
+// each pair the same vehicle and angle, clearly labeled. These are the owner's
+// curated pairs; add more entries here as new before/after photos are supplied.
+interface BeforeAfterPair {
+  id: number;
+  title: string;
+  before: string;
+  after: string;
+}
+
+const beforeAfterPairs: BeforeAfterPair[] = [
+  {
+    id: 1,
+    title: "Sedan Interior — Lakeland, FL",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 2,
+    title: "Interior Deep Clean — Lakeland, FL",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
+
 const allPhotos: GalleryItem[] = [...exteriorPhotos, ...interiorPhotos];
 
 const tabs: { key: Category; label: string }[] = [
@@ -88,6 +114,58 @@ export default function GalleryPage() {
         <p className="text-xl text-white/60 max-w-xl mx-auto">
           Real vehicles. Real transformations. Every photo is a job completed right here in the Lakeland area.
         </p>
+      </section>
+
+      {/* ── BEFORE & AFTER PAIRS ── */}
+      <section className="bg-apple-gray py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="label-tag">Before &amp; After</span>
+            <h2 className="section-heading mb-3">Same car. Same angle. Real results.</h2>
+            <p className="section-subheading max-w-2xl mx-auto">
+              Every pair below is the same vehicle photographed before and after
+              our detail — nothing staged, just the difference our work makes.
+            </p>
+          </div>
+
+          <div className="space-y-12">
+            {beforeAfterPairs.map((pair) => (
+              <div key={pair.id}>
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
+                  {/* Before (left) */}
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10">
+                    <Image
+                      src={pair.before}
+                      alt={`${pair.title} — before detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 40vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 left-3 bg-navy/85 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      Before
+                    </span>
+                  </div>
+                  {/* After (right) */}
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10">
+                    <Image
+                      src={pair.after}
+                      alt={`${pair.title} — after detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 40vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 right-3 bg-gold text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      After
+                    </span>
+                  </div>
+                </div>
+                <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
+                  {pair.title}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="bg-white py-16 px-6">
