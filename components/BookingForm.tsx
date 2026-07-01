@@ -84,6 +84,39 @@ const COATING_PRICES: Record<string, number> = {
   truck: 200,
 };
 
+// ── TASK 7 — ADD-ONS IN BOOKING PORTAL — DONE 2026-07-01 ───────────────────────
+// Customers pick optional add-ons from a list instead of typing them in notes.
+// Each selection appends its canonical label to the notes sent to the server, so
+// the existing upcharge-detection pricing (client + create-payment-intent + book)
+// applies unchanged — no changes to the payment/pricing backend required.
+type AddOnKey = "petHair" | "stains" | "coating";
+
+const ADD_ONS: {
+  key: AddOnKey;
+  label: string;
+  priceLabel: string;
+  desc: string;
+}[] = [
+  {
+    key: "petHair",
+    label: "Pet Hair Removal",
+    priceLabel: "+$20",
+    desc: "Thorough removal of embedded pet hair from seats and carpets.",
+  },
+  {
+    key: "stains",
+    label: "Stain Treatment",
+    priceLabel: "+$30",
+    desc: "Targeted extraction and treatment of deep-set interior stains.",
+  },
+  {
+    key: "coating",
+    label: "1-Year Protection Coating",
+    priceLabel: "+$100–$200",
+    desc: "Long-lasting paint protection. Final price depends on vehicle size.",
+  },
+];
+
 // ── Keyword detection ──────────────────────────────────────────────────────────
 
 interface DetectedUpcharges {
@@ -239,7 +272,7 @@ function UpchargeCallout({
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-3">
       <p className="text-xs font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
         <Info size={12} />
-        Additional charges detected from your notes
+        Add-ons added to your total
       </p>
       <ul className="space-y-1.5">
         {upcharges.hasPetHair && (
@@ -386,11 +419,29 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const set = (field: keyof BookingData, val: string) =>
     setData((d) => ({ ...d, [field]: val }));
 
+  // TASK 7 — selected optional add-ons (empty array === "No Add-Ons").
+  const [addOns, setAddOns] = useState<AddOnKey[]>([]);
+  const toggleAddOn = (key: AddOnKey) =>
+    setAddOns((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+
+  // Notes actually sent for pricing/booking: the customer's free text plus a
+  // readable line naming each selected add-on. Those labels contain the same
+  // keywords the pricing engine detects ("pet hair", "stain", "coating"), so
+  // selections drive the total without touching the server pricing code.
+  const selectedAddOnLabels = ADD_ONS.filter((a) => addOns.includes(a.key)).map(
+    (a) => a.label
+  );
+  const effectiveNotes = selectedAddOnLabels.length
+    ? `${data.notes}${data.notes.trim() ? "\n\n" : ""}Selected add-ons: ${selectedAddOnLabels.join(", ")}`
+    : data.notes;
+
   // Live pricing — recalculates whenever any relevant field changes
   const pricing = calcPricing(
     data.service,
     data.vehicleSize,
-    data.notes,
+    effectiveNotes,
     data.promoCode,
   );
 
@@ -426,12 +477,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.date]);
 
-  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
-  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
-  // a slot is bookable only if a full 3-hour detail starting there fits before
-  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
-  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
-  const DETAIL_HOURS = 3;
+  // Each booking reserves the 5 hours starting at its time to prevent double
+  // bookings (a 10:00 AM booking blocks 10:00 AM–3:00 PM) — nothing before it.
+  // So a slot is bookable only if a full 5-hour window starting there fits
+  // before the next booking, i.e. its [X, X+5) window doesn't overlap any
+  // existing detail. Mirrors BOOKING_BLOCK_HOURS in lib/googleCalendar.ts.
+  const DETAIL_HOURS = 5;
 
   // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
@@ -443,7 +494,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  // The soonest existing booking whose window overlaps the 3-hour detail that
+  // The soonest existing booking whose window overlaps the 5-hour block that
   // would start at `slot`, or null if a detail fits. Drives both the disabled
   // slots and the "detail at …" explanation.
   const conflictingBooking = (slot: string): Date | null => {
@@ -484,7 +535,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
       const res = await fetch("/api/book", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(data),
+        body:    JSON.stringify({ ...data, notes: effectiveNotes }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to submit booking");
@@ -507,7 +558,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           service:       data.service,
           vehicleSize:   data.vehicleSize,
           promoCode:     data.promoCode,
-          notes:         data.notes,        // ← passed for server-side upcharge detection
+          notes:         effectiveNotes,    // ← includes selected add-ons for server-side upcharge detection
           customerName:  data.name,
           customerEmail: data.email,
           customerPhone: data.phone,
@@ -753,7 +804,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
                   <AlertCircle size={11} className="mt-0.5 shrink-0" />
                   A detail is scheduled at {fmtBookingTime(selectedConflict)}.
-                  Please select a time with at least 3 hours before that
+                  Please select a time with at least 5 hours before that
                   appointment.
                 </p>
               )}
@@ -843,7 +894,88 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </div>
           </div>
 
-          {/* Notes with live upcharge detection */}
+          {/* TASK 7 — Optional add-ons: pick from a list instead of typing */}
+          <div>
+            <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
+              Add-Ons (optional)
+            </label>
+            <p className="text-[11px] text-apple-text-tertiary mb-3">
+              Select any extras you&apos;d like — they&apos;re added to your total
+              automatically.
+            </p>
+            <div className="space-y-2.5">
+              {ADD_ONS.map((addon) => {
+                const selected = addOns.includes(addon.key);
+                return (
+                  <button
+                    key={addon.key}
+                    type="button"
+                    onClick={() => toggleAddOn(addon.key)}
+                    className={`w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 flex items-start gap-3 ${
+                      selected
+                        ? "border-navy bg-navy/5"
+                        : "border-apple-gray-2 bg-white hover:border-navy/30"
+                    }`}
+                  >
+                    <div
+                      className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                        selected
+                          ? "border-navy bg-navy text-white"
+                          : "border-apple-gray-2 bg-white"
+                      }`}
+                    >
+                      {selected && <CheckCircle2 size={14} />}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-sm text-apple-text-primary">
+                          {addon.label}
+                        </span>
+                        <span className="font-semibold text-sm text-gold shrink-0">
+                          {addon.priceLabel}
+                        </span>
+                      </div>
+                      <p className="text-xs text-apple-text-secondary mt-0.5">
+                        {addon.desc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* "No Add-Ons" — clears any selection */}
+              <button
+                type="button"
+                onClick={() => setAddOns([])}
+                className={`w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 flex items-center gap-3 ${
+                  addOns.length === 0
+                    ? "border-navy bg-navy/5"
+                    : "border-apple-gray-2 bg-white hover:border-navy/30"
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                    addOns.length === 0
+                      ? "border-navy bg-navy text-white"
+                      : "border-apple-gray-2 bg-white"
+                  }`}
+                >
+                  {addOns.length === 0 && <CheckCircle2 size={14} />}
+                </div>
+                <span className="font-semibold text-sm text-apple-text-primary">
+                  No Add-Ons
+                </span>
+              </button>
+            </div>
+
+            {/* Live callout reflecting selected add-ons */}
+            <UpchargeCallout
+              upcharges={pricing.upcharges}
+              vehicleSize={data.vehicleSize}
+            />
+          </div>
+
+          {/* Notes — free text for anything else */}
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
               Special Notes (optional)
@@ -851,25 +983,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <textarea
               rows={4}
               placeholder={
-                "Describe your vehicle's condition — e.g. pet hair, stains, or if you'd like the 1-Year Protection Coating added.\n\nOther details: access instructions, gate codes, etc."
+                "Anything else we should know — access instructions, gate codes, specific problem areas, etc."
               }
               value={data.notes}
               onChange={(e) => set("notes", e.target.value)}
               className={`${inputClass} resize-none`}
             />
-
-            {/* Auto-upcharge callout — appears as user types */}
-            <UpchargeCallout
-              upcharges={pricing.upcharges}
-              vehicleSize={data.vehicleSize}
-            />
-
-            {/* Helper hint */}
-            <p className="text-[11px] text-apple-text-tertiary mt-2">
-              Mentioning pet hair (+$20), stains (+$30), or protection coating
-              (+$100–$200 depending on vehicle) will automatically add those
-              charges to your total.
-            </p>
           </div>
 
           <div className="flex gap-3">
@@ -883,7 +1002,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               onClick={() => {
                 setStep2Attempted(true);
                 // Only advance if every required field is filled and the
-                // chosen time has a valid 3-hour runway after it
+                // chosen time has a valid 5-hour runway after it
                 if (
                   data.date.trim() &&
                   data.time.trim() &&

@@ -72,22 +72,27 @@ const services = [
     popular: true,
   },
   {
+    // TASK 5 — CHECKUP DETAILING PLAN — DONE 2026-07-01
+    // Maintenance package for already-clean vehicles; specific light-service
+    // checklist (exterior rinse, tire shine, window wipe, interior vacuum,
+    // dashboard wipe) with value-focused copy.
     id: "checkup",
     label: "Checkup Detailing Plan",
-    tagline: "Always clean. No effort required.",
+    tagline: "Keep that just-detailed feeling.",
     price: "$120 – $200 / month",
     intro:
-      "The Checkup Plan is a monthly subscription for customers who want their vehicle maintained on a consistent basis. You book once, lock in your preferred time slot, and we show up on schedule — every time. It's built for people who value their vehicle and don't want to think about when it was last detailed.",
+      "The Checkup Detailing Plan is a maintenance package built for vehicles that are already in great shape and simply need to stay that way. It's not a deep clean or a recovery job — it's a fast, consistent touch-up that preserves the results of your last full detail, so your car keeps looking freshly detailed week after week without the price of a full service every time.",
     body:
-      "Each visit includes a full interior and exterior service. With the Essential Plan, we come out once a month. The Premium Plan gets you two visits. Both plans include priority scheduling, leather care, and a dedicated approach to keeping your vehicle in top shape year-round. Since we're seeing the same vehicle regularly, we know exactly what it needs each time.",
+      "Each Checkup visit is a focused maintenance service: a gentle exterior rinse to lift away dust and road film, a fresh tire shine to sharpen up the wheels, a window wipe down for streak-free glass, a full interior vacuum of seats and carpets, and a dashboard and console wipe to keep the cabin crisp. Because we service your vehicle on a regular schedule, dirt never gets the chance to build up — which means less time, less cost, and a car that always looks its best. Reserve a recurring slot and we handle the rest.",
     included: [
-      "1 or 2 full details per month (your choice of plan)",
-      "Priority scheduling with a reserved weekly time slot",
-      "Interior and exterior service every visit",
-      "Complimentary leather care and conditioning",
-      "Consistent care from the same detailer",
+      "Exterior rinse — dust and light road film removed",
+      "Tire shine — clean, dressed wheels every visit",
+      "Window wipe down — streak-free glass inside and out",
+      "Interior vacuum — seats, carpets, and floor mats",
+      "Dashboard and console wipe — a crisp, fresh cabin",
+      "Priority scheduling with a reserved recurring slot",
     ],
-    note: "Available only after your vehicle's first full detail with Attention to Shine.",
+    note: "A maintenance plan for already-clean vehicles — available after your car's first full detail with Attention to Shine keeps it in top condition for less.",
     gradient: "from-gold-dark to-gold",
   },
 ];
@@ -241,7 +246,10 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+          {/* TASK 6 — EXTREME DIRTINESS PRICING — DONE 2026-07-01
+              Added "Extreme Dirtiness → Custom Quote" entry (no set price;
+              assessed before service, severely neglected vehicles only). */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             {[
               {
                 factor: "Vehicle Size",
@@ -257,6 +265,11 @@ export default function ServicesPage() {
                 factor: "Heavy Staining",
                 adj: "+$30",
                 note: "Deep-set stains require additional treatment and extraction.",
+              },
+              {
+                factor: "Extreme Dirtiness",
+                adj: "Custom Quote",
+                note: "For severely neglected vehicles only. Assessed in person before service begins — no set price.",
               },
             ].map((row) => (
               <div
