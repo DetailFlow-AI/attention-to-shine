@@ -83,7 +83,7 @@ const beforeAfters = [
   {
     title: "Interior Deep Clean — Lakeland, FL",
     before: "/images/interior/IMG_5529.jpeg",
-    after: "/images/interior/IMG_5567.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
   },
 ];
 
