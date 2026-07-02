@@ -74,6 +74,8 @@ const features = [
   },
 ];
 
+/* TASK 1 (Gallery: before & after photo pairs): DONE 2026-07-02 —
+   pairs corrected so before/after show the same vehicle and same angle */
 const beforeAfters = [
   {
     title: "Sedan Interior Detail — Lakeland, FL",
@@ -82,7 +84,7 @@ const beforeAfters = [
   },
   {
     title: "Interior Deep Clean — Lakeland, FL",
-    before: "/images/interior/IMG_5529.jpeg",
+    before: "/images/interior/IMG_5540.jpeg",
     after: "/images/interior/IMG_5567.jpeg",
   },
 ];
