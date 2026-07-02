@@ -1,9 +1,19 @@
 "use client";
 
+// TASK 1 (Gallery restructured into labeled Before & After pairs) — DONE 2026-07-02
+
 import { useState } from "react";
 import Image from "next/image";
 
 type Category = "all" | "exterior" | "interior";
+
+interface BeforeAfterPair {
+  id: number;
+  category: "exterior" | "interior";
+  title: string;
+  beforeSrc: string;
+  afterSrc: string;
+}
 
 interface GalleryItem {
   id: number;
@@ -12,12 +22,70 @@ interface GalleryItem {
   alt: string;
 }
 
-const exteriorPhotos: GalleryItem[] = [
+// Each pair is the same vehicle photographed from the same angle:
+// left = before, right = after.
+const pairs: BeforeAfterPair[] = [
+  {
+    id: 1,
+    category: "exterior",
+    title: "Chevrolet Camaro SS — Exterior Detail",
+    beforeSrc: "/images/exterior/IMG_3667.jpeg",
+    afterSrc: "/images/exterior/IMG_1963.PNG",
+  },
+  {
+    id: 2,
+    category: "exterior",
+    title: "Ford Maverick — Exterior Detail",
+    beforeSrc: "/images/exterior/IMG_3584.jpeg",
+    afterSrc: "/images/exterior/IMG_6035.jpeg",
+  },
+  {
+    id: 3,
+    category: "exterior",
+    title: "Lincoln Navigator — Exterior Detail",
+    beforeSrc: "/images/exterior/IMG_4585.jpeg",
+    afterSrc: "/images/exterior/IMG_1956.PNG",
+  },
+  {
+    id: 4,
+    category: "exterior",
+    title: "Ford F-150 — Exterior Detail",
+    beforeSrc: "/images/exterior/IMG_1940.PNG",
+    afterSrc: "/images/exterior/IMG_3235.jpeg",
+  },
+  {
+    id: 5,
+    category: "interior",
+    title: "Sedan Footwell — Interior Deep Clean",
+    beforeSrc: "/images/interior/IMG_1929.PNG",
+    afterSrc: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 6,
+    category: "interior",
+    title: "Driver's Seat & Carpet — Interior Deep Clean",
+    beforeSrc: "/images/interior/IMG_5529.jpeg",
+    afterSrc: "/images/interior/IMG_5567.jpeg",
+  },
+  {
+    id: 7,
+    category: "interior",
+    title: "Floor Mats & Door Sill — Interior Deep Clean",
+    beforeSrc: "/images/interior/IMG_5540.jpeg",
+    afterSrc: "/images/interior/IMG_5561.jpeg",
+  },
+  {
+    id: 8,
+    category: "interior",
+    title: "Dodge Charger Cabin — Interior Deep Clean",
+    beforeSrc: "/images/interior/IMG_4666.jpeg",
+    afterSrc: "/images/interior/IMG_1949.PNG",
+  },
+];
+
+const morePhotos: GalleryItem[] = [
   { id: 1, category: "exterior", src: "/images/exterior/IMG_1941.PNG", alt: "Exterior detail 1" },
-  { id: 2, category: "exterior", src: "/images/exterior/IMG_1963.PNG", alt: "Exterior detail 2" },
-  { id: 3, category: "exterior", src: "/images/exterior/IMG_1956.PNG", alt: "Exterior detail 3" },
   { id: 4, category: "exterior", src: "/images/exterior/IMG_1954.PNG", alt: "Exterior detail 4" },
-  { id: 5, category: "exterior", src: "/images/exterior/IMG_1959.PNG", alt: "Exterior detail 5" },
   { id: 6, category: "exterior", src: "/images/exterior/IMG_1942.PNG", alt: "Exterior detail 6" },
   { id: 7, category: "exterior", src: "/images/exterior/IMG_1943.PNG", alt: "Exterior detail 7" },
   { id: 8, category: "exterior", src: "/images/exterior/IMG_1932.PNG", alt: "Exterior detail 8" },
@@ -25,21 +93,13 @@ const exteriorPhotos: GalleryItem[] = [
   { id: 10, category: "exterior", src: "/images/exterior/IMG_1955.PNG", alt: "Exterior detail 10" },
   { id: 11, category: "exterior", src: "/images/exterior/IMG_1946.PNG", alt: "Exterior detail 11" },
   { id: 12, category: "exterior", src: "/images/exterior/IMG_1947.PNG", alt: "Exterior detail 12" },
-  { id: 13, category: "exterior", src: "/images/exterior/IMG_1940.PNG", alt: "Exterior detail 13" },
-  { id: 14, category: "exterior", src: "/images/exterior/IMG_2525.jpeg", alt: "Exterior detail 14" },
   { id: 15, category: "exterior", src: "/images/exterior/IMG_2542.jpeg", alt: "Exterior detail 15" },
   { id: 16, category: "exterior", src: "/images/exterior/IMG_2841.jpeg", alt: "Exterior detail 16" },
-  { id: 17, category: "exterior", src: "/images/exterior/IMG_3235.jpeg", alt: "Exterior detail 17" },
-  { id: 18, category: "exterior", src: "/images/exterior/IMG_3584.jpeg", alt: "Exterior detail 18" },
-  { id: 19, category: "exterior", src: "/images/exterior/IMG_3667.jpeg", alt: "Exterior detail 19" },
+  { id: 19, category: "exterior", src: "/images/exterior/IMG_2525.jpeg", alt: "Exterior detail 19" },
   { id: 20, category: "exterior", src: "/images/exterior/IMG_3777.jpeg", alt: "Exterior detail 20" },
-  { id: 21, category: "exterior", src: "/images/exterior/IMG_4585.jpeg", alt: "Exterior detail 21" },
+  { id: 21, category: "exterior", src: "/images/exterior/IMG_1959.PNG", alt: "Exterior detail 21" },
   { id: 22, category: "exterior", src: "/images/exterior/IMG_4671.jpeg", alt: "Exterior detail 22" },
-  { id: 23, category: "exterior", src: "/images/exterior/IMG_6035.jpeg", alt: "Exterior detail 23" },
   { id: 24, category: "exterior", src: "/images/exterior/IMG_6057.jpeg", alt: "Exterior detail 24" },
-];
-
-const interiorPhotos: GalleryItem[] = [
   { id: 101, category: "interior", src: "/images/interior/IMG_1961.PNG", alt: "Interior detail 1" },
   { id: 102, category: "interior", src: "/images/interior/IMG_3980.PNG", alt: "Interior detail 2" },
   { id: 103, category: "interior", src: "/images/interior/IMG_3675.jpeg", alt: "Interior detail 3" },
@@ -52,15 +112,7 @@ const interiorPhotos: GalleryItem[] = [
   { id: 110, category: "interior", src: "/images/interior/IMG_2526.jpeg", alt: "Interior detail 10" },
   { id: 111, category: "interior", src: "/images/interior/IMG_3983.jpeg", alt: "Interior detail 11" },
   { id: 112, category: "interior", src: "/images/interior/IMG_3986.jpeg", alt: "Interior detail 12" },
-  { id: 113, category: "interior", src: "/images/interior/IMG_4666.jpeg", alt: "Interior detail 13" },
-  { id: 114, category: "interior", src: "/images/interior/IMG_5529.jpeg", alt: "Interior detail 14" },
-  { id: 115, category: "interior", src: "/images/interior/IMG_5540.jpeg", alt: "Interior detail 15" },
-  { id: 116, category: "interior", src: "/images/interior/IMG_5561.jpeg", alt: "Interior detail 16" },
-  { id: 117, category: "interior", src: "/images/interior/IMG_1930.PNG", alt: "Interior detail 17" },
-  { id: 118, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 18" },
 ];
-
-const allPhotos: GalleryItem[] = [...exteriorPhotos, ...interiorPhotos];
 
 const tabs: { key: Category; label: string }[] = [
   { key: "all", label: "All Work" },
@@ -68,15 +120,44 @@ const tabs: { key: Category; label: string }[] = [
   { key: "interior", label: "Interior" },
 ];
 
+function PairImage({
+  src,
+  label,
+  title,
+}: {
+  src: string;
+  label: "Before" | "After";
+  title: string;
+}) {
+  return (
+    <div className="relative aspect-[4/3] bg-navy/10">
+      <Image
+        src={src}
+        alt={`${title} — ${label.toLowerCase()}`}
+        fill
+        sizes="(max-width: 768px) 50vw, 33vw"
+        className="object-cover"
+      />
+      <span
+        className={`absolute top-3 left-3 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm ${
+          label === "Before" ? "bg-navy/80 text-white" : "bg-gold/90 text-navy"
+        }`}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export default function GalleryPage() {
   const [active, setActive] = useState<Category>("all");
 
-  const filtered: GalleryItem[] =
+  const filteredPairs =
+    active === "all" ? pairs : pairs.filter((p) => p.category === active);
+  const filteredPhotos =
     active === "all"
-      ? allPhotos
-      : active === "exterior"
-      ? exteriorPhotos
-      : interiorPhotos;
+      ? morePhotos
+      : morePhotos.filter((p) => p.category === active);
 
   return (
     <>
@@ -108,8 +189,36 @@ export default function GalleryPage() {
             ))}
           </div>
 
+          <h2 className="text-3xl font-bold text-navy text-center mb-2">
+            Before &amp; After
+          </h2>
+          <p className="text-navy/60 text-center mb-10">
+            Same vehicle, same angle — see exactly what a detail from us does.
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
+            {filteredPairs.map((pair) => (
+              <figure
+                key={pair.id}
+                className="rounded-2xl overflow-hidden shadow-lg bg-white border border-navy/10"
+              >
+                <div className="grid grid-cols-2 gap-1">
+                  <PairImage src={pair.beforeSrc} label="Before" title={pair.title} />
+                  <PairImage src={pair.afterSrc} label="After" title={pair.title} />
+                </div>
+                <figcaption className="px-5 py-4 text-sm font-semibold text-navy">
+                  {pair.title}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+
+          <h2 className="text-3xl font-bold text-navy text-center mb-10">
+            More From Our Work
+          </h2>
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((photo) => (
+            {filteredPhotos.map((photo) => (
               <div
                 key={photo.id}
                 className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10"
@@ -118,6 +227,7 @@ export default function GalleryPage() {
                   src={photo.src}
                   alt={photo.alt}
                   fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
