@@ -1,0 +1,47 @@
+import Image from "next/image";
+
+interface BeforeAfterPairProps {
+  beforeSrc: string;
+  afterSrc: string;
+  title: string;
+}
+
+export default function BeforeAfterPair({
+  beforeSrc,
+  afterSrc,
+  title,
+}: BeforeAfterPairProps) {
+  return (
+    <div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-navy/10 shadow-lg">
+          <Image
+            src={beforeSrc}
+            alt={`${title} — before detailing`}
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className="object-cover"
+          />
+          <span className="absolute top-3 left-3 bg-navy/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+            Before
+          </span>
+        </div>
+        <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-navy/10 shadow-lg">
+          <Image
+            src={afterSrc}
+            alt={`${title} — after detailing`}
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className="object-cover"
+          />
+          <span className="absolute top-3 right-3 bg-gold/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+            After
+          </span>
+        </div>
+      </div>
+      <p className="text-center text-sm font-medium text-navy/70 mt-4">
+        {title}
+      </p>
+    </div>
+  );
+}
