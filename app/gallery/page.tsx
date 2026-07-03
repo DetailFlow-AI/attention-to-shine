@@ -1,5 +1,7 @@
 "use client";
 
+// TASK 1 (Gallery restructured into labeled Before & After pairs) — DONE 2026-07-03
+
 import { useState } from "react";
 import Image from "next/image";
 
@@ -12,31 +14,78 @@ interface GalleryItem {
   alt: string;
 }
 
+interface BeforeAfterPair {
+  id: number;
+  title: string;
+  before: string;
+  after: string;
+}
+
+/*
+ * Matched before/after pairs — each pair is the same vehicle photographed
+ * from the same (or closest available) angle. Left = before, right = after.
+ */
+const beforeAfterPairs: BeforeAfterPair[] = [
+  {
+    id: 1,
+    title: "Chevrolet Camaro SS — Full Exterior Detail",
+    before: "/images/exterior/IMG_3667.jpeg",
+    after: "/images/exterior/IMG_1963.PNG",
+  },
+  {
+    id: 2,
+    title: "Ford Maverick — Exterior Wash & Detail",
+    before: "/images/exterior/IMG_3584.jpeg",
+    after: "/images/exterior/IMG_6035.jpeg",
+  },
+  {
+    id: 3,
+    title: "Ford F-150 — Exterior Detail",
+    before: "/images/exterior/IMG_1940.PNG",
+    after: "/images/exterior/IMG_3235.jpeg",
+  },
+  {
+    id: 4,
+    title: "Land Rover Defender — Exterior Detail",
+    before: "/images/exterior/IMG_2525.jpeg",
+    after: "/images/exterior/IMG_2542.jpeg",
+  },
+  {
+    id: 5,
+    title: "Sedan Interior — Floor & Carpet Detail",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 6,
+    title: "Coupe Interior — Seat Deep Clean",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
+  },
+  {
+    id: 7,
+    title: "Coupe Interior — Carpet & Footwell Detail",
+    before: "/images/interior/IMG_5540.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
+
 const exteriorPhotos: GalleryItem[] = [
   { id: 1, category: "exterior", src: "/images/exterior/IMG_1941.PNG", alt: "Exterior detail 1" },
-  { id: 2, category: "exterior", src: "/images/exterior/IMG_1963.PNG", alt: "Exterior detail 2" },
-  { id: 3, category: "exterior", src: "/images/exterior/IMG_1956.PNG", alt: "Exterior detail 3" },
-  { id: 4, category: "exterior", src: "/images/exterior/IMG_1954.PNG", alt: "Exterior detail 4" },
-  { id: 5, category: "exterior", src: "/images/exterior/IMG_1959.PNG", alt: "Exterior detail 5" },
-  { id: 6, category: "exterior", src: "/images/exterior/IMG_1942.PNG", alt: "Exterior detail 6" },
-  { id: 7, category: "exterior", src: "/images/exterior/IMG_1943.PNG", alt: "Exterior detail 7" },
-  { id: 8, category: "exterior", src: "/images/exterior/IMG_1932.PNG", alt: "Exterior detail 8" },
-  { id: 9, category: "exterior", src: "/images/exterior/IMG_1933.PNG", alt: "Exterior detail 9" },
-  { id: 10, category: "exterior", src: "/images/exterior/IMG_1955.PNG", alt: "Exterior detail 10" },
-  { id: 11, category: "exterior", src: "/images/exterior/IMG_1946.PNG", alt: "Exterior detail 11" },
-  { id: 12, category: "exterior", src: "/images/exterior/IMG_1947.PNG", alt: "Exterior detail 12" },
-  { id: 13, category: "exterior", src: "/images/exterior/IMG_1940.PNG", alt: "Exterior detail 13" },
-  { id: 14, category: "exterior", src: "/images/exterior/IMG_2525.jpeg", alt: "Exterior detail 14" },
-  { id: 15, category: "exterior", src: "/images/exterior/IMG_2542.jpeg", alt: "Exterior detail 15" },
-  { id: 16, category: "exterior", src: "/images/exterior/IMG_2841.jpeg", alt: "Exterior detail 16" },
-  { id: 17, category: "exterior", src: "/images/exterior/IMG_3235.jpeg", alt: "Exterior detail 17" },
-  { id: 18, category: "exterior", src: "/images/exterior/IMG_3584.jpeg", alt: "Exterior detail 18" },
-  { id: 19, category: "exterior", src: "/images/exterior/IMG_3667.jpeg", alt: "Exterior detail 19" },
-  { id: 20, category: "exterior", src: "/images/exterior/IMG_3777.jpeg", alt: "Exterior detail 20" },
-  { id: 21, category: "exterior", src: "/images/exterior/IMG_4585.jpeg", alt: "Exterior detail 21" },
-  { id: 22, category: "exterior", src: "/images/exterior/IMG_4671.jpeg", alt: "Exterior detail 22" },
-  { id: 23, category: "exterior", src: "/images/exterior/IMG_6035.jpeg", alt: "Exterior detail 23" },
-  { id: 24, category: "exterior", src: "/images/exterior/IMG_6057.jpeg", alt: "Exterior detail 24" },
+  { id: 2, category: "exterior", src: "/images/exterior/IMG_1956.PNG", alt: "Exterior detail 2" },
+  { id: 3, category: "exterior", src: "/images/exterior/IMG_1954.PNG", alt: "Exterior detail 3" },
+  { id: 4, category: "exterior", src: "/images/exterior/IMG_1959.PNG", alt: "Exterior detail 4" },
+  { id: 5, category: "exterior", src: "/images/exterior/IMG_1942.PNG", alt: "Exterior detail 5" },
+  { id: 6, category: "exterior", src: "/images/exterior/IMG_1943.PNG", alt: "Exterior detail 6" },
+  { id: 7, category: "exterior", src: "/images/exterior/IMG_1932.PNG", alt: "Exterior detail 7" },
+  { id: 8, category: "exterior", src: "/images/exterior/IMG_1933.PNG", alt: "Exterior detail 8" },
+  { id: 9, category: "exterior", src: "/images/exterior/IMG_1955.PNG", alt: "Exterior detail 9" },
+  { id: 10, category: "exterior", src: "/images/exterior/IMG_1946.PNG", alt: "Exterior detail 10" },
+  { id: 11, category: "exterior", src: "/images/exterior/IMG_1947.PNG", alt: "Exterior detail 11" },
+  { id: 12, category: "exterior", src: "/images/exterior/IMG_2841.jpeg", alt: "Exterior detail 12" },
+  { id: 13, category: "exterior", src: "/images/exterior/IMG_4585.jpeg", alt: "Exterior detail 13" },
+  { id: 14, category: "exterior", src: "/images/exterior/IMG_4671.jpeg", alt: "Exterior detail 14" },
+  { id: 15, category: "exterior", src: "/images/exterior/IMG_6057.jpeg", alt: "Exterior detail 15" },
 ];
 
 const interiorPhotos: GalleryItem[] = [
@@ -53,11 +102,6 @@ const interiorPhotos: GalleryItem[] = [
   { id: 111, category: "interior", src: "/images/interior/IMG_3983.jpeg", alt: "Interior detail 11" },
   { id: 112, category: "interior", src: "/images/interior/IMG_3986.jpeg", alt: "Interior detail 12" },
   { id: 113, category: "interior", src: "/images/interior/IMG_4666.jpeg", alt: "Interior detail 13" },
-  { id: 114, category: "interior", src: "/images/interior/IMG_5529.jpeg", alt: "Interior detail 14" },
-  { id: 115, category: "interior", src: "/images/interior/IMG_5540.jpeg", alt: "Interior detail 15" },
-  { id: 116, category: "interior", src: "/images/interior/IMG_5561.jpeg", alt: "Interior detail 16" },
-  { id: 117, category: "interior", src: "/images/interior/IMG_1930.PNG", alt: "Interior detail 17" },
-  { id: 118, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 18" },
 ];
 
 const allPhotos: GalleryItem[] = [...exteriorPhotos, ...interiorPhotos];
@@ -67,6 +111,35 @@ const tabs: { key: Category; label: string }[] = [
   { key: "exterior", label: "Exterior" },
   { key: "interior", label: "Interior" },
 ];
+
+function PairImage({
+  src,
+  label,
+  title,
+}: {
+  src: string;
+  label: "Before" | "After";
+  title: string;
+}) {
+  return (
+    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-navy/10">
+      <Image
+        src={src}
+        alt={`${title} — ${label.toLowerCase()}`}
+        fill
+        sizes="(max-width: 768px) 50vw, 33vw"
+        className="object-cover"
+      />
+      <span
+        className={`absolute top-3 left-3 text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none ${
+          label === "Before" ? "bg-navy/85 text-white" : "bg-gold text-navy"
+        }`}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export default function GalleryPage() {
   const [active, setActive] = useState<Category>("all");
@@ -90,8 +163,45 @@ export default function GalleryPage() {
         </p>
       </section>
 
+      {/* ── BEFORE & AFTER PAIRS ── */}
       <section className="bg-white py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="label-tag">Before &amp; After</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight mb-3">
+              Side-by-side transformations.
+            </h2>
+            <p className="text-lg text-navy/60 max-w-2xl mx-auto">
+              The same vehicle, the same angle — before our detail on the left,
+              after on the right.
+            </p>
+          </div>
+
+          <div className="space-y-12">
+            {beforeAfterPairs.map((pair) => (
+              <div key={pair.id}>
+                <div className="grid grid-cols-2 gap-3 md:gap-6">
+                  <PairImage src={pair.before} label="Before" title={pair.title} />
+                  <PairImage src={pair.after} label="After" title={pair.title} />
+                </div>
+                <p className="text-center text-sm font-semibold text-navy/70 mt-4">
+                  {pair.title}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── MORE FROM OUR WORK ── */}
+      <section className="bg-apple-gray py-16 px-6">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-navy tracking-tight mb-3">
+              More from our work.
+            </h2>
+          </div>
+
           <div className="flex gap-3 mb-10 justify-center flex-wrap">
             {tabs.map((tab) => (
               <button
@@ -118,6 +228,7 @@ export default function GalleryPage() {
                   src={photo.src}
                   alt={photo.alt}
                   fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
