@@ -1,9 +1,38 @@
 "use client";
 
+// TASK 1 (Gallery before & after pairs): DONE 2026-07-03
+
 import { useState } from "react";
 import Image from "next/image";
+import BeforeAfterPair from "@/components/BeforeAfterPair";
 
 type Category = "all" | "exterior" | "interior";
+
+interface BeforeAfterItem {
+  title: string;
+  before: string;
+  after: string;
+}
+
+// Each pair is the same vehicle photographed from the same angle,
+// before and after the detail.
+const beforeAfterPairs: BeforeAfterItem[] = [
+  {
+    title: "Sedan Interior Detail — Lakeland, FL",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    title: "Coupe Interior Deep Clean — Seats & Console",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+  {
+    title: "Coupe Interior Deep Clean — Carpet & Footwell",
+    before: "/images/interior/IMG_5540.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
+  },
+];
 
 interface GalleryItem {
   id: number;
@@ -53,11 +82,7 @@ const interiorPhotos: GalleryItem[] = [
   { id: 111, category: "interior", src: "/images/interior/IMG_3983.jpeg", alt: "Interior detail 11" },
   { id: 112, category: "interior", src: "/images/interior/IMG_3986.jpeg", alt: "Interior detail 12" },
   { id: 113, category: "interior", src: "/images/interior/IMG_4666.jpeg", alt: "Interior detail 13" },
-  { id: 114, category: "interior", src: "/images/interior/IMG_5529.jpeg", alt: "Interior detail 14" },
-  { id: 115, category: "interior", src: "/images/interior/IMG_5540.jpeg", alt: "Interior detail 15" },
-  { id: 116, category: "interior", src: "/images/interior/IMG_5561.jpeg", alt: "Interior detail 16" },
-  { id: 117, category: "interior", src: "/images/interior/IMG_1930.PNG", alt: "Interior detail 17" },
-  { id: 118, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 18" },
+  { id: 114, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 14" },
 ];
 
 const allPhotos: GalleryItem[] = [...exteriorPhotos, ...interiorPhotos];
@@ -90,8 +115,41 @@ export default function GalleryPage() {
         </p>
       </section>
 
+      {/* ── BEFORE & AFTER PAIRS ── */}
       <section className="bg-white py-16 px-6">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="label-tag">Before &amp; After</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight mb-3">
+              Same vehicle. Same angle. Real results.
+            </h2>
+            <p className="text-lg text-navy/60 max-w-2xl mx-auto">
+              On the left, how each vehicle arrived. On the right, how we
+              handed it back.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {beforeAfterPairs.map((pair) => (
+              <BeforeAfterPair
+                key={pair.title}
+                beforeSrc={pair.before}
+                afterSrc={pair.after}
+                title={pair.title}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FULL GALLERY GRID ── */}
+      <section className="bg-white py-16 px-6 border-t border-navy/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-navy tracking-tight mb-3">
+              More from our work.
+            </h2>
+          </div>
           <div className="flex gap-3 mb-10 justify-center flex-wrap">
             {tabs.map((tab) => (
               <button
