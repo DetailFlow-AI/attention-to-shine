@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 
+// TASK 1 — GALLERY BEFORE & AFTER PAIRS: DONE 2026-07-04
 type Category = "all" | "exterior" | "interior";
 
 interface GalleryItem {
@@ -11,6 +12,36 @@ interface GalleryItem {
   src: string;
   alt: string;
 }
+
+interface BeforeAfterPair {
+  id: number;
+  title: string;
+  before: string;
+  after: string;
+}
+
+// Each pair is the same vehicle photographed from the same angle,
+// once before the detail and once after.
+const beforeAfterPairs: BeforeAfterPair[] = [
+  {
+    id: 1,
+    title: "Sedan Interior — Driver's Side",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 2,
+    title: "Dodge Interior — Passenger Seat & Carpet",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
+  },
+  {
+    id: 3,
+    title: "Dodge Interior — Driver's Side",
+    before: "/images/interior/IMG_5540.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
 
 const exteriorPhotos: GalleryItem[] = [
   { id: 1, category: "exterior", src: "/images/exterior/IMG_1941.PNG", alt: "Exterior detail 1" },
@@ -90,8 +121,66 @@ export default function GalleryPage() {
         </p>
       </section>
 
+      {/* Before & After matched pairs — left is before, right is after */}
       <section className="bg-white py-16 px-6">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="label-tag">Before &amp; After</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight">
+              Same vehicle. Same angle. Different story.
+            </h2>
+            <p className="text-navy/60 max-w-xl mx-auto mt-3">
+              Each pair below shows the exact same vehicle before we started
+              and after we finished.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-4">
+            {beforeAfterPairs.map((pair) => (
+              <figure key={pair.id} className="rounded-3xl overflow-hidden bg-navy/5 shadow-lg">
+                <div className="grid grid-cols-2 gap-1">
+                  <div className="relative aspect-[3/4]">
+                    <Image
+                      src={pair.before}
+                      alt={`${pair.title} — before detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 left-3 bg-navy/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      Before
+                    </span>
+                  </div>
+                  <div className="relative aspect-[3/4]">
+                    <Image
+                      src={pair.after}
+                      alt={`${pair.title} — after detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 right-3 bg-gold/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      After
+                    </span>
+                  </div>
+                </div>
+                <figcaption className="px-5 py-4 text-sm font-semibold text-navy">
+                  {pair.title}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white pb-16 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="label-tag">Full Gallery</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight">
+              More of our work
+            </h2>
+          </div>
           <div className="flex gap-3 mb-10 justify-center flex-wrap">
             {tabs.map((tab) => (
               <button
