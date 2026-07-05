@@ -1,5 +1,7 @@
 "use client";
 
+// TASK 1 (Gallery restructured into labeled Before & After pairs) — DONE 2026-07-05
+
 import { useState } from "react";
 import Image from "next/image";
 
@@ -11,6 +13,36 @@ interface GalleryItem {
   src: string;
   alt: string;
 }
+
+interface BeforeAfterPair {
+  id: number;
+  title: string;
+  before: string;
+  after: string;
+}
+
+// Each pair is the same vehicle photographed from the same angle,
+// before and after the detail.
+const beforeAfterPairs: BeforeAfterPair[] = [
+  {
+    id: 1,
+    title: "Sedan Interior Detail — Driver's Side",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 2,
+    title: "Suede Seat Deep Clean — Dodge Charger",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
+  },
+  {
+    id: 3,
+    title: "Carpet & Footwell Restoration — Dodge Charger",
+    before: "/images/interior/IMG_5540.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
 
 const exteriorPhotos: GalleryItem[] = [
   { id: 1, category: "exterior", src: "/images/exterior/IMG_1941.PNG", alt: "Exterior detail 1" },
@@ -39,6 +71,8 @@ const exteriorPhotos: GalleryItem[] = [
   { id: 24, category: "exterior", src: "/images/exterior/IMG_6057.jpeg", alt: "Exterior detail 24" },
 ];
 
+// Photos used in the Before & After pairs above are intentionally
+// excluded from this grid so they don't appear twice.
 const interiorPhotos: GalleryItem[] = [
   { id: 101, category: "interior", src: "/images/interior/IMG_1961.PNG", alt: "Interior detail 1" },
   { id: 102, category: "interior", src: "/images/interior/IMG_3980.PNG", alt: "Interior detail 2" },
@@ -53,11 +87,7 @@ const interiorPhotos: GalleryItem[] = [
   { id: 111, category: "interior", src: "/images/interior/IMG_3983.jpeg", alt: "Interior detail 11" },
   { id: 112, category: "interior", src: "/images/interior/IMG_3986.jpeg", alt: "Interior detail 12" },
   { id: 113, category: "interior", src: "/images/interior/IMG_4666.jpeg", alt: "Interior detail 13" },
-  { id: 114, category: "interior", src: "/images/interior/IMG_5529.jpeg", alt: "Interior detail 14" },
-  { id: 115, category: "interior", src: "/images/interior/IMG_5540.jpeg", alt: "Interior detail 15" },
-  { id: 116, category: "interior", src: "/images/interior/IMG_5561.jpeg", alt: "Interior detail 16" },
-  { id: 117, category: "interior", src: "/images/interior/IMG_1930.PNG", alt: "Interior detail 17" },
-  { id: 118, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 18" },
+  { id: 114, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 14" },
 ];
 
 const allPhotos: GalleryItem[] = [...exteriorPhotos, ...interiorPhotos];
@@ -90,8 +120,63 @@ export default function GalleryPage() {
         </p>
       </section>
 
+      {/* Before & After pairs — same vehicle, same angle, side by side */}
       <section className="bg-white py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="label-tag">Before &amp; After</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight">
+              See the transformation.
+            </h2>
+          </div>
+
+          <div className="space-y-12">
+            {beforeAfterPairs.map((pair) => (
+              <div key={pair.id}>
+                <div className="grid grid-cols-2 gap-3 md:gap-6">
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10">
+                    <Image
+                      src={pair.before}
+                      alt={`${pair.title} — before`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 40vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 left-3 bg-navy/85 text-white text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      Before
+                    </span>
+                  </div>
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-navy/10">
+                    <Image
+                      src={pair.after}
+                      alt={`${pair.title} — after`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 40vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 right-3 bg-gold text-navy text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      After
+                    </span>
+                  </div>
+                </div>
+                <p className="text-center text-sm font-medium text-navy/70 mt-4">
+                  {pair.title}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white pb-16 px-6">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="label-tag">More Of Our Work</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight">
+              Finished results.
+            </h2>
+          </div>
+
           <div className="flex gap-3 mb-10 justify-center flex-wrap">
             {tabs.map((tab) => (
               <button
