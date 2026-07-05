@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import BeforeAfterPair from "@/components/BeforeAfterPair";
 import ReviewsCarousel from "@/components/ReviewsCarousel";
 import {
   ArrowRight,
@@ -83,7 +83,7 @@ const beforeAfters = [
   {
     title: "Interior Deep Clean — Lakeland, FL",
     before: "/images/interior/IMG_5529.jpeg",
-    after: "/images/interior/IMG_5567.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
   },
 ];
 
@@ -469,23 +469,19 @@ export default function HomePage() {
               See the difference for yourself.
             </h2>
             <p className="section-subheading max-w-2xl mx-auto">
-              Real vehicles, real results. Drag the slider to compare each
-              vehicle before and after our detail.
+              Real vehicles, real results. Same vehicle, same angle — before
+              on the left, after on the right.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {beforeAfters.map((pair) => (
-              <div key={pair.title}>
-                <BeforeAfterSlider
-                  beforeSrc={pair.before}
-                  afterSrc={pair.after}
-                  alt={pair.title}
-                />
-                <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
-                  {pair.title}
-                </p>
-              </div>
+              <BeforeAfterPair
+                key={pair.title}
+                before={pair.before}
+                after={pair.after}
+                title={pair.title}
+              />
             ))}
           </div>
         </div>
