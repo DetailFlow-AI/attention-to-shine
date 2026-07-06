@@ -1,9 +1,31 @@
 "use client";
 
+// TASK 1 (Gallery restructured into labeled before/after pairs) — DONE 2026-07-06
+
 import { useState } from "react";
 import Image from "next/image";
+import BeforeAfterPair from "@/components/BeforeAfterPair";
 
 type Category = "all" | "exterior" | "interior";
+
+// Matched pairs — same vehicle, same angle. Before on the left, After on the right.
+const beforeAfterPairs = [
+  {
+    title: "Sedan Interior Detail — Lakeland, FL",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    title: "Driver's Seat Deep Clean — Lakeland, FL",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+  {
+    title: "Footwell & Carpet Restoration — Lakeland, FL",
+    before: "/images/interior/IMG_5540.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
+  },
+];
 
 interface GalleryItem {
   id: number;
@@ -90,8 +112,41 @@ export default function GalleryPage() {
         </p>
       </section>
 
+      {/* ── BEFORE & AFTER PAIRS ── */}
       <section className="bg-white py-16 px-6">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="label-tag">Before &amp; After</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight mb-3">
+              Side-by-side transformations.
+            </h2>
+            <p className="text-lg text-apple-text-secondary max-w-xl mx-auto">
+              Each pair shows the same vehicle from the same angle — before our
+              detail on the left, after on the right.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {beforeAfterPairs.map((pair) => (
+              <BeforeAfterPair
+                key={pair.title}
+                beforeSrc={pair.before}
+                afterSrc={pair.after}
+                title={pair.title}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FULL GALLERY GRID ── */}
+      <section className="bg-apple-gray py-16 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-navy tracking-tight mb-3">
+              More from our work.
+            </h2>
+          </div>
           <div className="flex gap-3 mb-10 justify-center flex-wrap">
             {tabs.map((tab) => (
               <button
