@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createBookingEvent } from "@/lib/googleCalendar";
+import { CALENDAR_SERVICE_LABELS } from "@/lib/bookingRules";
 
 // ── Base prices (cents) — mirrors create-payment-intent exactly ───────────────
 
@@ -95,31 +96,34 @@ export async function POST(req: NextRequest) {
       `Estimated total (collect on site): $${(amount / 100).toFixed(2)}`,
     ].filter(Boolean);
 
-    // Put the appointment on the owner's Google Calendar
-    const serviceLabels: Record<string, string> = {
-      exterior: "Exterior Detail",
-      interior: "Interior Detail",
-      full:     "Full Detail Package",
-    };
+    // Put the appointment on the owner's Google Calendar. The title shows the
+    // appointment time; the event itself spans prep hour + detail length.
     await createBookingEvent({
-      summary: `${serviceLabels[service] ?? service} — ${name} (pay in person)`,
+      summary: `${CALENDAR_SERVICE_LABELS[service] ?? service} at ${time} — ${name} (pay in person)`,
       description: summaryLines.join("\n"),
       date,
       time,
+      service,
     });
 
-    // Email the owner if Resend is configured — same pattern as the contact route
+    // Email the owner if Resend is configured — same pattern as the contact
+    // route. An email failure must not fail the booking (the calendar event
+    // already exists), so it's caught and logged.
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey) {
-      const { Resend } = await import("resend");
-      const resend = new Resend(apiKey);
-      await resend.emails.send({
-        from:    "Attention to Shine <onboarding@resend.dev>",
-        to:      process.env.CONTACT_EMAIL ?? "lilliechris06@gmail.com",
-        replyTo: email,
-        subject: `[Booking — Pay in Person] ${name} — ${date} at ${time}`,
-        text: summaryLines.join("\n"),
-      });
+      try {
+        const { Resend } = await import("resend");
+        const resend = new Resend(apiKey);
+        await resend.emails.send({
+          from:    "Attention to Shine <onboarding@resend.dev>",
+          to:      process.env.CONTACT_EMAIL ?? "lilliechris06@gmail.com",
+          replyTo: email,
+          subject: `[Booking — Pay in Person] ${name} — ${date} at ${time}`,
+          text: summaryLines.join("\n"),
+        });
+      } catch (emailError) {
+        console.error("Booking confirmation email failed:", emailError);
+      }
     } else {
       console.log("📅 Pay-in-person booking (RESEND_API_KEY not set):", summaryLines.join("\n"));
     }
