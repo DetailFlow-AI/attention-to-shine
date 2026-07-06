@@ -12,6 +12,10 @@ import {
 //   ?date=YYYY-MM-DD            → busy intervals for that day (time dropdown)
 //   ?start=YYYY-MM-DD&days=N    → open-slot count per day (date picker grid)
 //
+// Both modes accept &service=exterior|interior|full so open-slot counts use
+// that service's blocked window (1 hr prep + detail length). Without it, the
+// longest window is assumed.
+//
 // Every response also includes `nextAvailable`: the soonest upcoming date
 // with at least one open slot, scanned over the next 45 days.
 // Fails open — if the calendar can't be reached, everything reports available
@@ -25,11 +29,11 @@ function todayEastern(): string {
   }).format(new Date());
 }
 
-function nextAvailableDate(busy: BusyInterval[]): string | null {
+function nextAvailableDate(busy: BusyInterval[], service?: string): string | null {
   const tomorrow = addDays(todayEastern(), 1);
   for (let i = 0; i < SCAN_DAYS; i++) {
     const d = addDays(tomorrow, i);
-    if (openSlotCount(d, busy) > 0) return d;
+    if (openSlotCount(d, busy, service) > 0) return d;
   }
   return null;
 }
@@ -38,6 +42,7 @@ export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get("date");
   const start = req.nextUrl.searchParams.get("start");
   const daysParam = parseInt(req.nextUrl.searchParams.get("days") ?? "0", 10);
+  const service = req.nextUrl.searchParams.get("service") ?? undefined;
 
   const tomorrow = addDays(todayEastern(), 1);
   const scanEnd = addDays(tomorrow, SCAN_DAYS);
@@ -54,13 +59,13 @@ export async function GET(req: NextRequest) {
     const openByDay: Record<string, number> = {};
     for (let i = 0; i < days; i++) {
       const d = addDays(start, i);
-      openByDay[d] = openSlotCount(d, busy);
+      openByDay[d] = openSlotCount(d, busy, service);
     }
 
     return NextResponse.json({
       configured,
       days: openByDay,
-      nextAvailable: nextAvailableDate(busy),
+      nextAvailable: nextAvailableDate(busy, service),
     });
   }
 
@@ -83,7 +88,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       configured,
       busy: dayBusy,
-      nextAvailable: nextAvailableDate(busy),
+      nextAvailable: nextAvailableDate(busy, service),
     });
   }
 

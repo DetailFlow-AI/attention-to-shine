@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import DatePicker from "@/components/DatePicker";
+import {
+  blockWindow,
+  detailHoursFor,
+  PREP_HOURS,
+} from "@/lib/bookingRules";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -403,13 +408,15 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
 
-  // Check the owner's Google Calendar whenever the chosen date changes.
-  // Each response also carries the soonest date with an open slot.
+  // Check the owner's Google Calendar whenever the chosen date or service
+  // changes (the service sets how long each booking blocks). Each response
+  // also carries the soonest date with an open slot.
   useEffect(() => {
     let cancelled = false;
+    const svc = data.service ? `&service=${data.service}` : "";
     const query = data.date
-      ? `date=${data.date}`
-      : `start=${minDate}&days=1`; // no date picked yet — still fetch nextAvailable
+      ? `date=${data.date}${svc}`
+      : `start=${minDate}&days=1${svc}`; // no date picked yet — still fetch nextAvailable
     fetch(`/api/availability?${query}`)
       .then((r) => (r.ok ? r.json() : { busy: [] }))
       .then((j) => {
@@ -424,14 +431,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.date]);
+  }, [data.date, data.service]);
 
-  // A detail takes 3 hours. Each booking reserves the 3 hours starting at its
-  // time (a 12:00 PM booking blocks 12:00 PM–3:00 PM) — nothing before it. So
-  // a slot is bookable only if a full 3-hour detail starting there fits before
-  // the next booking, i.e. its [X, X+3) window doesn't overlap any existing
-  // detail. Mirrors the calendar block in lib/googleCalendar.ts.
-  const DETAIL_HOURS = 3;
+  // Every booking blocks 1 hour of prep before the appointment plus the
+  // detail itself (2h exterior / 3h interior / 4h full). A slot is bookable
+  // only if its whole blocked window is free of existing bookings — the exact
+  // same blockWindow() the server uses to create the calendar event.
 
   // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
@@ -443,19 +448,19 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  // The soonest existing booking whose window overlaps the 3-hour detail that
-  // would start at `slot`, or null if a detail fits. Drives both the disabled
-  // slots and the "detail at …" explanation.
+  // The soonest existing booking that overlaps the blocked window (prep +
+  // detail) of a booking at `slot`, or null if it fits. Drives both the
+  // disabled slots and the "detail at …" explanation.
   const conflictingBooking = (slot: string): Date | null => {
     if (!data.date || busyRanges.length === 0) return null;
     const slotStart = slotToDate(slot);
     if (!slotStart) return null;
-    const detailEnd = new Date(slotStart.getTime() + DETAIL_HOURS * 60 * 60 * 1000);
+    const { start: blockStart, end: blockEnd } = blockWindow(slotStart, data.service);
     let earliest: Date | null = null;
     for (const b of busyRanges) {
       const busyStart = new Date(b.start);
       const busyEnd   = new Date(b.end);
-      if (slotStart < busyEnd && detailEnd > busyStart) {
+      if (blockStart < busyEnd && blockEnd > busyStart) {
         if (!earliest || busyStart < earliest) earliest = busyStart;
       }
     }
@@ -725,6 +730,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               <DatePicker
                 value={data.date}
                 minDate={minDate}
+                service={data.service}
                 onChange={(d) => set("date", d)}
               />
               <RequiredMsg value={data.date} />
@@ -753,8 +759,11 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
                   <AlertCircle size={11} className="mt-0.5 shrink-0" />
                   A detail is scheduled at {fmtBookingTime(selectedConflict)}.
-                  Please select a time with at least 3 hours before that
-                  appointment.
+                  Your {SERVICE_LABELS[data.service] ?? "detail"} needs{" "}
+                  {PREP_HOURS + detailHoursFor(data.service)} hours free (
+                  {PREP_HOURS} hr prep before your time +{" "}
+                  {detailHoursFor(data.service)} hr detail) — please pick a
+                  time that doesn&apos;t overlap that appointment.
                 </p>
               )}
               {nextAvailable && (
@@ -883,7 +892,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               onClick={() => {
                 setStep2Attempted(true);
                 // Only advance if every required field is filled and the
-                // chosen time has a valid 3-hour runway after it
+                // chosen time's blocked window (prep + detail) is free
                 if (
                   data.date.trim() &&
                   data.time.trim() &&

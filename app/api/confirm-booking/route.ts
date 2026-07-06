@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createBookingEvent } from "@/lib/googleCalendar";
+import { CALENDAR_SERVICE_LABELS } from "@/lib/bookingRules";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
-const SERVICE_LABELS: Record<string, string> = {
-  exterior: "Exterior Detail",
-  interior: "Interior Detail",
-  full:     "Full Detail Package",
-};
+const SERVICE_LABELS = CALENDAR_SERVICE_LABELS;
 
 // Called by the booking form after an online payment succeeds. The payment
 // status is verified directly with Stripe — the client only supplies the
@@ -53,11 +50,34 @@ export async function POST(req: NextRequest) {
     ].filter(Boolean).join("\n");
 
     const { ok: created } = await createBookingEvent({
-      summary: `${SERVICE_LABELS[m.service] ?? m.service} — ${m.customerName} (paid online)`,
+      summary: `${SERVICE_LABELS[m.service] ?? m.service} at ${m.time} — ${m.customerName} (paid online)`,
       description,
       date: m.date,
       time: m.time,
+      service: m.service,
     });
+
+    // Email the owner — paid-online bookings previously created a calendar
+    // event but never sent the confirmation email. Failures are logged, not
+    // fatal: the payment already succeeded.
+    const apiKey = process.env.RESEND_API_KEY;
+    if (apiKey) {
+      try {
+        const { Resend } = await import("resend");
+        const resend = new Resend(apiKey);
+        await resend.emails.send({
+          from:    "Attention to Shine <onboarding@resend.dev>",
+          to:      process.env.CONTACT_EMAIL ?? "lilliechris06@gmail.com",
+          replyTo: m.customerEmail || undefined,
+          subject: `[Booking — Paid Online] ${m.customerName} — ${m.date} at ${m.time}`,
+          text: description,
+        });
+      } catch (emailError) {
+        console.error("Paid-online confirmation email failed:", emailError);
+      }
+    } else {
+      console.log("📅 Paid-online booking (RESEND_API_KEY not set):", description);
+    }
 
     if (created) {
       // Mark the intent so retries or page refreshes don't duplicate the event

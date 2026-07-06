@@ -1,4 +1,12 @@
 import crypto from "crypto";
+import {
+  BOOKING_SLOT_HOURS,
+  blockWindow,
+  detailHoursFor,
+  PREP_HOURS,
+} from "./bookingRules";
+
+export { BOOKING_SLOT_HOURS, blockWindow, detailHoursFor, PREP_HOURS };
 
 // Creates events on the owner's Google Calendar using a service account.
 //
@@ -95,8 +103,11 @@ export interface BookingEvent {
   summary: string;
   description: string;
   date: string; // YYYY-MM-DD
-  time: string; // e.g. "1:00 PM"
-  durationHours?: number; // length of the booking in hours from the start (default 3)
+  time: string; // appointment time, e.g. "1:00 PM"
+  service?: string; // "exterior" | "interior" | "full" — sets the blocked window
+  // Diagnostic override (calendar-test route only): exact event length in
+  // hours starting AT the appointment time, with no prep hour before it.
+  durationHours?: number;
 }
 
 // Resolves the calendar to write to. Falls back to the business calendar when
@@ -120,34 +131,20 @@ export interface BusyInterval {
   end: string;
 }
 
-// Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
-export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-
-// Each booking reserves the 3 hours starting at the booked time — the length
-// of a detail. A 12:00 PM booking blocks 12:00 PM – 3:00 PM; nothing before
-// the start time is blocked. The availability check uses the same window: a
-// slot is taken if the 3-hour detail starting there would overlap an existing
-// event, so a slot stays open only when a full detail fits before the next
-// booking.
-export const BOOKING_BLOCK_HOURS = 3;
-
-// Given the start time of a slot, returns the [start, end) window it blocks.
-export function blockWindow(slotStart: Date): { start: Date; end: Date } {
-  return {
-    start: slotStart,
-    end: new Date(slotStart.getTime() + BOOKING_BLOCK_HOURS * 60 * 60 * 1000),
-  };
-}
-
 export function addDays(date: string, days: number): string {
   const d = new Date(`${date}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().split("T")[0];
 }
 
-// How many of the bookable slots on a date are free of calendar events.
+// How many of the bookable slots on a date are free of calendar events, using
+// the blocked window for the given service (prep hour + detail length).
 // Sundays are closed, so they always report zero.
-export function openSlotCount(date: string, busy: BusyInterval[]): number {
+export function openSlotCount(
+  date: string,
+  busy: BusyInterval[],
+  service?: string
+): number {
   if (new Date(`${date}T12:00:00Z`).getUTCDay() === 0) return 0;
   const offset = easternOffset(date);
   let open = 0;
@@ -155,7 +152,7 @@ export function openSlotCount(date: string, busy: BusyInterval[]): number {
     const slotStart = new Date(
       `${date}T${String(hour).padStart(2, "0")}:00:00${offset}`
     );
-    const { start: blockStart, end: blockEnd } = blockWindow(slotStart);
+    const { start: blockStart, end: blockEnd } = blockWindow(slotStart, service);
     const taken = busy.some(
       (b) => blockStart < new Date(b.end) && blockEnd > new Date(b.start)
     );
@@ -278,14 +275,20 @@ export async function createBookingEvent(ev: BookingEvent): Promise<CalendarResu
 
   try {
     const token = await getAccessToken(saEmail, saKey);
-    // Reserve the 3 hours starting at the booked time (the detail itself).
-    // A 12:00 PM booking blocks 12:00 PM – 3:00 PM on the calendar.
+    // One event covers the whole blocked window: 1 hour of prep before the
+    // appointment plus the detail itself (2h/3h/4h by service). A 10:00 AM
+    // full detail blocks 9:00 AM – 2:00 PM. The diagnostic durationHours
+    // override skips the prep hour and uses the exact length given.
     const slotStart = new Date(slotToStartISO(ev.date, ev.time));
-    const start = slotStart.toISOString();
-    const end = new Date(
-      slotStart.getTime() +
-        (ev.durationHours ?? BOOKING_BLOCK_HOURS) * 60 * 60 * 1000
-    ).toISOString();
+    const window =
+      ev.durationHours != null
+        ? {
+            start: slotStart,
+            end: new Date(slotStart.getTime() + ev.durationHours * 60 * 60 * 1000),
+          }
+        : blockWindow(slotStart, ev.service);
+    const start = window.start.toISOString();
+    const end = window.end.toISOString();
 
     const res = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,

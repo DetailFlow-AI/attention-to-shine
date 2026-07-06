@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface DatePickerProps {
   value: string; // YYYY-MM-DD or ""
   minDate: string; // YYYY-MM-DD
+  service?: string; // sets the blocked window used for open-slot counts
   onChange: (date: string) => void;
 }
 
@@ -19,7 +20,7 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export default function DatePicker({ value, minDate, onChange }: DatePickerProps) {
+export default function DatePicker({ value, minDate, service, onChange }: DatePickerProps) {
   const initial = value || minDate;
   const [viewYear, setViewYear] = useState(() => parseInt(initial.slice(0, 4), 10));
   const [viewMonth, setViewMonth] = useState(() => parseInt(initial.slice(5, 7), 10) - 1); // 0-based
@@ -32,7 +33,8 @@ export default function DatePicker({ value, minDate, onChange }: DatePickerProps
   useEffect(() => {
     let cancelled = false;
     setOpenByDay(null);
-    fetch(`/api/availability?start=${monthStart}&days=${daysInMonth}`)
+    const svc = service ? `&service=${service}` : "";
+    fetch(`/api/availability?start=${monthStart}&days=${daysInMonth}${svc}`)
       .then((r) => (r.ok ? r.json() : { days: null }))
       .then((j) => {
         if (!cancelled) setOpenByDay(j.days ?? {});
@@ -43,7 +45,7 @@ export default function DatePicker({ value, minDate, onChange }: DatePickerProps
     return () => {
       cancelled = true;
     };
-  }, [monthStart, daysInMonth]);
+  }, [monthStart, daysInMonth, service]);
 
   const prevMonth = () => {
     if (viewMonth === 0) {
