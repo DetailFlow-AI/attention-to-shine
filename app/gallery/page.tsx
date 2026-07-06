@@ -12,6 +12,48 @@ interface GalleryItem {
   alt: string;
 }
 
+interface BeforeAfterPair {
+  id: number;
+  title: string;
+  before: string;
+  after: string;
+}
+
+// Each pair is the same vehicle photographed from the same angle,
+// before and after the detail.
+const beforeAfterPairs: BeforeAfterPair[] = [
+  {
+    id: 1,
+    title: "Sedan Interior — Driver's Side",
+    before: "/images/interior/IMG_1929.PNG",
+    after: "/images/interior/IMG_1930.PNG",
+  },
+  {
+    id: 2,
+    title: "Coupe Interior — Passenger Seat & Carpet",
+    before: "/images/interior/IMG_5529.jpeg",
+    after: "/images/interior/IMG_5561.jpeg",
+  },
+  {
+    id: 3,
+    title: "Coupe Interior — Floor & Door Sill",
+    before: "/images/interior/IMG_5540.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+  {
+    id: 4,
+    title: "Sedan Interior — Dash & Front Seats",
+    before: "/images/interior/IMG_1949.PNG",
+    after: "/images/interior/IMG_4666.jpeg",
+  },
+  {
+    id: 5,
+    title: "Sports Coupe Exterior — Wash Day",
+    before: "/images/exterior/IMG_3777.jpeg",
+    after: "/images/exterior/IMG_3667.jpeg",
+  },
+];
+
 const exteriorPhotos: GalleryItem[] = [
   { id: 1, category: "exterior", src: "/images/exterior/IMG_1941.PNG", alt: "Exterior detail 1" },
   { id: 2, category: "exterior", src: "/images/exterior/IMG_1963.PNG", alt: "Exterior detail 2" },
@@ -90,8 +132,68 @@ export default function GalleryPage() {
         </p>
       </section>
 
+      {/* TASK 1 (Gallery restructured into matched before/after pairs) — DONE 2026-07-06 */}
       <section className="bg-white py-16 px-6">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="label-tag">Before &amp; After</span>
+            <h2 className="text-4xl font-bold text-navy tracking-tight mb-3">
+              Same vehicle. Same angle. Different story.
+            </h2>
+            <p className="text-navy/60 max-w-xl mx-auto">
+              Every pair below shows the exact same spot on the exact same
+              vehicle — before we started, and after we finished.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-4">
+            {beforeAfterPairs.map((pair) => (
+              <div
+                key={pair.id}
+                className="rounded-3xl overflow-hidden bg-navy/5 shadow-lg"
+              >
+                <div className="grid grid-cols-2 gap-1">
+                  <div className="relative aspect-[3/4] bg-navy/10">
+                    <Image
+                      src={pair.before}
+                      alt={`${pair.title} — before detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 left-3 bg-navy/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      Before
+                    </span>
+                  </div>
+                  <div className="relative aspect-[3/4] bg-navy/10">
+                    <Image
+                      src={pair.after}
+                      alt={`${pair.title} — after detailing`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 right-3 bg-gold/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                      After
+                    </span>
+                  </div>
+                </div>
+                <p className="text-center text-sm font-semibold text-navy py-4 px-4">
+                  {pair.title}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white pb-16 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-navy tracking-tight">
+              More of our work
+            </h2>
+          </div>
           <div className="flex gap-3 mb-10 justify-center flex-wrap">
             {tabs.map((tab) => (
               <button
