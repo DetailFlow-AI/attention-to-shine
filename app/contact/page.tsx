@@ -20,7 +20,7 @@ const contactInfo = [
   {
     icon: <MapPin size={18} />,
     label: "Location",
-    value: "Lakeland, FL 33809",
+    value: "Stationed in Lakeland, Florida — We come to you.",
     href: null,
   },
   {

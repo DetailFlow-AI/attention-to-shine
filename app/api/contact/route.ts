@@ -1,3 +1,4 @@
+// TASK 3 — CONTACT FORM EMAIL + LOCATION TEXT — DONE 2026-07-07
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -20,7 +21,9 @@ export async function POST(req: NextRequest) {
 
       await resend.emails.send({
         from:    "Attention to Shine <onboarding@resend.dev>",
-        to:      process.env.CONTACT_EMAIL ?? "lilliechris06@gmail.com",
+        // All contact form submissions go directly to the business owner.
+        // Intentionally not overridable by CONTACT_EMAIL.
+        to:      "lilliechris06@gmail.com",
         replyTo: email,
         subject: subject
           ? `[Attention to Shine] ${subject} — from ${name}`

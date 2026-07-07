@@ -509,7 +509,9 @@ export default function HomePage() {
       <section className="section-pad bg-white">
         <div className="container-wide text-center">
           <span className="label-tag">Service Area</span>
-          <h2 className="section-heading mb-4">Based in Lakeland, FL</h2>
+          <h2 className="section-heading mb-4">
+            Stationed in Lakeland, Florida — We come to you.
+          </h2>
           <p className="section-subheading max-w-xl mx-auto mb-8">
             We proudly serve Lakeland and the surrounding Polk County area. Not
             sure if we cover your location? Give us a call — we're happy to help.
