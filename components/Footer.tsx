@@ -1,5 +1,6 @@
+// TASK 2 — REMOVE SOCIAL MEDIA ICONS — DONE 2026-07-07
 import Link from "next/link";
-import { Phone, Mail, MapPin, Clock, Instagram, Facebook } from "lucide-react";
+import { Phone, Mail, MapPin, Clock } from "lucide-react";
 
 const footerLinks = {
   Services: [
@@ -36,24 +37,6 @@ export default function Footer() {
               Bringing show-quality results to your driveway. Mobile detailing
               that comes to you — no appointment hassle, just a perfect shine.
             </p>
-            <div className="flex gap-3">
-              <a
-                href="https://www.instagram.com/attentiontoshinedetailing"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow us on Instagram"
-                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold transition-colors duration-200"
-              >
-                <Instagram size={16} />
-              </a>
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold transition-colors duration-200"
-              >
-                <Facebook size={16} />
-              </a>
-            </div>
           </div>
 
           {/* Links */}
