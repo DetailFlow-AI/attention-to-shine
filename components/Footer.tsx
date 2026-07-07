@@ -86,11 +86,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/60">
                 <MapPin size={14} className="mt-0.5 shrink-0" />
-                Lakeland, FL 33809
-                <br />
-                <span className="text-white/40 text-xs">
-                  We come to you — mobile service
-                </span>
+                Stationed in Lakeland, Florida — We come to you.
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/60">
                 <Clock size={14} className="mt-0.5 shrink-0" />
