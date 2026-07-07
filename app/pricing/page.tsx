@@ -79,18 +79,20 @@ const monthlyPlans = [
   {
     name: "Essential Plan",
     price: "$120",
-    details: "1 full detail per month",
+    details: "1 maintenance visit per month",
     features: [
-      "Interior & exterior each visit",
-      "Priority scheduling",
-      "Reserved weekly time slot",
-      "Complimentary leather care",
+      "Exterior rinse & hand dry",
+      "Tire shine on all four tires",
+      "Window wipe down, inside & out",
+      "Full interior vacuum",
+      "Dashboard & console wipe-down",
+      "Priority scheduling & reserved time slot",
     ],
   },
   {
     name: "Premium Plan",
     price: "$200",
-    details: "2 full details per month",
+    details: "2 maintenance visits per month",
     features: [
       "Everything in the Essential Plan",
       "Two visits per month",
@@ -355,9 +357,10 @@ export default function PricingPage() {
               Checkup Detailing Plan
             </h2>
             <p className="text-white/60 max-w-xl mx-auto">
-              A recurring monthly service for customers who want their vehicle
-              consistently maintained — no scheduling headaches, just results
-              every time.
+              A monthly maintenance plan for already-clean vehicles. Each visit
+              includes an exterior rinse, tire shine, window wipe down, full
+              interior vacuum, and dashboard wipe-down — keeping your detail
+              looking fresh between full services.
             </p>
           </div>
 

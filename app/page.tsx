@@ -392,9 +392,10 @@ export default function HomePage() {
               The Checkup Detailing Plan
             </h2>
             <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Designed for those who want their vehicle looking its best at all
-              times — without thinking about it. Reserve a recurring slot and
-              we'll handle everything on a consistent schedule.
+              A maintenance plan for already-clean vehicles. After your initial
+              full detail, we keep it looking that way — exterior rinse, tire
+              shine, window wipe down, interior vacuum, and dashboard wipe-down
+              on a consistent schedule, so your car never slips back.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mb-10">
@@ -403,13 +404,13 @@ export default function HomePage() {
                   plan: "Essential Plan",
                   price: "$120",
                   freq: "/ month",
-                  details: "1 full detail per month",
+                  details: "1 maintenance visit per month",
                 },
                 {
                   plan: "Premium Plan",
                   price: "$200",
                   freq: "/ month",
-                  details: "2 full details per month",
+                  details: "2 maintenance visits per month",
                 },
               ].map((tier) => (
                 <div
@@ -430,10 +431,10 @@ export default function HomePage() {
                   <p className="text-sm text-white/50 mb-6">{tier.details}</p>
                   <ul className="space-y-2.5">
                     {[
-                      "Priority booking — reserved weekly slot",
-                      "Interior & exterior service each visit",
-                      "Complimentary leather care & protection",
-                      "Paint-safe hand wash every time",
+                      "Exterior rinse & tire shine each visit",
+                      "Window wipe down, inside & out",
+                      "Interior vacuum & dashboard wipe-down",
+                      "Priority booking — reserved recurring slot",
                     ].map((item) => (
                       <li
                         key={item}
