@@ -36,11 +36,7 @@ Drop your photos into:
 
 Then open `app/gallery/page.tsx` and update the `src` field in each `galleryItems` entry to match your filenames. The `PlaceholderImage` components will automatically be replaced once real `<Image>` tags are added.
 
-### 3. Add your social media links
-
-In `components/Footer.tsx`, find the Instagram and Facebook `<a>` tags and replace `href="#"` with your actual profile URLs.
-
-### 4. Wire up the contact form
+### 3. Wire up the contact form
 
 The contact form in `app/contact/page.tsx` currently simulates a send (for demo). To make it actually send emails, sign up for a free email service:
 
@@ -48,7 +44,7 @@ The contact form in `app/contact/page.tsx` currently simulates a send (for demo)
 - **[Formspree](https://formspree.io)** — no code needed for simple forms
 - **[SendGrid](https://sendgrid.com)** — powerful, free tier
 
-### 5. Connect your Google Calendar (live availability)
+### 4. Connect your Google Calendar (live availability)
 
 The booking form checks your Google Calendar and greys out time slots where
 you already have an event, so customers can't book (or pay) for a time you
@@ -73,7 +69,7 @@ GOOGLE_CALENDAR_API_KEY=YOUR_API_KEY_HERE
 If these aren't set, the form simply shows every slot as available — nothing
 breaks.
 
-### 6. Auto-create calendar events for new bookings
+### 5. Auto-create calendar events for new bookings
 
 When a customer books (online payment or pay-in-person), the site can
 automatically add the appointment to your Google Calendar with their name,
