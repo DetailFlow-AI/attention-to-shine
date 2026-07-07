@@ -1,3 +1,4 @@
+// TASK 4 — CHECKUP DETAILING PLAN DESCRIPTION — DONE 2026-07-07
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -77,17 +78,18 @@ const services = [
     tagline: "Always clean. No effort required.",
     price: "$120 – $200 / month",
     intro:
-      "The Checkup Plan is a monthly subscription for customers who want their vehicle maintained on a consistent basis. You book once, lock in your preferred time slot, and we show up on schedule — every time. It's built for people who value their vehicle and don't want to think about when it was last detailed.",
+      "The Checkup Detailing Plan is a maintenance subscription built for vehicles that are already clean and need to stay that way. Once your car has had its initial full detail with us, this plan keeps it in showroom condition month after month — you book once, lock in your preferred time slot, and we show up on schedule, every time.",
     body:
-      "Each visit includes a full interior and exterior service. With the Essential Plan, we come out once a month. The Premium Plan gets you two visits. Both plans include priority scheduling, leather care, and a dedicated approach to keeping your vehicle in top shape year-round. Since we're seeing the same vehicle regularly, we know exactly what it needs each time.",
+      "Each Checkup visit is a focused maintenance service designed to preserve the results of your full detail. We give the exterior a thorough rinse and hand dry to clear away dust, pollen, and light road film before it can bond to the paint. Your tires get a fresh coat of tire shine for that just-detailed look, and every window is wiped down inside and out for crystal-clear visibility. Inside, we run a complete interior vacuum across seats, carpets, and mats, then finish with a full dashboard and console wipe-down. It's the smartest way to protect the investment you made in your initial detail — regular upkeep at a fraction of the cost of starting over.",
     included: [
-      "1 or 2 full details per month (your choice of plan)",
-      "Priority scheduling with a reserved weekly time slot",
-      "Interior and exterior service every visit",
-      "Complimentary leather care and conditioning",
-      "Consistent care from the same detailer",
+      "Exterior rinse and hand dry to remove dust and light film",
+      "Tire shine applied to all four tires",
+      "Window wipe down, inside and out",
+      "Full interior vacuum — seats, carpets, and mats",
+      "Dashboard and console wipe-down",
+      "Priority scheduling with a reserved recurring time slot",
     ],
-    note: "Available only after your vehicle's first full detail with Attention to Shine.",
+    note: "This is a maintenance plan for already-clean vehicles — available only after your vehicle's first full detail with Attention to Shine.",
     gradient: "from-gold-dark to-gold",
   },
 ];
