@@ -76,14 +76,24 @@ const features = [
 
 const beforeAfters = [
   {
-    title: "Sedan Interior Detail — Lakeland, FL",
-    before: "/images/interior/IMG_1929.PNG",
-    after: "/images/interior/IMG_1930.PNG",
+    title: "Detail Transformation 1 — Lakeland, FL",
+    before: "/images/before-after/Slider1-before.jpg",
+    after: "/images/before-after/Slider1-after.jpg",
   },
   {
-    title: "Interior Deep Clean — Lakeland, FL",
-    before: "/images/interior/IMG_5529.jpeg",
-    after: "/images/interior/IMG_5567.jpeg",
+    title: "Detail Transformation 2 — Lakeland, FL",
+    before: "/images/before-after/Slider2-before.jpg",
+    after: "/images/before-after/Slider2-after.jpg",
+  },
+  {
+    title: "Detail Transformation 3 — Lakeland, FL",
+    before: "/images/before-after/Slider3-before.jpg",
+    after: "/images/before-after/Slider3-after.jpg",
+  },
+  {
+    title: "Detail Transformation 4 — Lakeland, FL",
+    before: "/images/before-after/Slider4-before.jpg",
+    after: "/images/before-after/Slider4-after.jpg",
   },
 ];
 
