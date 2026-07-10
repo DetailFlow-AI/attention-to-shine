@@ -62,8 +62,6 @@ const morePhotos: GalleryItem[] = [
   { id: 102, category: "interior", src: "/images/interior/IMG_3675.jpeg", alt: "Interior detail 2" },
   { id: 104, category: "interior", src: "/images/interior/IMG_2749.jpeg", alt: "Interior detail 4" },
   { id: 107, category: "interior", src: "/images/interior/IMG_0373.jpeg", alt: "Interior detail 7" },
-  { id: 111, category: "interior", src: "/images/interior/IMG_4666.jpeg", alt: "Interior detail 11" },
-  { id: 113, category: "interior", src: "/images/interior/IMG_1949.PNG", alt: "Interior detail 13" },
 ];
 
 const tabs: { key: Category; label: string }[] = [
