@@ -91,7 +91,7 @@ const monthlyPlans = [
   },
   {
     name: "Premium Plan",
-    price: "$200",
+    price: "$150",
     details: "2 maintenance visits per month",
     features: [
       "Everything in the Essential Plan",

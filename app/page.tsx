@@ -418,7 +418,7 @@ export default function HomePage() {
                 },
                 {
                   plan: "Premium Plan",
-                  price: "$200",
+                  price: "$150",
                   freq: "/ month",
                   details: "2 maintenance visits per month",
                 },
