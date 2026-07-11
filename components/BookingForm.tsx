@@ -7,6 +7,11 @@ import {
   detailHoursFor,
   PREP_HOURS,
 } from "@/lib/bookingRules";
+import {
+  SIZE_SURCHARGE as SIZE_SURCHARGES,
+  COATING_PRICE as COATING_PRICES,
+  detectNoteUpcharges,
+} from "@/lib/pricing";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -35,7 +40,7 @@ const stripePromise = loadStripe(
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Service     = "exterior" | "interior" | "full" | "";
-type VehicleSize = "sedan" | "suv" | "truck" | "";
+type VehicleSize = "sedan" | "minivan" | "suv" | "truck" | "";
 type Step        = 1 | 2 | 3 | 4;
 
 interface BookingData {
@@ -63,12 +68,6 @@ const BASE_PRICES: Record<string, number> = {
   full:     159.99,
 };
 
-const SIZE_SURCHARGES: Record<string, number> = {
-  sedan: 0,
-  suv:   20,
-  truck: 40,
-};
-
 const SERVICE_LABELS: Record<string, string> = {
   exterior: "Exterior Detail",
   interior: "Interior Detail",
@@ -76,20 +75,13 @@ const SERVICE_LABELS: Record<string, string> = {
 };
 
 const SIZE_LABELS: Record<string, string> = {
-  sedan: "Sedan / Coupe",
-  suv:   "SUV / Minivan",
-  truck: "Large Truck / Van",
+  sedan:   "Sedan / Coupe",
+  minivan: "Minivan",
+  suv:     "SUV",
+  truck:   "Large Truck / Van",
 };
 
-// ── Coating prices by vehicle size ─────────────────────────────────────────────
-
-const COATING_PRICES: Record<string, number> = {
-  sedan: 100,
-  suv:   150,
-  truck: 200,
-};
-
-// ── Keyword detection ──────────────────────────────────────────────────────────
+// ── Keyword detection (tiered amounts live in lib/pricing.ts) ──────────────────
 
 interface DetectedUpcharges {
   hasPetHair:    boolean;
@@ -101,41 +93,19 @@ interface DetectedUpcharges {
   total:         number;
 }
 
-const PET_HAIR_KEYWORDS = [
-  "pet hair", "dog hair", "cat hair", "animal hair",
-  "pet fur", "dog fur", "cat fur", "fur",
-];
-
-const STAIN_KEYWORDS = [
-  "heavy staining", "heavy stain", "staining",
-  "stain", "stains",
-];
-
-const COATING_KEYWORDS = [
-  "protection coating", "protective coating",
-  "1 year coating", "one year coating",
-  "add coating", "wax coating", "coating",
-];
-
+// Wraps the shared server/client detection so the estimate shown here always
+// matches what the API charges. Pet hair and staining are tiered (a "severe"
+// or "heavy" mention costs more); coating is priced by vehicle size.
 function detectUpcharges(notes: string, vehicleSize: VehicleSize): DetectedUpcharges {
-  const lower = notes.toLowerCase();
-
-  const hasPetHair = PET_HAIR_KEYWORDS.some((kw) => lower.includes(kw));
-  const hasStains  = STAIN_KEYWORDS.some((kw) => lower.includes(kw));
-  const hasCoating = COATING_KEYWORDS.some((kw) => lower.includes(kw));
-
-  const petHairAmount = hasPetHair ? 20 : 0;
-  const stainsAmount  = hasStains  ? 30 : 0;
-  const coatingAmount = hasCoating ? (COATING_PRICES[vehicleSize] ?? 100) : 0;
-
+  const { petHair, stains, coating } = detectNoteUpcharges(notes, vehicleSize);
   return {
-    hasPetHair,
-    hasStains,
-    hasCoating,
-    petHairAmount,
-    stainsAmount,
-    coatingAmount,
-    total: petHairAmount + stainsAmount + coatingAmount,
+    hasPetHair: petHair > 0,
+    hasStains:  stains > 0,
+    hasCoating: coating > 0,
+    petHairAmount: petHair,
+    stainsAmount:  stains,
+    coatingAmount: coating,
+    total: petHair + stains + coating,
   };
 }
 
@@ -652,12 +622,13 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <label className="block text-xs font-medium text-apple-text-secondary mb-2">
               Vehicle Size
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {(
                 [
-                  { id: "sedan", label: "Sedan / Coupe",     adj: "Base price" },
-                  { id: "suv",   label: "SUV / Minivan",     adj: "+$20" },
-                  { id: "truck", label: "Truck / Van",       adj: "+$40" },
+                  { id: "sedan",   label: "Sedan / Coupe",  adj: "Base price" },
+                  { id: "minivan", label: "Minivan",        adj: "+$20" },
+                  { id: "suv",     label: "SUV",            adj: "+$40" },
+                  { id: "truck",   label: "Truck / Van",    adj: "+$40" },
                 ] as { id: VehicleSize; label: string; adj: string }[]
               ).map((sz) => (
                 <button
@@ -875,9 +846,10 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
             {/* Helper hint */}
             <p className="text-[11px] text-apple-text-tertiary mt-2">
-              Mentioning pet hair (+$20), stains (+$30), or protection coating
-              (+$100–$200 depending on vehicle) will automatically add those
-              charges to your total.
+              Mentioning pet hair (from +$20), staining (from +$30), or the
+              1-Year Protection Coating (+$50–$150 by vehicle size) automatically
+              adds those charges. Note "severe pet hair" (+$40) or "heavy
+              staining" (+$50) for heavier jobs.
             </p>
           </div>
 
