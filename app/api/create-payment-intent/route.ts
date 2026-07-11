@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { SIZE_SURCHARGE, detectNoteUpcharges as detectDollars } from "@/lib/pricing";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
@@ -11,55 +12,19 @@ const BASE_PRICES: Record<string, number> = {
   full:     15999,
 };
 
-const SIZE_SURCHARGES: Record<string, number> = {
-  sedan: 0,
-  suv:   2000,
-  truck: 4000,
-};
-
-// ── Coating prices by vehicle size (cents) ────────────────────────────────────
-
-const COATING_PRICES: Record<string, number> = {
-  sedan: 10000,
-  suv:   15000,
-  truck: 20000,
-};
-
-// ── Keyword detection — mirrors client-side logic exactly ────────────────────
-
-const PET_HAIR_KEYWORDS = [
-  "pet hair", "dog hair", "cat hair", "animal hair",
-  "pet fur", "dog fur", "cat fur", "fur",
-];
-
-const STAIN_KEYWORDS = [
-  "heavy staining", "heavy stain", "staining",
-  "stain", "stains",
-];
-
-const COATING_KEYWORDS = [
-  "protection coating", "protective coating",
-  "1 year coating", "one year coating",
-  "add coating", "wax coating", "coating",
-];
-
 interface NoteUpcharges {
   petHair: number; // cents
   stains:  number;
   coating: number;
 }
 
+// Shared detection works in dollars; convert to cents for Stripe.
 function detectNoteUpcharges(notes: string, vehicleSize: string): NoteUpcharges {
-  const lower = (notes ?? "").toLowerCase();
-
-  const hasPetHair = PET_HAIR_KEYWORDS.some((kw) => lower.includes(kw));
-  const hasStains  = STAIN_KEYWORDS.some((kw)    => lower.includes(kw));
-  const hasCoating = COATING_KEYWORDS.some((kw)  => lower.includes(kw));
-
+  const d = detectDollars(notes, vehicleSize);
   return {
-    petHair: hasPetHair ? 2000 : 0,
-    stains:  hasStains  ? 3000 : 0,
-    coating: hasCoating ? (COATING_PRICES[vehicleSize] ?? 10000) : 0,
+    petHair: d.petHair * 100,
+    stains:  d.stains  * 100,
+    coating: d.coating * 100,
   };
 }
 
@@ -97,7 +62,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid service" }, { status: 400 });
     }
 
-    const sizeSurcharge = SIZE_SURCHARGES[vehicleSize] ?? 0;
+    const sizeSurcharge = (SIZE_SURCHARGE[vehicleSize] ?? 0) * 100;
 
     // Server-side upcharge detection — never trust client-sent totals
     const noteUpcharges = detectNoteUpcharges(notes ?? "", vehicleSize);

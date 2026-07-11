@@ -78,7 +78,7 @@ const comparisonRows = [
 const monthlyPlans = [
   {
     name: "Essential Plan",
-    price: "$120",
+    price: "$75",
     details: "1 maintenance visit per month",
     features: [
       "Exterior rinse & hand dry",
@@ -321,10 +321,11 @@ export default function PricingPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { size: "Sedan / Coupe", adj: "Starting at base price" },
-              { size: "SUV / Minivan", adj: "Starting at +$20" },
+              { size: "Minivan", adj: "Starting at +$20" },
+              { size: "SUV", adj: "Starting at +$40" },
               { size: "Large Truck / Van", adj: "Starting at +$40" },
             ].map((row) => (
               <div
@@ -421,7 +422,7 @@ export default function PricingPage() {
             {[
               {
                 q: "Do prices include all vehicle types?",
-                a: "Base prices apply to standard sedans and coupes. SUVs and minivans add $20, and large trucks or vans add $40 to any service.",
+                a: "Base prices apply to standard sedans and coupes. Minivans add $20, and SUVs and large trucks or vans add $40 to any service.",
               },
               {
                 q: "What payment methods do you accept?",

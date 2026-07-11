@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createBookingEvent } from "@/lib/googleCalendar";
 import { CALENDAR_SERVICE_LABELS } from "@/lib/bookingRules";
+import { SIZE_SURCHARGE, detectNoteUpcharges } from "@/lib/pricing";
 
 // ── Base prices (cents) — mirrors create-payment-intent exactly ───────────────
 
@@ -9,45 +10,6 @@ const BASE_PRICES: Record<string, number> = {
   interior: 11999,
   full:     15999,
 };
-
-const SIZE_SURCHARGES: Record<string, number> = {
-  sedan: 0,
-  suv:   2000,
-  truck: 4000,
-};
-
-const COATING_PRICES: Record<string, number> = {
-  sedan: 10000,
-  suv:   15000,
-  truck: 20000,
-};
-
-const PET_HAIR_KEYWORDS = [
-  "pet hair", "dog hair", "cat hair", "animal hair",
-  "pet fur", "dog fur", "cat fur", "fur",
-];
-
-const STAIN_KEYWORDS = [
-  "heavy staining", "heavy stain", "staining",
-  "stain", "stains",
-];
-
-const COATING_KEYWORDS = [
-  "protection coating", "protective coating",
-  "1 year coating", "one year coating",
-  "add coating", "wax coating", "coating",
-];
-
-function detectNoteUpcharges(notes: string, vehicleSize: string) {
-  const lower = (notes ?? "").toLowerCase();
-  return {
-    petHair: PET_HAIR_KEYWORDS.some((kw) => lower.includes(kw)) ? 2000 : 0,
-    stains:  STAIN_KEYWORDS.some((kw) => lower.includes(kw))    ? 3000 : 0,
-    coating: COATING_KEYWORDS.some((kw) => lower.includes(kw))
-      ? (COATING_PRICES[vehicleSize] ?? 10000)
-      : 0,
-  };
-}
 
 // ── Route handler — records a pay-in-person booking and notifies the owner ────
 
@@ -72,9 +34,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid service" }, { status: 400 });
     }
 
-    const sizeSurcharge = SIZE_SURCHARGES[vehicleSize] ?? 0;
+    // Shared rules are in dollars; this route works in cents.
+    const sizeSurcharge = (SIZE_SURCHARGE[vehicleSize] ?? 0) * 100;
     const upcharges = detectNoteUpcharges(notes ?? "", vehicleSize);
-    let amount = basePrice + sizeSurcharge + upcharges.petHair + upcharges.stains + upcharges.coating;
+    const upchargeCents = (upcharges.petHair + upcharges.stains + upcharges.coating) * 100;
+    let amount = basePrice + sizeSurcharge + upchargeCents;
     if ((promoCode ?? "").toUpperCase() === "SUMMER26" && amount >= 20000) {
       amount = Math.round(amount * 0.85);
     }

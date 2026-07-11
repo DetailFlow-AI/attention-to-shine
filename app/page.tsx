@@ -412,7 +412,7 @@ export default function HomePage() {
               {[
                 {
                   plan: "Essential Plan",
-                  price: "$120",
+                  price: "$75",
                   freq: "/ month",
                   details: "1 maintenance visit per month",
                 },

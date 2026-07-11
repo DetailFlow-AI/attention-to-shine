@@ -76,7 +76,7 @@ const services = [
     id: "checkup",
     label: "Checkup Detailing Plan",
     tagline: "Always clean. No effort required.",
-    price: "$120 – $200 / month",
+    price: "Starting at $75 / month",
     intro:
       "The Checkup Detailing Plan is a maintenance subscription built for vehicles that are already clean and need to stay that way. Once your car has had its initial full detail with us, this plan keeps it in showroom condition month after month — you book once, lock in your preferred time slot, and we show up on schedule, every time.",
     body:
@@ -204,10 +204,11 @@ export default function ServicesPage() {
             Larger vehicles take more time and product. All prices listed are
             base rates for standard sedans and coupes.
           </p>
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             {[
               { size: "Sedan / Coupe", adj: "Base price" },
-              { size: "SUV / Minivan", adj: "+ $20" },
+              { size: "Minivan", adj: "+ $20" },
+              { size: "SUV", adj: "+ $40" },
               { size: "Large Truck / Van", adj: "+ $40" },
             ].map((row) => (
               <div
@@ -248,17 +249,17 @@ export default function ServicesPage() {
               {
                 factor: "Vehicle Size",
                 adj: "+$20 – $40",
-                note: "SUVs and minivans add $20, large trucks and vans add $40 to the base price.",
+                note: "Minivans add $20; SUVs and large trucks or vans add $40 to the base price.",
               },
               {
                 factor: "Pet Hair",
-                adj: "+$20",
-                note: "Heavy pet hair removal takes extra time and specialized tools.",
+                adj: "From +$20",
+                note: "Light pet hair starts at $20; severe pet hair is $40, as it takes extra time and specialized tools.",
               },
               {
-                factor: "Heavy Staining",
-                adj: "+$30",
-                note: "Deep-set stains require additional treatment and extraction.",
+                factor: "Staining",
+                adj: "From +$30",
+                note: "Light staining starts at $30; heavy or severe staining is $50, requiring extra treatment and extraction.",
               },
             ].map((row) => (
               <div
@@ -303,7 +304,7 @@ export default function ServicesPage() {
                       1-Year Protection Coating
                     </h3>
                     <p className="text-gold font-semibold text-sm">
-                      Starting at $100 upcharge
+                      Starting at $50 upcharge
                     </p>
                   </div>
                   <span className="bg-navy text-white text-xs font-semibold px-3 py-1.5 rounded-full shrink-0 ml-4">
