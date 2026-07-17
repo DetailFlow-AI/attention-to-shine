@@ -1,0 +1,6 @@
+# Generated HTML reports
+*_mirror.html
+
+# Python cache
+__pycache__/
+*.pyc
