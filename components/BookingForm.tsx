@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import DatePicker from "@/components/DatePicker";
 import {
-  blockWindow,
+  BOOKING_SLOT_HOURS,
   detailHoursFor,
   PREP_HOURS,
+  slotConflicts,
+  slotLabel,
 } from "@/lib/bookingRules";
 import {
   SIZE_SURCHARGE as SIZE_SURCHARGES,
@@ -369,10 +371,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     data.promoCode,
   );
 
-  const timeSlots = [
-    "7:00 AM","8:00 AM","9:00 AM","10:00 AM","11:00 AM",
-    "12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM",
-  ];
+  const timeSlots = BOOKING_SLOT_HOURS.map(slotLabel);
 
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -405,8 +404,10 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
   // Every booking blocks 1 hour of prep before the appointment plus the
   // detail itself (2h exterior / 3h interior / 4h full). A slot is bookable
-  // only if its whole blocked window is free of existing bookings — the exact
-  // same blockWindow() the server uses to create the calendar event.
+  // only if its whole blocked window is free of every busy calendar event —
+  // existing bookings (whose stored events carry their own prep + detail
+  // buffer) and personal/task events (which block just their own time) — via
+  // the exact same slotConflicts() the availability API uses.
 
   // Parses a slot label like "12:00 PM" into a Date on the selected date.
   const slotToDate = (slot: string): Date | null => {
@@ -418,21 +419,17 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     return new Date(`${data.date}T${String(hour).padStart(2, "0")}:00:00`);
   };
 
-  // The soonest existing booking that overlaps the blocked window (prep +
+  // The soonest busy calendar event that overlaps the blocked window (prep +
   // detail) of a booking at `slot`, or null if it fits. Drives both the
   // disabled slots and the "detail at …" explanation.
   const conflictingBooking = (slot: string): Date | null => {
     if (!data.date || busyRanges.length === 0) return null;
     const slotStart = slotToDate(slot);
     if (!slotStart) return null;
-    const { start: blockStart, end: blockEnd } = blockWindow(slotStart, data.service);
     let earliest: Date | null = null;
-    for (const b of busyRanges) {
+    for (const b of slotConflicts(slotStart, busyRanges, data.service)) {
       const busyStart = new Date(b.start);
-      const busyEnd   = new Date(b.end);
-      if (blockStart < busyEnd && blockEnd > busyStart) {
-        if (!earliest || busyStart < earliest) earliest = busyStart;
-      }
+      if (!earliest || busyStart < earliest) earliest = busyStart;
     }
     return earliest;
   };
@@ -720,7 +717,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                   const conflict = conflictingBooking(t);
                   return (
                     <option key={t} value={t} disabled={conflict !== null}>
-                      {conflict ? `${t} — detail at ${fmtBookingTime(conflict)}` : t}
+                      {conflict ? `${t} — busy at ${fmtBookingTime(conflict)}` : t}
                     </option>
                   );
                 })}
@@ -729,12 +726,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               {selectedConflict && (
                 <p className="text-red-500 text-xs mt-1.5 flex items-start gap-1 font-medium">
                   <AlertCircle size={11} className="mt-0.5 shrink-0" />
-                  A detail is scheduled at {fmtBookingTime(selectedConflict)}.
+                  We&apos;re busy at {fmtBookingTime(selectedConflict)}.
                   Your {SERVICE_LABELS[data.service] ?? "detail"} needs{" "}
                   {PREP_HOURS + detailHoursFor(data.service)} hours free (
                   {PREP_HOURS} hr prep before your time +{" "}
                   {detailHoursFor(data.service)} hr detail) — please pick a
-                  time that doesn&apos;t overlap that appointment.
+                  time that doesn&apos;t overlap.
                 </p>
               )}
               {nextAvailable && (

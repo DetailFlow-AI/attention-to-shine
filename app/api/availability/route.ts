@@ -16,6 +16,11 @@ import {
 // that service's blocked window (1 hr prep + detail length). Without it, the
 // longest window is assumed.
 //
+// A slot is blocked by ANY busy event on the calendar, not just detailing
+// bookings: bookings carry their prep + detail buffer in the stored event,
+// personal/task events block exactly their own start–end time, and events
+// marked "free" (transparent) never block (see getBusyWindow/slotConflicts).
+//
 // Every response also includes `nextAvailable`: the soonest upcoming date
 // with at least one open slot, scanned over the next 45 days.
 // Fails open — if the calendar can't be reached, everything reports available

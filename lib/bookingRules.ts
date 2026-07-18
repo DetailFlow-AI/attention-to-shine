@@ -36,6 +36,12 @@ export const CALENDAR_SERVICE_LABELS: Record<string, string> = {
 // Booking slots offered on the form: 7:00 AM through 5:00 PM, hourly
 export const BOOKING_SLOT_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
+// 13 → "1:00 PM" — the slot labels shown in the form's time dropdown
+export function slotLabel(hour: number): string {
+  const h12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${h12}:00 ${hour < 12 ? "AM" : "PM"}`;
+}
+
 const HOUR_MS = 60 * 60 * 1000;
 
 // Given the appointment time of a slot, returns the [start, end) window it
@@ -48,4 +54,34 @@ export function blockWindow(
     start: new Date(slotStart.getTime() - PREP_HOURS * HOUR_MS),
     end: new Date(slotStart.getTime() + detailHoursFor(service) * HOUR_MS),
   };
+}
+
+// A busy span on the owner's calendar, as ISO datetimes. EVERY busy event
+// counts, not just detailing bookings:
+//   • Detailing bookings are written by this site with the prep hour and
+//     detail length already baked into the stored event, so their interval
+//     carries the full booking buffer.
+//   • Personal and task events block exactly their own start–end time — no
+//     service buffer is added around them.
+//   • Events marked "free" (transparent) are excluded at read time and never
+//     appear here.
+export interface BusyInterval {
+  start: string;
+  end: string;
+}
+
+// The busy intervals that collide with booking a slot: the candidate's own
+// blocked window (1 hr prep + detail length for its service) overlapped
+// against each busy interval as stored. This one predicate drives the
+// server's open-slot counts, the booking form's disabled times, and the
+// diagnostic endpoint, so the three can never disagree.
+export function slotConflicts(
+  slotStart: Date,
+  busy: BusyInterval[],
+  service?: string
+): BusyInterval[] {
+  const { start, end } = blockWindow(slotStart, service);
+  return busy.filter(
+    (b) => start < new Date(b.end) && end > new Date(b.start)
+  );
 }
