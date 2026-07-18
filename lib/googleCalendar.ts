@@ -4,9 +4,12 @@ import {
   blockWindow,
   detailHoursFor,
   PREP_HOURS,
+  slotConflicts,
+  type BusyInterval,
 } from "./bookingRules";
 
-export { BOOKING_SLOT_HOURS, blockWindow, detailHoursFor, PREP_HOURS };
+export { BOOKING_SLOT_HOURS, blockWindow, detailHoursFor, PREP_HOURS, slotConflicts };
+export type { BusyInterval };
 
 // Creates events on the owner's Google Calendar using a service account.
 //
@@ -126,11 +129,6 @@ export interface CalendarResult {
   error?: string;
 }
 
-export interface BusyInterval {
-  start: string;
-  end: string;
-}
-
 export function addDays(date: string, days: number): string {
   const d = new Date(`${date}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
@@ -152,19 +150,22 @@ export function openSlotCount(
     const slotStart = new Date(
       `${date}T${String(hour).padStart(2, "0")}:00:00${offset}`
     );
-    const { start: blockStart, end: blockEnd } = blockWindow(slotStart, service);
-    const taken = busy.some(
-      (b) => blockStart < new Date(b.end) && blockEnd > new Date(b.start)
-    );
-    if (!taken) open++;
+    if (slotConflicts(slotStart, busy, service).length === 0) open++;
   }
   return open;
 }
 
 // Returns the busy intervals on the business calendar across a date window.
+// EVERY busy event blocks — detailing bookings and personal/task events
+// alike. Detailing bookings are stored with their prep + detail buffer baked
+// into the event window; every other event blocks exactly its own start–end
+// time (see BusyInterval in bookingRules.ts). Skipped: cancelled events and
+// events marked "free" (transparent) — those never block a slot. The read is
+// paginated so a heavily time-blocked calendar can't silently truncate.
 // Prefers reading directly as the service account; falls back to the public
-// free/busy API-key lookup; fails open (configured: false, no busy times) so
-// the booking form never breaks if the calendar can't be reached.
+// free/busy API-key lookup (which applies the same busy-only, free-excluded
+// semantics); fails open (configured: false, no busy times) so the booking
+// form never breaks if the calendar can't be reached.
 export async function getBusyWindow(
   startDate: string,
   endDate: string
@@ -179,40 +180,48 @@ export async function getBusyWindow(
   if (saEmail && saKey) {
     try {
       const token = await getAccessToken(saEmail, saKey);
-      const params = new URLSearchParams({
-        timeMin,
-        timeMax,
-        singleEvents: "true",
-        orderBy: "startTime",
-        maxResults: "250",
-      });
-      const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: "no-store",
+      const busy: BusyInterval[] = [];
+      let pageToken: string | undefined;
+      // 10 pages × 2500 events is far beyond any real calendar; the cap only
+      // guards against a runaway pagination loop.
+      for (let page = 0; page < 10; page++) {
+        const params = new URLSearchParams({
+          timeMin,
+          timeMax,
+          singleEvents: "true",
+          orderBy: "startTime",
+          maxResults: "2500",
+        });
+        if (pageToken) params.set("pageToken", pageToken);
+        const res = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          }
+        );
+        if (!res.ok) {
+          console.error("Busy-window fetch failed:", res.status, await res.text());
+          return { configured: true, busy: [] };
         }
-      );
-      if (!res.ok) {
-        console.error("Busy-window fetch failed:", res.status, await res.text());
-        return { configured: true, busy: [] };
-      }
-      const json = await res.json();
-      const busy = (json.items ?? [])
-        .filter(
-          (e: { status?: string; transparency?: string }) =>
-            e.status !== "cancelled" && e.transparency !== "transparent"
-        )
-        .map(
-          (e: {
-            start?: { dateTime?: string; date?: string };
-            end?: { dateTime?: string; date?: string };
-          }) => ({
+        const json = await res.json();
+        const items: Array<{
+          status?: string;
+          transparency?: string;
+          start?: { dateTime?: string; date?: string };
+          end?: { dateTime?: string; date?: string };
+        }> = json.items ?? [];
+        for (const e of items) {
+          if (e.status === "cancelled" || e.transparency === "transparent") continue;
+          busy.push({
             // All-day events have only a date — they block their whole day(s)
             start: e.start?.dateTime ?? `${e.start?.date}T00:00:00${easternOffset(e.start?.date ?? startDate)}`,
             end: e.end?.dateTime ?? `${e.end?.date}T00:00:00${easternOffset(e.end?.date ?? endDate)}`,
-          })
-        );
+          });
+        }
+        pageToken = json.nextPageToken;
+        if (!pageToken) break;
+      }
       return { configured: true, busy };
     } catch (error) {
       console.error("Busy-window error:", error);
