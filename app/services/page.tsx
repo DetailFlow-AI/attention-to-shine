@@ -15,7 +15,7 @@ const services = [
     id: "exterior",
     label: "Exterior Detail",
     tagline: "A deep, protective shine.",
-    price: "From $79.99",
+    price: "From $100",
     intro:
       "Your car's exterior takes a beating every day. Road grime, tree sap, bird droppings, Florida sun — they all add up. Our exterior detail is a thorough, paint-safe process designed to remove that buildup and leave behind a clean, protected finish that actually lasts.",
     body:
@@ -37,7 +37,7 @@ const services = [
     id: "interior",
     label: "Interior Detail",
     tagline: "Clean, fresh, and well cared for.",
-    price: "From $119.99",
+    price: "From $140",
     intro:
       "The inside of your car is where you actually spend your time — and it shows. Dust on the dash, crumbs in the seats, smells that have built up over time. Our interior detail is a real deep clean, not a quick wipe-down. We get into every corner so that when you open the door, it genuinely feels different.",
     body:
@@ -58,7 +58,7 @@ const services = [
     id: "full",
     label: "Full Detail Package",
     tagline: "Every inch, done right.",
-    price: "From $159.99",
+    price: "From $200",
     intro:
       "The Full Detail Package is our most requested service for good reason. It combines everything in our exterior and interior details into a single appointment, and it's the most thorough way to refresh your vehicle from every angle. Whether your car hasn't been properly cleaned in months or you just want it in peak condition, this is the one.",
     body:

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Attention to Shine | Mobile Car Detailing in Lakeland, FL",
     description:
-      "Expert mobile car detailing that comes to you. Interior, exterior, and full detail packages starting at $79.99.",
+      "Expert mobile car detailing that comes to you. Interior, exterior, and full detail packages starting at $100.",
     url: "https://www.attentiontoshinedetailing.com",
     siteName: "Attention to Shine",
     locale: "en_US",

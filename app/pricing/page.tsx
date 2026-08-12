@@ -12,7 +12,7 @@ const packages = [
   {
     id: "exterior",
     name: "Exterior Detail",
-    price: "$79.99",
+    price: "$100",
     description:
       "A thorough, paint-safe exterior clean from top to bottom. Foam pre-wash, full hand wash, wheel and rim cleaning, windows, tire dressing, and a protective sealant. Perfect for routine upkeep or before a special occasion.",
     features: [
@@ -29,7 +29,7 @@ const packages = [
   {
     id: "full",
     name: "Full Detail Package",
-    price: "$159.99",
+    price: "$200",
     description:
       "Everything in both the exterior and interior services, completed in one appointment. This is our most requested service and our best overall value. Ideal for any vehicle that's due for a full reset.",
     features: [
@@ -44,7 +44,7 @@ const packages = [
   {
     id: "interior",
     name: "Interior Detail",
-    price: "$119.99",
+    price: "$140",
     description:
       "A proper deep clean of your entire interior. Steam treatment, full vacuuming, surface wipe-down, UV-protective dressing on all plastics and vinyl, leather care where applicable, and odor treatment. Adjusted to your vehicle's specific condition.",
     features: [
@@ -247,19 +247,19 @@ export default function PricingPage() {
                   <th className="font-semibold px-4 py-4 text-center">
                     Exterior
                     <span className="block text-xs font-normal text-white/50">
-                      $79.99
+                      Starting at $100
                     </span>
                   </th>
                   <th className="font-semibold px-4 py-4 text-center">
                     Interior
                     <span className="block text-xs font-normal text-white/50">
-                      $119.99
+                      Starting at $140
                     </span>
                   </th>
                   <th className="font-semibold px-4 py-4 text-center bg-gold/90">
                     Full Detail
                     <span className="block text-xs font-normal text-white/80">
-                      $159.99
+                      Starting at $200
                     </span>
                   </th>
                 </tr>
@@ -426,11 +426,11 @@ export default function PricingPage() {
               },
               {
                 q: "What payment methods do you accept?",
-                a: "You can pay securely by card through our online booking form, or pay cash on the day of your appointment — just let us know when booking.",
+                a: "Payment is made in person on the day of your appointment — cash or card, once your detail is finished. Booking online simply reserves your time slot; nothing is charged up front.",
               },
               {
                 q: "How do I use the SUMMER26 discount?",
-                a: "Enter the code SUMMER26 at checkout during online booking. The 15% discount applies to any package totaling over $200.",
+                a: "Enter the code SUMMER26 when you book online. The 15% discount applies to any package totaling over $200 and comes off the total you pay in person.",
               },
               {
                 q: "Do I need to be home during the detail?",
@@ -464,7 +464,7 @@ export default function PricingPage() {
         </h2>
         <p className="text-white/80 mb-8">
           Online booking takes under 2 minutes. Select your service, pick a
-          time, and pay securely.
+          time, and pay in person once your detail is done.
         </p>
         <Link
           href="/booking"

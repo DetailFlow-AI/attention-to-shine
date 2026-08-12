@@ -16,6 +16,13 @@ Open http://localhost:3000
 
 ### 1. Set up Stripe (for the booking form)
 
+> **Online card payment is currently turned off.** Pay in person is the only
+> option customers see in the booking flow. The Stripe integration is still in
+> place — API routes (`app/api/create-payment-intent`, `app/api/confirm-booking`),
+> env vars, and the card form in `components/BookingForm.tsx` are untouched. To
+> turn online payment back on, set `ONLINE_PAYMENT_ENABLED = true` at the top of
+> `components/BookingForm.tsx` (the keys below must be configured).
+
 1. Create a free account at https://stripe.com
 2. Go to Developers → API Keys
 3. Copy your **Publishable key** and **Secret key**

@@ -20,7 +20,7 @@ const services = [
     tagline: "A mirror finish, every time.",
     description:
       "From a thorough pre-wash and full foam bath to hand washing, window cleaning, tire dressing, and a protective sealant — your car's exterior will look better than it has in years.",
-    price: "From $79.99",
+    price: "From $100",
     icon: "✦",
     href: "/services#exterior",
   },
@@ -30,7 +30,7 @@ const services = [
     tagline: "Clean from the inside out.",
     description:
       "A thorough deep clean using steam treatment, full vacuuming, surface wiping, UV-protective dressing on all plastics and trim, and odor elimination — tailored to your vehicle's specific condition.",
-    price: "From $119.99",
+    price: "From $140",
     icon: "◈",
     href: "/services#interior",
   },
@@ -40,7 +40,7 @@ const services = [
     tagline: "The complete transformation.",
     description:
       "Our most popular service. Everything in the exterior and interior detail, combined into one appointment at our best bundled rate. The result is a car that looks — and feels — brand new.",
-    price: "From $159.99",
+    price: "From $200",
     icon: "◉",
     href: "/services#full",
     popular: true,
