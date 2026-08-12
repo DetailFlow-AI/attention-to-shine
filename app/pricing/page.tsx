@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight, Info } from "lucide-react";
+import {
+  INSTANT_BOOKING_ENABLED,
+  FLOW_CTA_SHORT,
+} from "@/lib/bookingMode";
+
+const bookVerb = INSTANT_BOOKING_ENABLED ? "Book" : "Request";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -23,7 +29,7 @@ const packages = [
       "Protective paint sealant",
       "Door jamb wipe-down",
     ],
-    cta: "Book Exterior",
+    cta: `${bookVerb} Exterior`,
     highlight: false,
   },
   {
@@ -37,7 +43,7 @@ const packages = [
       "Complete interior detail",
       "Best value — bundled rate",
     ],
-    cta: "Book Full Detail",
+    cta: `${bookVerb} Full Detail`,
     highlight: true,
     badge: "Most Popular",
   },
@@ -55,7 +61,7 @@ const packages = [
       "Leather conditioning (where applicable)",
       "Odor treatment",
     ],
-    cta: "Book Interior",
+    cta: `${bookVerb} Interior`,
     highlight: false,
   },
 ];
@@ -426,11 +432,15 @@ export default function PricingPage() {
               },
               {
                 q: "What payment methods do you accept?",
-                a: "Payment is made in person on the day of your appointment — cash or card, once your detail is finished. Booking online simply reserves your time slot; nothing is charged up front.",
+                a: INSTANT_BOOKING_ENABLED
+                  ? "Payment is made in person on the day of your appointment — cash or card, once your detail is finished. Booking online simply reserves your time slot; nothing is charged up front."
+                  : "Payment is made in person once your detail is finished — cash or card. Sending a request costs nothing and charges nothing; we quote you first and confirm the appointment with you before any work happens.",
               },
               {
                 q: "How do I use the SUMMER26 discount?",
-                a: "Enter the code SUMMER26 when you book online. The 15% discount applies to any package totaling over $200 and comes off the total you pay in person.",
+                a: INSTANT_BOOKING_ENABLED
+                  ? "Enter the code SUMMER26 when you book online. The 15% discount applies to any package totaling over $200 and comes off the total you pay in person."
+                  : "Enter the code SUMMER26 on your request. The 15% discount applies to any package totaling over $200 and will be reflected in the quote we send back.",
               },
               {
                 q: "Do I need to be home during the detail?",
@@ -460,17 +470,18 @@ export default function PricingPage() {
       {/* CTA */}
       <section className="bg-gold py-16 px-6 text-center">
         <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
-          Ready to book?
+          {INSTANT_BOOKING_ENABLED ? "Ready to book?" : "Ready to get started?"}
         </h2>
         <p className="text-white/80 mb-8">
-          Online booking takes under 2 minutes. Select your service, pick a
-          time, and pay in person once your detail is done.
+          {INSTANT_BOOKING_ENABLED
+            ? "Online booking takes under 2 minutes. Select your service, pick a time, and pay in person once your detail is done."
+            : "Sending a request takes under 2 minutes. Tell us your service and preferred times, and we'll reply with a quote."}
         </p>
         <Link
           href="/booking"
           className="inline-flex items-center gap-2 bg-white text-gold px-8 py-4 rounded-full font-semibold text-sm hover:bg-white/90 transition-colors"
         >
-          Book Now
+          {FLOW_CTA_SHORT}
           <ArrowRight size={16} />
         </Link>
       </section>

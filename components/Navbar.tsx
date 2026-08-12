@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Phone } from "lucide-react";
+import { FLOW_CTA, FLOW_CTA_SHORT } from "@/lib/bookingMode";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -89,7 +90,7 @@ export default function Navbar() {
               (863) 934-9779
             </a>
             <Link href="/booking" className="btn-gold text-xs px-5 py-2.5">
-              Book Now
+              {FLOW_CTA_SHORT}
             </Link>
           </div>
 
@@ -136,7 +137,7 @@ export default function Navbar() {
               (863) 934-9779
             </a>
             <Link href="/booking" className="btn-gold text-sm text-center">
-              Book Your Detail
+              {FLOW_CTA}
             </Link>
           </div>
         </div>

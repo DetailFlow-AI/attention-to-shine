@@ -12,6 +12,7 @@ import {
   COATING_PRICE as COATING_PRICES,
   detectNoteUpcharges,
 } from "@/lib/pricing";
+import { INSTANT_BOOKING_ENABLED } from "@/lib/bookingMode";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -58,6 +59,8 @@ interface BookingData {
   vehicleColor: string;
   date:         string;
   time:         string;
+  altDate:      string; // optional second preference (request mode)
+  altTime:      string;
   address:      string;
   city:         string;
   zip:          string;
@@ -226,7 +229,9 @@ function UpchargeCallout({
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-3">
       <p className="text-xs font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
         <Info size={12} />
-        Additional charges detected from your notes
+        {INSTANT_BOOKING_ENABLED
+          ? "Additional charges detected from your notes"
+          : "Likely add-ons based on what you described"}
       </p>
       <ul className="space-y-1.5">
         {upcharges.hasPetHair && (
@@ -251,7 +256,11 @@ function UpchargeCallout({
           </li>
         )}
         <li className="flex justify-between text-xs text-amber-800 font-semibold border-t border-amber-200 pt-1.5 mt-1">
-          <span>Additional charges total</span>
+          <span>
+            {INSTANT_BOOKING_ENABLED
+              ? "Additional charges total"
+              : "Estimated add-ons total"}
+          </span>
           <span>+${upcharges.total.toFixed(2)}</span>
         </li>
       </ul>
@@ -362,6 +371,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     vehicleColor: "",
     date:         "",
     time:         "",
+    altDate:      "",
+    altTime:      "",
     address:      "",
     city:         "",
     zip:          "",
@@ -485,6 +496,30 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     }
   };
 
+  // Request mode: emails the owner the request and confirms nothing. No
+  // calendar event is created — the owner quotes and confirms by hand.
+  const submitRequest = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/request-appointment", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ ...data, condition: data.notes }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to submit your request");
+      setSuccess(true);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // The one place the flow's submit action is chosen.
+  const submitFlow = INSTANT_BOOKING_ENABLED ? submitPayLater : submitRequest;
+
   const goToPayment = async () => {
     setLoading(true);
     setError("");
@@ -543,7 +578,37 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
       </p>
     ) : null;
 
-  // ── Success screen ──────────────────────────────────────────────────────────
+  // ── Request-submitted screen ────────────────────────────────────────────────
+  // Deliberately says nothing about the slot being held or booked — the owner
+  // reviews the request, sends a quote, and confirms it themselves.
+  if (success && !INSTANT_BOOKING_ENABLED) {
+    return (
+      <div className="flex flex-col items-center text-center py-14 px-6">
+        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 size={40} className="text-green-500" />
+        </div>
+        <h2 className="text-3xl font-bold text-apple-text-primary tracking-tight mb-3">
+          Request received!
+        </h2>
+        <p className="text-apple-text-secondary mb-2 max-w-md">
+          Thank you, {data.name}! We've got your request —{" "}
+          <strong>{SERVICE_LABELS[data.service]}</strong>, preferred time{" "}
+          <strong>{data.date}</strong> at <strong>{data.time}</strong>.
+        </p>
+        <p className="text-apple-text-secondary mb-2 max-w-md">
+          <strong>This is not a confirmed appointment yet.</strong> We'll review
+          your vehicle's details and reach out with a quote — then we'll confirm
+          a time that works for you.
+        </p>
+        <p className="text-sm text-apple-text-tertiary max-w-sm">
+          We'll contact you at {data.email} or {data.phone}. Need us sooner?
+          Call (863) 934-9779.
+        </p>
+      </div>
+    );
+  }
+
+  // ── Success screen (instant booking) ────────────────────────────────────────
   if (success) {
     return (
       <div className="flex flex-col items-center text-center py-14 px-6">
@@ -770,6 +835,40 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </div>
           </div>
 
+          {/* Second choice of day/time — request mode only, always optional.
+              Gives the owner a fallback to work with when quoting. */}
+          {!INSTANT_BOOKING_ENABLED && (
+            <div className="bg-apple-gray rounded-2xl p-4 border border-apple-gray-2">
+              <p className="text-xs font-medium text-apple-text-secondary mb-1">
+                Another day or time that works (optional)
+              </p>
+              <p className="text-[11px] text-apple-text-tertiary mb-3">
+                Giving us a second option makes it easier to find a slot that
+                suits you both.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <DatePicker
+                  value={data.altDate}
+                  minDate={minDate}
+                  service={data.service}
+                  onChange={(d) => set("altDate", d)}
+                />
+                <select
+                  value={data.altTime}
+                  onChange={(e) => set("altTime", e.target.value)}
+                  className={ic(data.altTime)}
+                >
+                  <option value="">Select a time</option>
+                  {timeSlots.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
               Service Address *
@@ -837,15 +936,25 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </div>
           </div>
 
-          {/* Notes with live upcharge detection */}
+          {/* Vehicle condition / notes with live upcharge detection */}
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
-              Special Notes (optional)
+              {INSTANT_BOOKING_ENABLED
+                ? "Special Notes (optional)"
+                : "Describe your vehicle's condition"}
             </label>
+            {!INSTANT_BOOKING_ENABLED && (
+              <p className="text-[11px] text-apple-text-tertiary mb-1.5">
+                The more you tell us here, the more accurate the quote we send
+                back will be.
+              </p>
+            )}
             <textarea
               rows={4}
               placeholder={
-                "Describe your vehicle's condition — e.g. pet hair, stains, or if you'd like the 1-Year Protection Coating added.\n\nOther details: access instructions, gate codes, etc."
+                INSTANT_BOOKING_ENABLED
+                  ? "Describe your vehicle's condition — e.g. pet hair, stains, or if you'd like the 1-Year Protection Coating added.\n\nOther details: access instructions, gate codes, etc."
+                  : "How does the vehicle look right now? For example: pet hair on the back seats, coffee stains in the carpet, heavy road film on the paint, smoker's odor — or if you'd like the 1-Year Protection Coating added.\n\nAnything else we should know: access instructions, gate codes, etc."
               }
               value={data.notes}
               onChange={(e) => set("notes", e.target.value)}
@@ -860,10 +969,21 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
             {/* Helper hint */}
             <p className="text-[11px] text-apple-text-tertiary mt-2">
-              Mentioning pet hair (from +$20), staining (from +$30), or the
-              1-Year Protection Coating (+$50–$150 by vehicle size) automatically
-              adds those charges. Note "severe pet hair" (+$40) or "heavy
-              staining" (+$50) for heavier jobs.
+              {INSTANT_BOOKING_ENABLED ? (
+                <>
+                  Mentioning pet hair (from +$20), staining (from +$30), or the
+                  1-Year Protection Coating (+$50–$150 by vehicle size)
+                  automatically adds those charges. Note "severe pet hair"
+                  (+$40) or "heavy staining" (+$50) for heavier jobs.
+                </>
+              ) : (
+                <>
+                  Pet hair (from +$20), staining (from +$30), and the 1-Year
+                  Protection Coating (+$50–$150 by vehicle size) each add to a
+                  detail. Mentioning them here means your quote accounts for
+                  them up front — nothing is charged now.
+                </>
+              )}
             </p>
           </div>
 
@@ -910,7 +1030,9 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               Your information
             </h2>
             <p className="text-sm text-apple-text-secondary">
-              We'll use this to confirm your booking and reach you on the day.
+              {INSTANT_BOOKING_ENABLED
+                ? "We'll use this to confirm your booking and reach you on the day."
+                : "This is how we'll send your quote and arrange a time with you."}
             </p>
           </div>
 
@@ -984,7 +1106,9 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
           {/* ── Full order summary ── */}
           <div className="bg-apple-gray rounded-2xl p-5 border border-apple-gray-2 text-sm space-y-2">
-            <h3 className="font-semibold text-apple-text-primary mb-3">Order Summary</h3>
+            <h3 className="font-semibold text-apple-text-primary mb-3">
+              {INSTANT_BOOKING_ENABLED ? "Order Summary" : "Your request"}
+            </h3>
 
             {/* Base service */}
             <div className="flex justify-between text-apple-text-secondary">
@@ -1031,15 +1155,37 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               </div>
             )}
 
-            {/* Total */}
+            {/* Total — an estimate only in request mode; the real number is the
+                quote the owner sends after reviewing the request. */}
             <div className="flex justify-between font-bold text-apple-text-primary border-t border-apple-gray-2 pt-2 mt-1">
-              <span>{payMethod === "in_person" ? "Estimated total — due after service" : "Total due today"}</span>
+              <span>
+                {!INSTANT_BOOKING_ENABLED
+                  ? "Estimated starting price"
+                  : payMethod === "in_person"
+                  ? "Estimated total — due after service"
+                  : "Total due today"}
+              </span>
               <span>${pricing.total.toFixed(2)}</span>
             </div>
+            {!INSTANT_BOOKING_ENABLED && (
+              <p className="text-[11px] text-apple-text-secondary">
+                An estimate, not a final price — we'll send you a proper quote
+                once we've read through your vehicle's details.
+              </p>
+            )}
 
             {/* Appointment details */}
             <div className="text-xs text-apple-text-tertiary pt-1 space-y-0.5">
-              <p>📅 {data.date} at {data.time}</p>
+              <p>
+                📅 {INSTANT_BOOKING_ENABLED ? "" : "Preferred: "}
+                {data.date} at {data.time}
+              </p>
+              {!INSTANT_BOOKING_ENABLED && (data.altDate || data.altTime) && (
+                <p>
+                  📅 Alternate: {data.altDate || data.date}
+                  {data.altTime ? ` at ${data.altTime}` : ""}
+                </p>
+              )}
               <p>📍 {data.address}, {data.city}</p>
               {data.vehicleMake && <p>🚗 {data.vehicleMake}{data.vehicleColor ? ` · ${data.vehicleColor}` : ""}</p>}
             </div>
@@ -1052,9 +1198,34 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             )}
           </div>
 
-          {/* ── Payment method ── */}
+          {/* ── What happens next (request mode) ── */}
+          {!INSTANT_BOOKING_ENABLED && (
+            <div className="rounded-2xl border-2 border-navy bg-navy/5 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Info size={16} className="text-navy" />
+                <span className="font-semibold text-sm text-apple-text-primary">
+                  What happens next
+                </span>
+              </div>
+              <ol className="text-xs text-apple-text-secondary space-y-1 list-decimal list-inside">
+                <li>We review your request and your vehicle's condition.</li>
+                <li>We contact you with a quote for the work.</li>
+                <li>
+                  We confirm a time together — your appointment isn't set until
+                  then.
+                </li>
+              </ol>
+              <p className="text-xs text-apple-text-secondary mt-2">
+                Nothing is charged now. Payment is by cash or card in person,
+                once the detail is finished.
+              </p>
+            </div>
+          )}
+
+          {/* ── Payment method (instant booking) ── */}
           {/* Online payment is switched off (ONLINE_PAYMENT_ENABLED), so
               pay-in-person is shown on its own as the only option. */}
+          {INSTANT_BOOKING_ENABLED && (
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-2">
               {ONLINE_PAYMENT_ENABLED ? "How would you like to pay?" : "Payment"}
@@ -1116,6 +1287,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               </div>
             )}
           </div>
+          )}
 
           {error && (
             <div className="flex items-start gap-2 text-red-600 text-sm bg-red-50 border border-red-100 rounded-xl px-4 py-3">
@@ -1130,9 +1302,9 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </button>
             <button
               onClick={
-                ONLINE_PAYMENT_ENABLED && payMethod === "online"
+                INSTANT_BOOKING_ENABLED && ONLINE_PAYMENT_ENABLED && payMethod === "online"
                   ? goToPayment
-                  : submitPayLater
+                  : submitFlow
               }
               disabled={!data.name || !data.email || !data.phone || !timeIsValid || loading}
               className="btn-gold flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1140,8 +1312,10 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               {loading ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Loading…
+                  {INSTANT_BOOKING_ENABLED ? "Loading…" : "Sending…"}
                 </>
+              ) : !INSTANT_BOOKING_ENABLED ? (
+                <>Submit Request <ArrowRight size={16} /></>
               ) : ONLINE_PAYMENT_ENABLED && payMethod === "online" ? (
                 <>Proceed to Payment <ArrowRight size={16} /></>
               ) : (

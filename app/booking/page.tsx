@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import BookingFormWrapper from "./BookingFormWrapper";
 import { Shield, Clock, Phone } from "lucide-react";
+import { INSTANT_BOOKING_ENABLED, FLOW_TITLE } from "@/lib/bookingMode";
 
 export const metadata: Metadata = {
-  title: "Book a Detail",
-  description:
-    "Book your mobile car detail online. Select your service, pick a time, and pay in person after the job — we'll come to you.",
+  title: FLOW_TITLE,
+  description: INSTANT_BOOKING_ENABLED
+    ? "Book your mobile car detail online. Select your service, pick a time, and pay in person after the job — we'll come to you."
+    : "Request a mobile car detail in Lakeland, FL. Tell us your vehicle, service, and preferred times, and we'll come back to you with a quote.",
 };
 
 export default function BookingPage() {
@@ -14,13 +16,18 @@ export default function BookingPage() {
     <>
       {/* Hero */}
       <section className="bg-navy pt-36 pb-16 px-6 text-center">
-        <span className="label-tag">Online Booking</span>
+        <span className="label-tag">
+          {INSTANT_BOOKING_ENABLED ? "Online Booking" : "Appointment Request"}
+        </span>
         <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
-          Book your detail.
+          {INSTANT_BOOKING_ENABLED
+            ? "Book your detail."
+            : "Request an appointment."}
         </h1>
         <p className="text-xl text-white/60 max-w-lg mx-auto">
-          Takes under 2 minutes. Pay in person after your detail — we'll handle
-          the rest.
+          {INSTANT_BOOKING_ENABLED
+            ? "Takes under 2 minutes. Pay in person after your detail — we'll handle the rest."
+            : "Takes under 2 minutes. Tell us about your vehicle and when suits you, and we'll come back to you with a quote."}
         </p>
       </section>
 
@@ -43,13 +50,22 @@ export default function BookingPage() {
                 What to expect
               </h3>
               <ul className="space-y-3">
-                {[
-                  "Book in under 2 minutes",
-                  "Receive an email confirmation",
-                  "We text you 30 min before arrival",
-                  "We bring all equipment — just leave your car accessible",
-                  "Pay in person — cash or card after your detail",
-                ].map((item) => (
+                {(INSTANT_BOOKING_ENABLED
+                  ? [
+                      "Book in under 2 minutes",
+                      "Receive an email confirmation",
+                      "We text you 30 min before arrival",
+                      "We bring all equipment — just leave your car accessible",
+                      "Pay in person — cash or card after your detail",
+                    ]
+                  : [
+                      "Send your request in under 2 minutes",
+                      "We review it and reply with a quote",
+                      "We confirm a time with you directly",
+                      "We bring all equipment — just leave your car accessible",
+                      "Pay in person — cash or card after your detail",
+                    ]
+                ).map((item) => (
                   <li
                     key={item}
                     className="flex items-start gap-2.5 text-sm text-apple-text-secondary"
@@ -68,11 +84,14 @@ export default function BookingPage() {
                 </div>
                 <div>
                   <p className="font-medium text-sm text-apple-text-primary">
-                    Pay in person
+                    {INSTANT_BOOKING_ENABLED
+                      ? "Pay in person"
+                      : "No payment up front"}
                   </p>
                   <p className="text-xs text-apple-text-tertiary mt-0.5">
-                    No payment is taken online. Pay by cash or card once your
-                    detail is complete.
+                    {INSTANT_BOOKING_ENABLED
+                      ? "No payment is taken online. Pay by cash or card once your detail is complete."
+                      : "Sending a request costs nothing and commits you to nothing. Pay by cash or card once the detail is complete."}
                   </p>
                 </div>
               </div>

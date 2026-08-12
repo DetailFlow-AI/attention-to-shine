@@ -3,6 +3,7 @@
 import type { Metadata } from "next";
 import { useState } from "react";
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
+import { INSTANT_BOOKING_ENABLED } from "@/lib/bookingMode";
 
 const contactInfo = [
   {
@@ -129,14 +130,17 @@ export default function ContactPage() {
                   Looking to book a detail?
                 </p>
                 <p className="text-sm text-apple-text-secondary">
-                  You can book and pay directly on our booking page — no need to
-                  wait for a reply.
+                  {INSTANT_BOOKING_ENABLED
+                    ? "You can book and pay directly on our booking page — no need to wait for a reply."
+                    : "Send us an appointment request instead — it takes about two minutes and we'll come back to you with a quote."}
                 </p>
                 <a
                   href="/booking"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-gold mt-2 hover:underline"
                 >
-                  Go to booking →
+                  {INSTANT_BOOKING_ENABLED
+                    ? "Go to booking →"
+                    : "Request an appointment →"}
                 </a>
               </div>
             </div>

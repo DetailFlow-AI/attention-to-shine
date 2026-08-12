@@ -12,6 +12,11 @@ import {
   ChevronRight,
   CheckCircle2,
 } from "lucide-react";
+import {
+  INSTANT_BOOKING_ENABLED,
+  FLOW_CTA,
+  FLOW_CTA_SHORT,
+} from "@/lib/bookingMode";
 
 const services = [
   {
@@ -172,7 +177,7 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link href="/booking" className="btn-gold text-base px-8 py-4">
-              Book Your Detail
+              {FLOW_CTA}
               <ArrowRight size={16} />
             </Link>
             <Link
@@ -387,7 +392,7 @@ export default function HomePage() {
           </ul>
 
           <Link href="/booking" className="btn-primary">
-            Schedule Your Detail
+            {INSTANT_BOOKING_ENABLED ? "Schedule Your Detail" : FLOW_CTA}
             <ArrowRight size={16} />
           </Link>
         </div>
@@ -556,7 +561,9 @@ export default function HomePage() {
               Ready to see the difference?
             </h2>
             <p className="text-white/80 text-lg">
-              Book online in under 2 minutes. We handle the rest.
+              {INSTANT_BOOKING_ENABLED
+                ? "Book online in under 2 minutes. We handle the rest."
+                : "Send a request in under 2 minutes. We'll come back with a quote."}
             </p>
           </div>
           <div className="flex gap-3 shrink-0">
@@ -564,7 +571,7 @@ export default function HomePage() {
               href="/booking"
               className="inline-flex items-center gap-2 bg-white text-gold px-7 py-3.5 rounded-full font-semibold text-sm hover:bg-white/90 transition-colors"
             >
-              Book Now
+              {FLOW_CTA_SHORT}
               <ArrowRight size={16} />
             </Link>
             <a
