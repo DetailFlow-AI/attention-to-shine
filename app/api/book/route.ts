@@ -6,9 +6,9 @@ import { SIZE_SURCHARGE, detectNoteUpcharges } from "@/lib/pricing";
 // ── Base prices (cents) — mirrors create-payment-intent exactly ───────────────
 
 const BASE_PRICES: Record<string, number> = {
-  exterior: 7999,
-  interior: 11999,
-  full:     15999,
+  exterior: 10000,
+  interior: 14000,
+  full:     20000,
 };
 
 // ── Route handler — records a pay-in-person booking and notifies the owner ────

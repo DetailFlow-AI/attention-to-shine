@@ -6,7 +6,7 @@ import { Shield, Clock, Phone } from "lucide-react";
 export const metadata: Metadata = {
   title: "Book a Detail",
   description:
-    "Book your mobile car detail online. Select your service, pick a time, and pay securely — we'll come to you.",
+    "Book your mobile car detail online. Select your service, pick a time, and pay in person after the job — we'll come to you.",
 };
 
 export default function BookingPage() {
@@ -19,7 +19,8 @@ export default function BookingPage() {
           Book your detail.
         </h1>
         <p className="text-xl text-white/60 max-w-lg mx-auto">
-          Takes under 2 minutes. Pay securely online and we'll handle the rest.
+          Takes under 2 minutes. Pay in person after your detail — we'll handle
+          the rest.
         </p>
       </section>
 
@@ -47,7 +48,7 @@ export default function BookingPage() {
                   "Receive an email confirmation",
                   "We text you 30 min before arrival",
                   "We bring all equipment — just leave your car accessible",
-                  "Pay online or cash on the day",
+                  "Pay in person — cash or card after your detail",
                 ].map((item) => (
                   <li
                     key={item}
@@ -67,10 +68,11 @@ export default function BookingPage() {
                 </div>
                 <div>
                   <p className="font-medium text-sm text-apple-text-primary">
-                    Secure payment
+                    Pay in person
                   </p>
                   <p className="text-xs text-apple-text-tertiary mt-0.5">
-                    Powered by Stripe. Your card data is never stored on our servers.
+                    No payment is taken online. Pay by cash or card once your
+                    detail is complete.
                   </p>
                 </div>
               </div>

@@ -7,9 +7,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // ── Base prices (cents) ───────────────────────────────────────────────────────
 
 const BASE_PRICES: Record<string, number> = {
-  exterior: 7999,
-  interior: 11999,
-  full:     15999,
+  exterior: 10000,
+  interior: 14000,
+  full:     20000,
 };
 
 interface NoteUpcharges {

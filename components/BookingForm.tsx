@@ -33,9 +33,17 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+// ── Online payment kill switch ────────────────────────────────────────────────
+// Pay-in-person is currently the only payment option offered to customers. The
+// entire Stripe path below (payment intent, Elements, card form) is left intact
+// and simply gated behind this flag — flip it back to `true` to re-enable
+// online card payment. The typed `boolean` (rather than a literal) keeps the
+// Stripe branches type-checked while they're switched off.
+const ONLINE_PAYMENT_ENABLED: boolean = false;
+
+const stripePromise = ONLINE_PAYMENT_ENABLED
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+  : null;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -63,9 +71,9 @@ interface BookingData {
 // ── Base pricing ───────────────────────────────────────────────────────────────
 
 const BASE_PRICES: Record<string, number> = {
-  exterior: 79.99,
-  interior: 119.99,
-  full:     159.99,
+  exterior: 100,
+  interior: 140,
+  full:     200,
 };
 
 const SERVICE_LABELS: Record<string, string> = {
@@ -149,12 +157,16 @@ function calcPricing(
 
 // ── Step indicator ─────────────────────────────────────────────────────────────
 
-const STEPS = [
+const ALL_STEPS = [
   { num: 1, label: "Service",  icon: <Car      size={14} /> },
   { num: 2, label: "Schedule", icon: <Calendar size={14} /> },
   { num: 3, label: "Details",  icon: <User     size={14} /> },
   { num: 4, label: "Payment",  icon: <CreditCard size={14} /> },
 ];
+
+// With online payment switched off the flow ends at step 3, so the Payment
+// step is hidden from the indicator rather than shown as a step never reached.
+const STEPS = ONLINE_PAYMENT_ENABLED ? ALL_STEPS : ALL_STEPS.slice(0, 3);
 
 function StepIndicator({ current }: { current: Step }) {
   return (
@@ -337,7 +349,9 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
   const [loading,         setLoading]        = useState(false);
   const [error,           setError]          = useState("");
   const [step2Attempted,  setStep2Attempted] = useState(false); // tracks if user tried to advance with missing fields
-  const [payMethod,       setPayMethod]      = useState<"online" | "in_person">("online");
+  const [payMethod,       setPayMethod]      = useState<"online" | "in_person">(
+    ONLINE_PAYMENT_ENABLED ? "online" : "in_person"
+  );
   const [busyRanges,      setBusyRanges]     = useState<{ start: string; end: string }[]>([]);
   const [nextAvailable,   setNextAvailable]  = useState<string>("");
 
@@ -577,9 +591,9 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           <div className="space-y-3">
             {(
               [
-                { id: "exterior", name: "Exterior Detail",     price: "$79.99+",  desc: "Foam wash, rim cleaning, tire shine, sealant" },
-                { id: "interior", name: "Interior Detail",     price: "$119.99+", desc: "Steam clean, vacuum, UV protection, odor treatment" },
-                { id: "full",     name: "Full Detail Package", price: "$159.99+", desc: "Complete interior + exterior — best value", popular: true },
+                { id: "exterior", name: "Exterior Detail",     price: "From $100", desc: "Foam wash, rim cleaning, tire shine, sealant" },
+                { id: "interior", name: "Interior Detail",     price: "From $140", desc: "Steam clean, vacuum, UV protection, odor treatment" },
+                { id: "full",     name: "Full Detail Package", price: "From $200", desc: "Complete interior + exterior — best value", popular: true },
               ] as { id: Service; name: string; price: string; desc: string; popular?: boolean }[]
             ).map((svc) => (
               <button
@@ -1038,41 +1052,57 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             )}
           </div>
 
-          {/* ── Payment method choice ── */}
+          {/* ── Payment method ── */}
+          {/* Online payment is switched off (ONLINE_PAYMENT_ENABLED), so
+              pay-in-person is shown on its own as the only option. */}
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-2">
-              How would you like to pay?
+              {ONLINE_PAYMENT_ENABLED ? "How would you like to pay?" : "Payment"}
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setPayMethod("online")}
-                className={`rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
-                  payMethod === "online"
-                    ? "border-navy bg-navy/5"
-                    : "border-apple-gray-2 bg-white hover:border-navy/30"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <CreditCard size={16} className="text-navy" />
-                  <span className="font-semibold text-sm text-apple-text-primary">
-                    Pay online now
-                  </span>
-                </div>
-                <p className="text-xs text-apple-text-secondary">
-                  Secure card payment through Stripe. Your booking is locked in
-                  instantly.
-                </p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPayMethod("in_person")}
-                className={`rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
-                  payMethod === "in_person"
-                    ? "border-navy bg-navy/5"
-                    : "border-apple-gray-2 bg-white hover:border-navy/30"
-                }`}
-              >
+            {ONLINE_PAYMENT_ENABLED ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPayMethod("online")}
+                  className={`rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
+                    payMethod === "online"
+                      ? "border-navy bg-navy/5"
+                      : "border-apple-gray-2 bg-white hover:border-navy/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <CreditCard size={16} className="text-navy" />
+                    <span className="font-semibold text-sm text-apple-text-primary">
+                      Pay online now
+                    </span>
+                  </div>
+                  <p className="text-xs text-apple-text-secondary">
+                    Secure card payment through Stripe. Your booking is locked in
+                    instantly.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPayMethod("in_person")}
+                  className={`rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
+                    payMethod === "in_person"
+                      ? "border-navy bg-navy/5"
+                      : "border-apple-gray-2 bg-white hover:border-navy/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Banknote size={16} className="text-navy" />
+                    <span className="font-semibold text-sm text-apple-text-primary">
+                      Pay in person
+                    </span>
+                  </div>
+                  <p className="text-xs text-apple-text-secondary">
+                    Book now, pay by cash or card after your detail is finished.
+                  </p>
+                </button>
+              </div>
+            ) : (
+              <div className="rounded-2xl border-2 border-navy bg-navy/5 p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Banknote size={16} className="text-navy" />
                   <span className="font-semibold text-sm text-apple-text-primary">
@@ -1080,10 +1110,11 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                   </span>
                 </div>
                 <p className="text-xs text-apple-text-secondary">
-                  Book now, pay by cash or card after your detail is finished.
+                  Nothing is charged now. Pay by cash or card once your detail is
+                  finished.
                 </p>
-              </button>
-            </div>
+              </div>
+            )}
           </div>
 
           {error && (
@@ -1098,7 +1129,11 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               <ArrowLeft size={16} /> Back
             </button>
             <button
-              onClick={payMethod === "online" ? goToPayment : submitPayLater}
+              onClick={
+                ONLINE_PAYMENT_ENABLED && payMethod === "online"
+                  ? goToPayment
+                  : submitPayLater
+              }
               disabled={!data.name || !data.email || !data.phone || !timeIsValid || loading}
               className="btn-gold flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -1107,7 +1142,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Loading…
                 </>
-              ) : payMethod === "online" ? (
+              ) : ONLINE_PAYMENT_ENABLED && payMethod === "online" ? (
                 <>Proceed to Payment <ArrowRight size={16} /></>
               ) : (
                 <>Confirm Booking <CheckCircle2 size={16} /></>
@@ -1117,8 +1152,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
         </div>
       )}
 
-      {/* ── STEP 4: Payment ── */}
-      {step === 4 && clientSecret && (
+      {/* ── STEP 4: Payment (Stripe — disabled via ONLINE_PAYMENT_ENABLED) ── */}
+      {ONLINE_PAYMENT_ENABLED && step === 4 && clientSecret && (
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold text-apple-text-primary mb-1">
