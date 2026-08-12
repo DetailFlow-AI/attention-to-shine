@@ -3,6 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import {
+  INSTANT_BOOKING_ENABLED,
+  FLOW_CTA,
+  FLOW_CTA_SHORT,
+} from "@/lib/bookingMode";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -163,7 +168,7 @@ export default function ServicesPage() {
                       </p>
                     </div>
                     <Link href="/booking" className="btn-primary text-sm">
-                      Book Now
+                      {FLOW_CTA_SHORT}
                       <ArrowRight size={14} />
                     </Link>
                   </div>
@@ -343,7 +348,9 @@ export default function ServicesPage() {
                 </p>
 
                 <Link href="/booking" className="btn-primary w-full justify-center">
-                  Add This to My Booking
+                  {INSTANT_BOOKING_ENABLED
+                    ? "Add This to My Booking"
+                    : "Add This to My Request"}
                   <ArrowRight size={14} />
                 </Link>
               </div>
@@ -355,13 +362,15 @@ export default function ServicesPage() {
       {/* CTA */}
       <section className="bg-navy py-20 px-6 text-center">
         <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
-          Ready to book?
+          {INSTANT_BOOKING_ENABLED ? "Ready to book?" : "Ready to get started?"}
         </h2>
         <p className="text-white/60 mb-8 text-lg">
-          Select your service, pick a time, and we'll handle the rest.
+          {INSTANT_BOOKING_ENABLED
+            ? "Select your service, pick a time, and we'll handle the rest."
+            : "Tell us your service and preferred times — we'll reply with a quote."}
         </p>
         <Link href="/booking" className="btn-gold">
-          Book Your Detail
+          {FLOW_CTA}
           <ArrowRight size={16} />
         </Link>
       </section>
