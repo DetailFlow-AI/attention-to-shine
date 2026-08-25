@@ -11,6 +11,9 @@ import {
   SIZE_SURCHARGE as SIZE_SURCHARGES,
   COATING_PRICE as COATING_PRICES,
   detectNoteUpcharges,
+  MEMBERSHIP_LABELS,
+  isMember,
+  type Membership,
 } from "@/lib/pricing";
 import { INSTANT_BOOKING_ENABLED } from "@/lib/bookingMode";
 import { loadStripe } from "@stripe/stripe-js";
@@ -30,6 +33,7 @@ import {
   CreditCard,
   Banknote,
   Tag,
+  BadgeCheck,
   Info,
   AlertCircle,
 } from "lucide-react";
@@ -69,6 +73,7 @@ interface BookingData {
   email:        string;
   phone:        string;
   promoCode:    string;
+  membership:   Membership;
 }
 
 // ── Base pricing ───────────────────────────────────────────────────────────────
@@ -107,8 +112,12 @@ interface DetectedUpcharges {
 // Wraps the shared server/client detection so the estimate shown here always
 // matches what the API charges. Pet hair and staining are tiered (a "severe"
 // or "heavy" mention costs more); coating is priced by vehicle size.
-function detectUpcharges(notes: string, vehicleSize: VehicleSize): DetectedUpcharges {
-  const { petHair, stains, coating } = detectNoteUpcharges(notes, vehicleSize);
+function detectUpcharges(
+  notes: string,
+  vehicleSize: VehicleSize,
+  membership: Membership,
+): DetectedUpcharges {
+  const { petHair, stains, coating } = detectNoteUpcharges(notes, vehicleSize, membership);
   return {
     hasPetHair: petHair > 0,
     hasStains:  stains > 0,
@@ -138,10 +147,11 @@ function calcPricing(
   service:     Service,
   size:        VehicleSize,
   notes:       string,
+  membership:  Membership,
 ): Pricing {
   const base          = BASE_PRICES[service] ?? 0;
   const sizeSurcharge = SIZE_SURCHARGES[size] ?? 0;
-  const upcharges     = detectUpcharges(notes, size);
+  const upcharges     = detectUpcharges(notes, size, membership);
   const preDiscount   = base + sizeSurcharge + upcharges.total;
 
   return {
@@ -377,6 +387,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     email:        "",
     phone:        "",
     promoCode:    "",
+    membership:   "none",
   });
 
   const set = (field: keyof BookingData, val: string) =>
@@ -387,6 +398,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     data.service,
     data.vehicleSize,
     data.notes,
+    data.membership,
   );
 
   const timeSlots = [
@@ -526,6 +538,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           service:       data.service,
           vehicleSize:   data.vehicleSize,
           promoCode:     data.promoCode,
+          membership:    data.membership,
           notes:         data.notes,        // ← passed for server-side upcharge detection
           customerName:  data.name,
           customerEmail: data.email,
@@ -1072,6 +1085,33 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 className={inputClass}
               />
             </div>
+          </div>
+
+          {/* Membership — self-reported, confirmed by the owner when quoting */}
+          <div>
+            <label className="block text-xs font-medium text-apple-text-secondary mb-1.5 flex items-center gap-1">
+              <BadgeCheck size={11} /> Shine Standard Maintenance member?
+            </label>
+            <select
+              value={data.membership}
+              onChange={(e) =>
+                setData((d) => ({
+                  ...d,
+                  membership: e.target.value as Membership,
+                }))
+              }
+              className={inputClass}
+            >
+              <option value="none">Not a member</option>
+              <option value="essential">Essential Plan</option>
+              <option value="premium">Premium Plan</option>
+            </select>
+            {isMember(data.membership) && (
+              <p className="text-green-600 text-xs mt-1.5 flex items-center gap-1">
+                <CheckCircle2 size={12} />
+                Pet hair removal is included with your plan — no upcharge.
+              </p>
+            )}
           </div>
 
           {/* Promo code — passed through on the request, applied manually */}

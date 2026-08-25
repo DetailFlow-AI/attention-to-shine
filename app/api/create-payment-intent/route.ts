@@ -19,8 +19,12 @@ interface NoteUpcharges {
 }
 
 // Shared detection works in dollars; convert to cents for Stripe.
-function detectNoteUpcharges(notes: string, vehicleSize: string): NoteUpcharges {
-  const d = detectDollars(notes, vehicleSize);
+function detectNoteUpcharges(
+  notes: string,
+  vehicleSize: string,
+  membership?: string,
+): NoteUpcharges {
+  const d = detectDollars(notes, vehicleSize, membership);
   return {
     petHair: d.petHair * 100,
     stains:  d.stains  * 100,
@@ -37,6 +41,7 @@ export async function POST(req: NextRequest) {
       service,
       vehicleSize,
       promoCode,
+      membership,
       notes,
       customerName,
       customerEmail,
@@ -65,7 +70,7 @@ export async function POST(req: NextRequest) {
     const sizeSurcharge = (SIZE_SURCHARGE[vehicleSize] ?? 0) * 100;
 
     // Server-side upcharge detection — never trust client-sent totals
-    const noteUpcharges = detectNoteUpcharges(notes ?? "", vehicleSize);
+    const noteUpcharges = detectNoteUpcharges(notes ?? "", vehicleSize, membership);
     const upchargeTotal = noteUpcharges.petHair + noteUpcharges.stains + noteUpcharges.coating;
 
     // No promo code discounts automatically. Any code the customer submits is
@@ -87,6 +92,7 @@ export async function POST(req: NextRequest) {
         service,
         vehicleSize,
         promoCode:         promoCode    ?? "",
+        membership:        membership   ?? "none",
         customerName:      customerName ?? "",
         customerEmail:     customerEmail ?? "",
         customerPhone:     customerPhone ?? "",

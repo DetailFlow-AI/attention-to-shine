@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SIZE_SURCHARGE, detectNoteUpcharges } from "@/lib/pricing";
+import {
+  SIZE_SURCHARGE,
+  detectNoteUpcharges,
+  isMember,
+  MEMBERSHIP_LABELS,
+  type Membership,
+} from "@/lib/pricing";
 
 // ── Appointment REQUEST route ─────────────────────────────────────────────────
 //
@@ -40,7 +46,7 @@ export async function POST(req: NextRequest) {
       service, vehicleSize, vehicleMake, vehicleColor,
       date, time, altDate, altTime,
       address, city, zip, condition,
-      name, email, phone, promoCode,
+      name, email, phone, promoCode, membership,
     } = body;
 
     if (!service || !vehicleSize || !date || !time || !name || !email || !phone) {
@@ -57,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Owner-facing estimate only — the quote is written by hand afterwards.
     const sizeSurcharge = SIZE_SURCHARGE[vehicleSize] ?? 0;
-    const upcharges = detectNoteUpcharges(condition ?? "", vehicleSize);
+    const upcharges = detectNoteUpcharges(condition ?? "", vehicleSize, membership);
     const upchargeTotal = upcharges.petHair + upcharges.stains + upcharges.coating;
     const estimate = basePrice + sizeSurcharge + upchargeTotal;
 
@@ -80,6 +86,9 @@ export async function POST(req: NextRequest) {
         : undefined,
       address ? `Address:   ${address}, ${city ?? ""} ${zip ?? ""}` : undefined,
       promoCode ? `Promo:     ${promoCode}` : undefined,
+      isMember(membership)
+        ? `Member:    ${MEMBERSHIP_LABELS[membership as Membership]} (self-reported — verify)`
+        : undefined,
       ``,
       `Vehicle condition (customer's words):`,
       condition ? condition : "(not provided)",

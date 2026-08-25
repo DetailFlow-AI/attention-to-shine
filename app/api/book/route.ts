@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createBookingEvent } from "@/lib/googleCalendar";
 import { CALENDAR_SERVICE_LABELS } from "@/lib/bookingRules";
-import { SIZE_SURCHARGE, detectNoteUpcharges } from "@/lib/pricing";
+import {
+  SIZE_SURCHARGE,
+  detectNoteUpcharges,
+  isMember,
+  MEMBERSHIP_LABELS,
+  type Membership,
+} from "@/lib/pricing";
 
 // ── Base prices (cents) — mirrors create-payment-intent exactly ───────────────
 
@@ -19,7 +25,7 @@ export async function POST(req: NextRequest) {
     const {
       service, vehicleSize, vehicleMake, vehicleColor,
       date, time, address, city, zip, notes,
-      name, email, phone, promoCode,
+      name, email, phone, promoCode, membership,
     } = body;
 
     if (!service || !vehicleSize || !date || !time || !address || !name || !email || !phone) {
@@ -36,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     // Shared rules are in dollars; this route works in cents.
     const sizeSurcharge = (SIZE_SURCHARGE[vehicleSize] ?? 0) * 100;
-    const upcharges = detectNoteUpcharges(notes ?? "", vehicleSize);
+    const upcharges = detectNoteUpcharges(notes ?? "", vehicleSize, membership);
     const upchargeCents = (upcharges.petHair + upcharges.stains + upcharges.coating) * 100;
     // No promo code discounts automatically; codes are honored manually.
     const amount = basePrice + sizeSurcharge + upchargeCents;
@@ -54,6 +60,9 @@ export async function POST(req: NextRequest) {
       `Address:  ${address}, ${city ?? ""} ${zip ?? ""}`,
       notes ? `Notes:    ${notes}` : "",
       promoCode ? `Promo:    ${promoCode}` : "",
+      isMember(membership)
+        ? `Member:   ${MEMBERSHIP_LABELS[membership as Membership]} (self-reported — verify)`
+        : "",
       ``,
       `Estimated total (collect on site): $${(amount / 100).toFixed(2)}`,
     ].filter(Boolean);

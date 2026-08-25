@@ -68,17 +68,38 @@ export interface NoteUpcharges {
   coating: number; // dollars
 }
 
+// Shine Standard Maintenance tier, as reported by the customer on the booking
+// form. Self-reported and unverified — the owner confirms it when quoting.
+export type Membership = "none" | "essential" | "premium";
+
+export const MEMBERSHIP_LABELS: Record<Membership, string> = {
+  none:      "Not a member",
+  essential: "Essential Plan member",
+  premium:   "Premium Plan member",
+};
+
+// Both paid tiers include pet hair removal at no charge — Essential lists it
+// outright and Premium inherits everything in Essential.
+export function isMember(membership?: string): boolean {
+  return membership === "essential" || membership === "premium";
+}
+
 // Detects note-driven add-ons from free-text booking notes. Pet hair and
 // staining are tiered: a "severe/heavy …" mention charges the higher rate,
 // anything else (including "light …") charges the starting rate. Coating is
 // priced by vehicle size.
+//
+// Members never pay the pet hair upcharge, so a claimed membership zeroes it
+// out regardless of what the notes say. Staining and coating are unaffected —
+// neither is included in a plan.
 export function detectNoteUpcharges(
   notes: string,
-  vehicleSize: string
+  vehicleSize: string,
+  membership?: string
 ): NoteUpcharges {
   const lower = (notes ?? "").toLowerCase();
 
-  const petHairPresent = includesAny(lower, PET_HAIR_KEYWORDS);
+  const petHairPresent = includesAny(lower, PET_HAIR_KEYWORDS) && !isMember(membership);
   const stainPresent   = includesAny(lower, STAIN_KEYWORDS);
   const coatingPresent = includesAny(lower, COATING_KEYWORDS);
 
