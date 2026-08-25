@@ -9,30 +9,76 @@ export const metadata: Metadata = {
     "A standing monthly appointment that keeps your vehicle in the condition we left it in. Essential from $100/month, Premium from $150/month, in Lakeland, FL.",
 };
 
-const included = [
+// Every line here is a real part of a maintenance visit, broken out
+// individually so the section reflects the full scope of the work rather than
+// summarizing it. Nothing here is a service we don't actually perform.
+const includedGroups = [
   {
-    title: "Exterior rinse & hand dry",
-    body: "A paint-safe wash and hand dry every visit, so dust, pollen, and road film never get the chance to bond to the finish.",
+    group: "Exterior",
+    items: [
+      {
+        title: "Paint-safe rinse",
+        body: "A full rinse that lifts dust, pollen, and light road film before any of it can bond to the paint.",
+      },
+      {
+        title: "Full hand dry",
+        body: "Dried by hand, panel by panel — never left to air dry into water spots.",
+      },
+      {
+        title: "Tire shine, all four",
+        body: "Every tire dressed and finished. It's the detail that makes a clean car read as a cared-for one.",
+      },
+      {
+        title: "Exterior glass",
+        body: "All exterior glass cleared of film and streaking for genuinely clean sightlines.",
+      },
+    ],
   },
   {
-    title: "Tire shine on all four",
-    body: "Dressed and finished each time — the detail that makes a clean car read as a cared-for one.",
+    group: "Interior",
+    items: [
+      {
+        title: "Seats vacuumed",
+        body: "Every seat worked over, including the seams and the gaps where debris actually collects.",
+      },
+      {
+        title: "Carpets & floor mats",
+        body: "Mats lifted out and cleaned separately, carpets vacuumed underneath rather than around them.",
+      },
+      {
+        title: "Trunk vacuumed",
+        body: "The area most services quietly skip, done every visit as part of the standard.",
+      },
+      {
+        title: "Dashboard detailed",
+        body: "Wiped down and dressed, including vents and the trim seams that collect dust.",
+      },
+      {
+        title: "Center console detailed",
+        body: "Cupholders, storage, and controls cleaned — the surfaces you touch on every drive.",
+      },
+      {
+        title: "Interior glass",
+        body: "The inside of every window cleared of the haze that builds up unnoticed over weeks.",
+      },
+      {
+        title: "Free pet hair removal",
+        body: "Included on every plan at no upcharge, ever — however much your passenger sheds.",
+      },
+    ],
   },
   {
-    title: "Glass, inside and out",
-    body: "Every window wiped down on both sides for genuinely clear visibility, not just a surface pass.",
-  },
-  {
-    title: "Full interior vacuum",
-    body: "Seats, carpets, mats, and trunk. Free pet hair removal on every plan — no upcharge, ever.",
-  },
-  {
-    title: "Dashboard & console detail",
-    body: "Surfaces wiped down and dressed so the cabin stays as sharp as the paint.",
-  },
-  {
-    title: "A reserved standing slot",
-    body: "The same time each month, held for you. Priority scheduling ahead of one-time bookings.",
+    group: "Your standing appointment",
+    items: [
+      {
+        title: "A reserved slot",
+        body: "The same time each month, held for you, so upkeep never depends on remembering to book.",
+      },
+      {
+        title: "Priority scheduling",
+        body: "Members are placed ahead of one-time bookings when the calendar tightens.",
+      },
+    ],
   },
 ];
 
@@ -66,26 +112,39 @@ export default function ShineStandardMaintenancePage() {
             </h2>
             <p className="section-subheading max-w-2xl mx-auto">
               Every visit is a focused maintenance service built to protect the
-              work of your initial detail. Nothing is rushed, and nothing is
-              skipped because it's the fifth visit instead of the first.
+              work of your initial detail. Every visit gets the same full
+              attention — first visit or fiftieth, nothing changes and nothing
+              gets shortened.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {included.map((item) => (
-              <div
-                key={item.title}
-                className="bg-apple-gray rounded-2xl p-6 border border-apple-gray-2"
-              >
-                <div className="w-9 h-9 bg-navy/10 rounded-xl flex items-center justify-center text-navy mb-4">
-                  <CheckCircle2 size={18} />
+          <div className="max-w-5xl mx-auto space-y-12">
+            {includedGroups.map((group) => (
+              <div key={group.group}>
+                <div className="flex items-center gap-4 mb-6">
+                  <h3 className="text-xs uppercase tracking-widest text-gold font-semibold whitespace-nowrap">
+                    {group.group}
+                  </h3>
+                  <span className="h-px flex-1 bg-apple-gray-2" />
                 </div>
-                <h3 className="font-semibold text-apple-text-primary mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-apple-text-secondary leading-relaxed">
-                  {item.body}
-                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {group.items.map((item) => (
+                    <div
+                      key={item.title}
+                      className="bg-apple-gray rounded-2xl p-6 border border-apple-gray-2"
+                    >
+                      <div className="w-9 h-9 bg-navy/10 rounded-xl flex items-center justify-center text-navy mb-4">
+                        <CheckCircle2 size={18} />
+                      </div>
+                      <h4 className="font-semibold text-apple-text-primary mb-2">
+                        {item.title}
+                      </h4>
+                      <p className="text-sm text-apple-text-secondary leading-relaxed">
+                        {item.body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

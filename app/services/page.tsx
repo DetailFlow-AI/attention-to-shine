@@ -167,10 +167,21 @@ export default function ServicesPage() {
                         Price may vary for larger vehicles
                       </p>
                     </div>
-                    <Link href="/booking" className="btn-primary text-sm">
-                      {FLOW_CTA_SHORT}
-                      <ArrowRight size={14} />
-                    </Link>
+                    <div className="flex flex-col items-stretch gap-2">
+                      <Link href="/booking" className="btn-primary text-sm">
+                        {FLOW_CTA_SHORT}
+                        <ArrowRight size={14} />
+                      </Link>
+                      {service.id === "checkup" && (
+                        <Link
+                          href="/shine-standard-maintenance"
+                          className="inline-flex items-center justify-center gap-2 text-sm font-medium text-navy border border-navy/20 px-5 py-2.5 rounded-full hover:bg-navy hover:text-white transition-colors duration-200"
+                        >
+                          See Plan Details
+                          <ArrowRight size={14} />
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
 

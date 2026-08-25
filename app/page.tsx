@@ -13,6 +13,7 @@ import {
   MapPin,
   ChevronRight,
   CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 import {
   INSTANT_BOOKING_ENABLED,
@@ -546,6 +547,20 @@ export default function HomePage() {
           </div>
 
           <ReviewsCarousel reviews={reviews} />
+
+          {/* Separate from the testimonials above — links out to the live
+              Google listing so leads can read unfiltered reviews. */}
+          <div className="text-center mt-12">
+            <a
+              href="https://maps.app.goo.gl/dqWzddQBFShN4KqB8?g_st=ic"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-medium text-navy border border-navy/20 px-6 py-3 rounded-full hover:bg-navy hover:text-white transition-colors duration-200"
+            >
+              See our Google Reviews
+              <ExternalLink size={14} />
+            </a>
+          </div>
         </div>
       </section>
 
