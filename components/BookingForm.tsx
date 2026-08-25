@@ -11,8 +11,6 @@ import {
   SIZE_SURCHARGE as SIZE_SURCHARGES,
   COATING_PRICE as COATING_PRICES,
   detectNoteUpcharges,
-  MEMBERSHIP_LABELS,
-  isMember,
   type Membership,
 } from "@/lib/pricing";
 import { INSTANT_BOOKING_ENABLED } from "@/lib/bookingMode";
@@ -33,7 +31,6 @@ import {
   CreditCard,
   Banknote,
   Tag,
-  BadgeCheck,
   Info,
   AlertCircle,
 } from "lucide-react";
@@ -1085,33 +1082,6 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 className={inputClass}
               />
             </div>
-          </div>
-
-          {/* Membership — self-reported, confirmed by the owner when quoting */}
-          <div>
-            <label className="block text-xs font-medium text-apple-text-secondary mb-1.5 flex items-center gap-1">
-              <BadgeCheck size={11} /> Shine Standard Maintenance member?
-            </label>
-            <select
-              value={data.membership}
-              onChange={(e) =>
-                setData((d) => ({
-                  ...d,
-                  membership: e.target.value as Membership,
-                }))
-              }
-              className={inputClass}
-            >
-              <option value="none">Not a member</option>
-              <option value="essential">Essential Plan</option>
-              <option value="premium">Premium Plan</option>
-            </select>
-            {isMember(data.membership) && (
-              <p className="text-green-600 text-xs mt-1.5 flex items-center gap-1">
-                <CheckCircle2 size={12} />
-                Pet hair removal is included with your plan — no upcharge.
-              </p>
-            )}
           </div>
 
           {/* Promo code — passed through on the request, applied manually */}

@@ -22,18 +22,14 @@ const services = [
     tagline: "A deep, protective shine.",
     price: "From $100",
     intro:
-      "Your car's exterior takes a beating every day. Road grime, tree sap, bird droppings, Florida sun — they all add up. Our exterior detail is a thorough, paint-safe process designed to remove that buildup and leave behind a clean, protected finish that actually lasts.",
+      "Road grime, tree sap, bird droppings, Florida sun — it all adds up. This detail undoes it: a deep, protective shine that actually lasts.",
     body:
-      "We start with a foam pre-wash to loosen surface contamination before anything touches the paint. From there, we hand wash the entire vehicle using pH-balanced soap, clean every rim and wheel well, dress the tires, detail the windows inside and out, and apply a protective sealant over the paint. By the time we're done, your car doesn't just look clean — it looks sharp.",
+      "Foam pre-wash, full hand wash, wheels, wells, windows, tires, and a protective sealant. By the time we're done, your car doesn't just look clean — it looks sharp.",
     included: [
-      "Foam pre-wash to safely lift surface dirt",
-      "Full hand wash with pH-balanced soap",
-      "Wheel and rim cleaning",
-      "Wheel well rinse and cleaning",
-      "Window and glass cleaning",
-      "Tire dressing and shine",
-      "Protective paint sealant",
-      "Door jamb wipe-down",
+      "Paint washed, dried, and sealed for lasting shine",
+      "Wheels, wells, and tires cleaned and dressed",
+      "Glass clear, inside and out",
+      "Nothing overlooked — even the door jambs",
     ],
     note: "Great for keeping your vehicle looking its best between full details or before a special occasion.",
     gradient: "from-blue-950 to-navy",
@@ -44,17 +40,14 @@ const services = [
     tagline: "Clean, fresh, and well cared for.",
     price: "From $140",
     intro:
-      "The inside of your car is where you actually spend your time — and it shows. Dust on the dash, crumbs in the seats, smells that have built up over time. Our interior detail is a real deep clean, not a quick wipe-down. We get into every corner so that when you open the door, it genuinely feels different.",
+      "Dust on the dash, crumbs in the seats, smells that have built up over time — gone. Step back in and it genuinely feels like a different car.",
     body:
-      "We use a steam cleaner to break down grime on hard surfaces, vents, and tight crevices. From there we thoroughly vacuum all seats, carpets, and the trunk. We wipe down every surface on the dash, doors, and console, apply UV-protective dressing to all plastics and vinyl to prevent cracking and fading, and treat the interior for odors. Every vehicle is a little different, so we adjust our approach based on what your car actually needs.",
+      "Steam-cleaned, fully vacuumed, every surface wiped down and UV-protected. Every vehicle is a little different, so we adjust to what yours actually needs — we don't rush it.",
     included: [
-      "Steam treatment on hard surfaces and vents",
-      "Full vacuum — seats, carpet, and trunk",
-      "Dashboard, console, and door panel wipe-down",
-      "UV-protective dressing on all plastics and vinyl",
-      "Leather conditioning and care (where applicable)",
-      "Window cleaning from inside",
-      "Odor treatment",
+      "No dust, crumbs, or grime anywhere you'd notice",
+      "No odors — treated at the source, not masked",
+      "Plastics and vinyl protected against fading and cracking",
+      "Leather conditioned where applicable",
     ],
     note: "Service is customized to your vehicle's condition. The more detailed the job, the more time we take — we don't rush.",
     gradient: "from-stone-900 to-stone-800",
@@ -65,13 +58,12 @@ const services = [
     tagline: "Every inch, done right.",
     price: "From $200",
     intro:
-      "The Full Detail Package is our most requested service for good reason. It combines everything in our exterior and interior details into a single appointment, and it's the most thorough way to refresh your vehicle from every angle. Whether your car hasn't been properly cleaned in months or you just want it in peak condition, this is the one.",
+      "Our most requested service, and the best value we offer — the complete exterior and interior process, done in one visit.",
     body:
-      "You get the complete exterior process — pre-wash, full hand wash, wheels, windows, tires, sealant — paired with the complete interior process — steam, vacuum, surfaces, UV protection, odor treatment, leather care. One appointment. Total transformation. It's bundled at a better rate than booking the two services separately, so it's also the best value we offer.",
+      "The full exterior process, paired with the full interior process, in a single appointment — bundled at a better rate than booking the two separately.",
     included: [
-      "Complete exterior detail (all items listed above)",
-      "Complete interior detail (all items listed above)",
-      "Best value — discounted vs. booking separately",
+      "A car that looks — and feels — brand new, inside and out",
+      "Best value — priced below booking exterior and interior separately",
     ],
     note: "This is the most popular service we offer and the one we recommend for any vehicle that hasn't had a professional detail in a while.",
     gradient: "from-navy to-navy-dark",
@@ -83,16 +75,13 @@ const services = [
     tagline: "Always clean. No effort required.",
     price: "Starting at $100 / month",
     intro:
-      "Shine Standard Maintenance is a maintenance subscription built for vehicles that are already clean and need to stay that way. Once your car has had its initial full detail with us, this plan keeps it in showroom condition month after month — you book once, lock in your preferred time slot, and we show up on schedule, every time.",
+      "Once your car's had its initial full detail, this keeps it looking that way — month after month, without you lifting a finger.",
     body:
-      "Each maintenance visit is a focused service designed to preserve the results of your full detail. We give the exterior a thorough rinse and hand dry to clear away dust, pollen, and light road film before it can bond to the paint. Your tires get a fresh coat of tire shine for that just-detailed look, and every window is wiped down inside and out for crystal-clear visibility. Inside, we run a complete interior vacuum across seats, carpets, and mats, then finish with a full dashboard and console wipe-down. It's the smartest way to protect the investment you made in your initial detail — regular upkeep at a fraction of the cost of starting over.",
+      "A reserved time slot, every month (Premium: twice a month). Your car looks freshly detailed each time we leave — for a fraction of what it'd cost to keep re-detailing from scratch.",
     included: [
-      "Exterior rinse and hand dry to remove dust and light film",
-      "Tire shine applied to all four tires",
-      "Window wipe down, inside and out",
-      "Full interior vacuum — seats, carpets, and mats",
-      "Dashboard and console wipe-down",
-      "Priority scheduling with a reserved recurring time slot",
+      "Looks freshly detailed, every single visit",
+      "A reserved slot — never a scramble to rebook",
+      "Costs far less than repeated full details",
     ],
     note: "This is a maintenance plan for already-clean vehicles — available only after your vehicle's first full detail with Attention to Shine.",
     gradient: "from-gold-dark to-gold",
@@ -338,12 +327,10 @@ export default function ServicesPage() {
 
                 <ul className="space-y-2.5 mb-8">
                   {[
-                    "Lasts up to one year — far longer than standard wax",
-                    "Water-repellent surface — beads and rolls right off",
-                    "Pollen, debris, and light dirt glide off with ease",
-                    "Protects against sun damage and UV fading",
-                    "Reduces rain spot buildup on paint",
-                    "Works like a ceramic sealant at a fraction of the cost",
+                    "Lasts up to a year — far longer than standard wax",
+                    "Water beads and rolls right off, taking dirt with it",
+                    "Protects against sun damage and rain spots",
+                    "Ceramic-level protection at a fraction of the cost",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2.5 text-sm text-apple-text-secondary">
                       <CheckCircle2 size={15} className="text-gold shrink-0 mt-0.5" />

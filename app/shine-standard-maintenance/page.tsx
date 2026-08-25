@@ -9,75 +9,29 @@ export const metadata: Metadata = {
     "A standing monthly appointment that keeps your vehicle in the condition we left it in. Essential from $100/month, Premium from $150/month, in Lakeland, FL.",
 };
 
-// Every line here is a real part of a maintenance visit, broken out
-// individually so the section reflects the full scope of the work rather than
-// summarizing it. Nothing here is a service we don't actually perform.
 const includedGroups = [
   {
     group: "Exterior",
     items: [
-      {
-        title: "Paint-safe rinse",
-        body: "A full rinse that lifts dust, pollen, and light road film before any of it can bond to the paint.",
-      },
-      {
-        title: "Full hand dry",
-        body: "Dried by hand, panel by panel — never left to air dry into water spots.",
-      },
-      {
-        title: "Tire shine, all four",
-        body: "Every tire dressed and finished. It's the detail that makes a clean car read as a cared-for one.",
-      },
-      {
-        title: "Exterior glass",
-        body: "All exterior glass cleared of film and streaking for genuinely clean sightlines.",
-      },
+      "Paint-safe rinse & full hand dry",
+      "Tire shine, all four",
+      "Exterior glass, streak-free",
     ],
   },
   {
     group: "Interior",
     items: [
-      {
-        title: "Seats vacuumed",
-        body: "Every seat worked over, including the seams and the gaps where debris actually collects.",
-      },
-      {
-        title: "Carpets & floor mats",
-        body: "Mats lifted out and cleaned separately, carpets vacuumed underneath rather than around them.",
-      },
-      {
-        title: "Trunk vacuumed",
-        body: "The area most services quietly skip, done every visit as part of the standard.",
-      },
-      {
-        title: "Dashboard detailed",
-        body: "Wiped down and dressed, including vents and the trim seams that collect dust.",
-      },
-      {
-        title: "Center console detailed",
-        body: "Cupholders, storage, and controls cleaned — the surfaces you touch on every drive.",
-      },
-      {
-        title: "Interior glass",
-        body: "The inside of every window cleared of the haze that builds up unnoticed over weeks.",
-      },
-      {
-        title: "Free pet hair removal",
-        body: "Included on every plan at no upcharge, ever — however much your passenger sheds.",
-      },
+      "Full vacuum — seats, carpets, trunk",
+      "Dashboard & center console detailed",
+      "Interior glass, streak-free",
+      "Free pet hair removal, always",
     ],
   },
   {
     group: "Your standing appointment",
     items: [
-      {
-        title: "A reserved slot",
-        body: "The same time each month, held for you, so upkeep never depends on remembering to book.",
-      },
-      {
-        title: "Priority scheduling",
-        body: "Members are placed ahead of one-time bookings when the calendar tightens.",
-      },
+      "Same reserved slot every month",
+      "Priority scheduling over one-time bookings",
     ],
   },
 ];
@@ -102,49 +56,39 @@ export default function ShineStandardMaintenancePage() {
         </div>
       </section>
 
-      {/* What's included */}
+      {/* Result, then what's included */}
       <section className="section-pad bg-white">
         <div className="container-wide">
-          <div className="text-center mb-14">
-            <span className="label-tag">What's Included</span>
+          <div className="text-center mb-10">
+            <span className="label-tag">The Result</span>
             <h2 className="section-heading mb-4">
-              Upkeep, not recovery.
+              A brand-new-looking car, every time we're there.
             </h2>
             <p className="section-subheading max-w-2xl mx-auto">
-              Every visit is a focused maintenance service built to protect the
-              work of your initial detail. Every visit gets the same full
-              attention — first visit or fiftieth, nothing changes and nothing
-              gets shortened.
+              Once a month — or twice, on the Premium plan — your vehicle gets
+              reset back to showroom condition. Not "cleaned." Brand-new
+              looking, protected, and cared for, for less than the cost of a
+              single detail spread across the month.
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto space-y-12">
+          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-apple-gray-2 pt-10">
             {includedGroups.map((group) => (
               <div key={group.group}>
-                <div className="flex items-center gap-4 mb-6">
-                  <h3 className="text-xs uppercase tracking-widest text-gold font-semibold whitespace-nowrap">
-                    {group.group}
-                  </h3>
-                  <span className="h-px flex-1 bg-apple-gray-2" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <h3 className="text-xs uppercase tracking-widest text-gold font-semibold mb-3">
+                  {group.group}
+                </h3>
+                <ul className="space-y-2">
                   {group.items.map((item) => (
-                    <div
-                      key={item.title}
-                      className="bg-apple-gray rounded-2xl p-6 border border-apple-gray-2"
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-sm text-apple-text-secondary"
                     >
-                      <div className="w-9 h-9 bg-navy/10 rounded-xl flex items-center justify-center text-navy mb-4">
-                        <CheckCircle2 size={18} />
-                      </div>
-                      <h4 className="font-semibold text-apple-text-primary mb-2">
-                        {item.title}
-                      </h4>
-                      <p className="text-sm text-apple-text-secondary leading-relaxed">
-                        {item.body}
-                      </p>
-                    </div>
+                      <CheckCircle2 size={14} className="text-gold shrink-0 mt-0.5" />
+                      {item}
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             ))}
           </div>

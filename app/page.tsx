@@ -27,7 +27,7 @@ const services = [
     title: "Exterior Detail",
     tagline: "A mirror finish, every time.",
     description:
-      "From a thorough pre-wash and full foam bath to hand washing, window cleaning, tire dressing, and a protective sealant — your car's exterior will look better than it has in years.",
+      "Your paint comes back to life — deep gloss, no swirl marks, no road film. The kind of shine that turns heads in your own driveway.",
     price: "From $100",
     icon: "✦",
     href: "/services#exterior",
@@ -37,7 +37,7 @@ const services = [
     title: "Interior Detail",
     tagline: "Clean from the inside out.",
     description:
-      "A thorough deep clean using steam treatment, full vacuuming, surface wiping, UV-protective dressing on all plastics and trim, and odor elimination — tailored to your vehicle's specific condition.",
+      "Step in and it feels like a new car — no stains, no odors, no dust anywhere you'd notice. The cabin you actually want to sit in.",
     price: "From $140",
     icon: "◈",
     href: "/services#interior",
@@ -47,7 +47,7 @@ const services = [
     title: "Full Detail Package",
     tagline: "The complete transformation.",
     description:
-      "Our most popular service. Everything in the exterior and interior detail, combined into one appointment at our best bundled rate. The result is a car that looks — and feels — brand new.",
+      "Our most popular service, and our best rate. The result: a car that looks — and feels — brand new, inside and out.",
     price: "From $200",
     icon: "◉",
     href: "/services#full",
@@ -58,27 +58,27 @@ const services = [
 const features = [
   {
     icon: <MapPin size={20} />,
-    title: "We Come to You",
+    title: "No Driving, No Waiting",
     description:
-      "Fully mobile — we bring all our professional equipment to your home, office, or anywhere in Lakeland.",
+      "We come to your home or office. You get a spotless car back without losing an hour of your day.",
   },
   {
     icon: <Shield size={20} />,
-    title: "Paint-Safe Products",
+    title: "Your Paint, Protected",
     description:
-      "We use only professional-grade, pH-balanced chemicals that protect your vehicle's finish every single time.",
+      "Professional-grade products keep your finish glossy and protected — never stripped or dulled, visit after visit.",
   },
   {
     icon: <Sparkles size={20} />,
-    title: "Meticulous Results",
+    title: "Results That Hold Up",
     description:
-      "Every detail matters to us. We treat your vehicle like it's our own — with patience, precision, and real pride in our work.",
+      "Not just clean at a glance — clean up close, in the seams and corners most people never check.",
   },
   {
     icon: <Clock size={20} />,
-    title: "Flexible Scheduling",
+    title: "Fits Your Week",
     description:
-      "Monday through Saturday, 7 AM to 7 PM. Book online in minutes and pick a time that actually works for you.",
+      "Monday through Saturday, 7 AM to 7 PM. Pick a time that works for you, not the other way around.",
   },
 ];
 
@@ -404,12 +404,12 @@ export default function HomePage() {
 
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-2xl mx-auto mb-12">
             {[
-              "Professional-grade, pH-balanced products only",
-              "Steam cleaning for a thorough interior deep clean",
-              "UV-protective treatments to prevent fading and cracking",
-              "Paint-safe washing techniques on every vehicle",
-              "We come directly to your home or workplace",
-              "Flexible appointments, Monday through Saturday",
+              "Paint stays glossy and protected, not stripped",
+              "An interior that actually smells and feels clean",
+              "No fading, cracking, or sun damage to plastics",
+              "No swirl marks or scratches, ever",
+              "Done at your home or office — no wasted time",
+              "A time that fits your week, Monday through Saturday",
             ].map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <CheckCircle2 size={18} className="text-gold shrink-0 mt-0.5" />
@@ -473,10 +473,9 @@ export default function HomePage() {
                   <p className="text-sm text-white/50 mb-6">{tier.details}</p>
                   <ul className="space-y-2.5">
                     {[
-                      "Exterior rinse & tire shine each visit",
-                      "Window wipe down, inside & out",
-                      "Interior vacuum & dashboard wipe-down",
-                      "Priority booking — reserved recurring slot",
+                      "Your car looks freshly detailed, every visit",
+                      "No streaks, no dust, no slipping back to dirty",
+                      "A reserved slot, never a scramble to rebook",
                     ].map((item) => (
                       <li
                         key={item}

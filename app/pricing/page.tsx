@@ -20,14 +20,12 @@ const packages = [
     name: "Exterior Detail",
     price: "$100",
     description:
-      "A thorough, paint-safe exterior clean from top to bottom. Foam pre-wash, full hand wash, wheel and rim cleaning, windows, tire dressing, and a protective sealant. Perfect for routine upkeep or before a special occasion.",
+      "Deep gloss, no swirl marks, no road film — paint that looks like it just left the showroom. Great for routine upkeep or before a special occasion.",
     features: [
-      "Foam pre-wash and full hand wash",
-      "Wheel and rim cleaning",
-      "Window and glass cleaning",
-      "Tire dressing and shine",
-      "Protective paint sealant",
-      "Door jamb wipe-down",
+      "Paint washed, dried, and sealed for lasting shine",
+      "Wheels, wells, and tires cleaned and dressed",
+      "Glass clear, inside and out",
+      "Nothing overlooked — even the door jambs",
     ],
     cta: `${bookVerb} Exterior`,
     highlight: false,
@@ -37,7 +35,7 @@ const packages = [
     name: "Full Detail Package",
     price: "$200",
     description:
-      "Everything in both the exterior and interior services, completed in one appointment. This is our most requested service and our best overall value. Ideal for any vehicle that's due for a full reset.",
+      "A car that looks — and feels — brand new, inside and out, in one appointment. Our most requested service and our best value. Ideal for any vehicle that's due for a full reset.",
     features: [
       "Complete exterior detail",
       "Complete interior detail",
@@ -52,14 +50,12 @@ const packages = [
     name: "Interior Detail",
     price: "$140",
     description:
-      "A proper deep clean of your entire interior. Steam treatment, full vacuuming, surface wipe-down, UV-protective dressing on all plastics and vinyl, leather care where applicable, and odor treatment. Adjusted to your vehicle's specific condition.",
+      "Step in and it feels like a different car — no stains, no odors, no dust anywhere you'd notice. Adjusted to your vehicle's specific condition.",
     features: [
-      "Steam treatment on surfaces and vents",
-      "Full vacuum — seats, carpet, trunk",
-      "Dashboard, console, and door panels",
-      "UV-protective dressing on plastics",
-      "Leather conditioning (where applicable)",
-      "Odor treatment",
+      "No dust, crumbs, or grime anywhere you'd notice",
+      "No odors — treated at the source, not masked",
+      "Plastics and vinyl protected against fading",
+      "Leather conditioned where applicable",
     ],
     cta: `${bookVerb} Interior`,
     highlight: false,
@@ -87,13 +83,9 @@ const monthlyPlans = [
     price: "$100",
     details: "1 maintenance visit per month",
     features: [
-      "Exterior rinse & hand dry",
-      "Tire shine on all four tires",
-      "Window wipe down, inside & out",
-      "Full interior vacuum",
-      "Dashboard & console wipe-down",
-      "Priority scheduling & reserved time slot",
-      "Free pet hair removal — no upcharge, ever",
+      "Looks freshly detailed, every visit",
+      "A reserved slot — never a scramble to rebook",
+      "Free pet hair removal, always — no upcharge",
     ],
   },
   {
@@ -102,9 +94,9 @@ const monthlyPlans = [
     details: "2 maintenance visits per month",
     features: [
       "Everything in the Essential Plan",
-      "Two visits per month",
-      "Complimentary paint protection refresh",
-      "Dedicated detailer assigned to your vehicle",
+      "Twice the upkeep, twice a month",
+      "Paint stays protected with a complimentary refresh",
+      "The same detailer, every time — knows your car",
     ],
   },
 ];
