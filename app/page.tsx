@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import BeforeAfterSlider, {
+  BeforeAfterPlaceholder,
+} from "@/components/BeforeAfterSlider";
 import ReviewsCarousel from "@/components/ReviewsCarousel";
 import {
   ArrowRight,
@@ -79,52 +81,30 @@ const features = [
   },
 ];
 
-// The two hero sliders. PLACEHOLDERS: these currently reuse existing pairs so
-// the hero renders while the dedicated hero photography is pending. To swap in
-// the real shots, drop the files into /public/images/before-after/ and change
-// only the before/after paths below — nothing else needs to move.
-const heroBeforeAfters = [
-  {
-    label: "Exterior",
-    title: "Chevrolet Camaro SS — exterior detail, Lakeland FL",
-    before: "/images/exterior/IMG_3777.jpeg",
-    after: "/images/exterior/IMG_3667.jpeg",
-  },
-  {
-    label: "Interior",
-    title: "Dodge Challenger — interior deep clean, Lakeland FL",
-    before: "/images/interior/IMG_5540.jpeg",
-    after: "/images/interior/IMG_5567.jpeg",
-  },
+// ── Before/after slots ────────────────────────────────────────────────────────
+// Photos for these are being supplied separately. Each slot renders an empty
+// placeholder until `before` and `after` are filled in; adding the two paths
+// (and the vehicle name in `title`) is the only change needed to go live.
+
+interface PairSlot {
+  label: string;
+  title?: string;
+  before?: string;
+  after?: string;
+}
+
+// Hero: one exterior, one interior, both on specific vehicles to be confirmed.
+const heroBeforeAfters: PairSlot[] = [
+  { label: "Exterior" },
+  { label: "Interior" },
 ];
 
-// Everything else, shown lower down under "More Transformations".
-const beforeAfters = [
-  {
-    title: "Detail Transformation 1 — Lakeland, FL",
-    before: "/images/before-after/Slider1-before.jpg",
-    after: "/images/before-after/Slider1-after.jpg",
-  },
-  {
-    title: "Detail Transformation 2 — Lakeland, FL",
-    before: "/images/before-after/Slider2-before.jpg",
-    after: "/images/before-after/Slider2-after.jpg",
-  },
-  {
-    title: "Detail Transformation 3 — Lakeland, FL",
-    before: "/images/before-after/Slider3-before.jpg",
-    after: "/images/before-after/Slider3-after.jpg",
-  },
-  {
-    title: "Detail Transformation 4 — Lakeland, FL",
-    before: "/images/before-after/Slider4-before.jpg",
-    after: "/images/before-after/Slider4-after.jpg",
-  },
-  {
-    title: "Ford Maverick — exterior detail, Lakeland FL",
-    before: "/images/exterior/IMG_3584.jpeg",
-    after: "/images/exterior/IMG_6035.jpeg",
-  },
+// Lower section: four transformations.
+const beforeAfters: PairSlot[] = [
+  { label: "Transformation 1" },
+  { label: "Transformation 2" },
+  { label: "Transformation 3" },
+  { label: "Transformation 4" },
 ];
 
 const reviews = [
@@ -183,7 +163,7 @@ export default function HomePage() {
           {/* Availability chip */}
           <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-xs font-semibold px-4 py-2 rounded-full mb-7 backdrop-blur-sm">
             <Sparkles size={12} />
-            By Appointment · Limited Weekly Availability
+            By Appointment Only. Book Yours Now.
           </div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white tracking-tight leading-[1.05] mb-5 max-w-4xl">
@@ -192,30 +172,39 @@ export default function HomePage() {
           </h1>
 
           <p className="text-base md:text-lg text-white/60 max-w-2xl leading-relaxed mb-10">
-            Specializing in Lakeland's finest vehicles — luxury imports and
-            performance cars — while giving every vehicle the same standard of
-            care.
+            Specializing in Lakeland's finest vehicles — while giving every
+            vehicle the same standard of care.
           </p>
 
           {/* Proof first: two draggable transformations, exterior and interior */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 w-full mb-10">
             {heroBeforeAfters.map((pair) => (
               <div key={pair.label}>
-                <BeforeAfterSlider
-                  beforeSrc={pair.before}
-                  afterSrc={pair.after}
-                  alt={pair.title}
-                  aspectClass="aspect-[4/3]"
-                />
+                {pair.before && pair.after ? (
+                  <BeforeAfterSlider
+                    beforeSrc={pair.before}
+                    afterSrc={pair.after}
+                    alt={pair.title ?? pair.label}
+                    aspectClass="aspect-[4/3]"
+                  />
+                ) : (
+                  <BeforeAfterPlaceholder
+                    label={pair.label}
+                    note="Vehicle and photos to be confirmed"
+                    aspectClass="aspect-[4/3]"
+                  />
+                )}
                 <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-white/50">
                   {pair.label}
                 </p>
               </div>
             ))}
           </div>
-          <p className="text-xs text-white/35 mb-10 -mt-6">
-            Drag any slider to see the difference.
-          </p>
+          {heroBeforeAfters.some((p) => p.before && p.after) && (
+            <p className="text-xs text-white/35 mb-10 -mt-6">
+              Drag any slider to see the difference.
+            </p>
+          )}
 
           {/* Single call to action */}
           <Link href="/booking" className="btn-gold text-base px-8 py-4">
@@ -454,7 +443,7 @@ export default function HomePage() {
               {[
                 {
                   plan: "Essential Plan",
-                  price: "$75",
+                  price: "$100",
                   freq: "/ month",
                   details: "1 maintenance visit per month",
                 },
@@ -505,7 +494,7 @@ export default function HomePage() {
               * Shine Standard Maintenance is available only after your vehicle's initial
               full detail with us.
             </p>
-            <Link href="/booking" className="btn-gold">
+            <Link href="/shine-standard-maintenance" className="btn-gold">
               Get Started
               <ArrowRight size={16} />
             </Link>
@@ -520,21 +509,25 @@ export default function HomePage() {
             <span className="label-tag">Before & After</span>
             <h2 className="section-heading mb-4">More Transformations</h2>
             <p className="section-subheading max-w-2xl mx-auto">
-              Real vehicles, real results. Drag the slider to compare each
+              Real vehicles, real results. Drag each slider to compare the
               vehicle before and after our detail.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {beforeAfters.map((pair) => (
-              <div key={pair.title}>
-                <BeforeAfterSlider
-                  beforeSrc={pair.before}
-                  afterSrc={pair.after}
-                  alt={pair.title}
-                />
+              <div key={pair.label}>
+                {pair.before && pair.after ? (
+                  <BeforeAfterSlider
+                    beforeSrc={pair.before}
+                    afterSrc={pair.after}
+                    alt={pair.title ?? pair.label}
+                  />
+                ) : (
+                  <BeforeAfterPlaceholder label={pair.label} tone="light" />
+                )}
                 <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
-                  {pair.title}
+                  {pair.title ?? pair.label}
                 </p>
               </div>
             ))}

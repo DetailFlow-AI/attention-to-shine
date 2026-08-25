@@ -109,14 +109,6 @@ const monthlyPlans = [
   },
 ];
 
-// Monthly maintenance plan adjustments — applied on top of the plan price.
-const priceAdjusters = [
-  { factor: "Trucks & SUVs", adj: "+$20/month" },
-  { factor: "Crossovers & family-size vehicles", adj: "+$10/month" },
-  { factor: "Kids in the vehicle", adj: "+$10/month" },
-  { factor: "Work/job-site vehicle", adj: "+$20/month" },
-];
-
 export default function PricingPage() {
   return (
     <>
@@ -130,7 +122,7 @@ export default function PricingPage() {
           No hidden fees. No surprises. Just quality work at fair prices.
         </p>
         <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
-          By Appointment · Limited Weekly Availability
+          By Appointment Only. Book Yours Now.
         </div>
       </section>
 
@@ -178,10 +170,10 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <Link
-                  href="/contact"
+                  href="/shine-standard-maintenance"
                   className="inline-flex items-center gap-2 w-full justify-center border border-gold/40 text-gold px-6 py-3 rounded-full text-sm font-medium hover:bg-gold hover:text-white hover:border-gold transition-all duration-200"
                 >
-                  Inquire About This Plan
+                  See Plan Details
                 </Link>
               </div>
             ))}
@@ -191,27 +183,6 @@ export default function PricingPage() {
             detail. Contact us to get started.
           </p>
 
-          {/* What Can Adjust Your Price */}
-          <div className="max-w-3xl mx-auto mt-16 pt-12 border-t border-white/10">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-white tracking-tight">
-                What Can Adjust Your Price
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {priceAdjusters.map((row) => (
-                <div
-                  key={row.factor}
-                  className="flex items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4"
-                >
-                  <p className="text-sm text-white/70">{row.factor}</p>
-                  <p className="text-base font-bold text-gold whitespace-nowrap">
-                    {row.adj}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 

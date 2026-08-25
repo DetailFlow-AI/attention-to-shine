@@ -91,3 +91,52 @@ export default function BeforeAfterSlider({
     </div>
   );
 }
+
+// An empty, correctly-proportioned slot for a pair we don't have photos for
+// yet. Renders in place of the slider so the layout can be reviewed and the
+// pending pairs are obvious; filling in the before/after paths swaps it for a
+// real slider with no other change.
+export function BeforeAfterPlaceholder({
+  label,
+  note,
+  aspectClass = "aspect-[3/4]",
+  tone = "dark",
+}: {
+  label: string;
+  note?: string;
+  aspectClass?: string;
+  tone?: "dark" | "light";
+}) {
+  const onDark = tone === "dark";
+  return (
+    <div
+      className={`relative ${aspectClass} rounded-3xl overflow-hidden border-2 border-dashed flex flex-col items-center justify-center text-center px-6 ${
+        onDark
+          ? "border-white/20 bg-white/[0.03]"
+          : "border-navy/15 bg-apple-gray"
+      }`}
+    >
+      <div
+        className={`w-12 h-12 rounded-full border flex items-center justify-center mb-4 text-xl ${
+          onDark ? "border-white/20 text-white/40" : "border-navy/20 text-navy/40"
+        }`}
+      >
+        ＋
+      </div>
+      <p
+        className={`text-sm font-semibold ${
+          onDark ? "text-white/70" : "text-apple-text-primary"
+        }`}
+      >
+        {label}
+      </p>
+      <p
+        className={`mt-1 text-xs leading-relaxed ${
+          onDark ? "text-white/40" : "text-apple-text-tertiary"
+        }`}
+      >
+        {note ?? "Before / after photos coming soon"}
+      </p>
+    </div>
+  );
+}
