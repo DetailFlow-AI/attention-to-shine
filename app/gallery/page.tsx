@@ -1,4 +1,3 @@
-// TASK 1 — GALLERY: BEFORE & AFTER PAIRS — DONE 2026-07-07
 "use client";
 
 import { useState } from "react";
@@ -6,12 +5,11 @@ import Image from "next/image";
 
 type Category = "all" | "exterior" | "interior";
 
-interface GalleryPair {
+interface AfterShot {
   id: number;
   category: "exterior" | "interior";
-  title: string;
-  before: string;
-  after: string;
+  label: string;
+  src: string;
 }
 
 interface GalleryItem {
@@ -21,27 +19,51 @@ interface GalleryItem {
   alt: string;
 }
 
-const pairs: GalleryPair[] = [
+// The finished result from each before/after pair we shoot. Only the "after"
+// frame is shown here — the draggable before/after comparisons live on the
+// homepage. Labels describe the service and the vehicle in the shot.
+const afterShots: AfterShot[] = [
   {
     id: 1,
     category: "exterior",
-    title: "Ford Maverick — Exterior Detail",
-    before: "/images/exterior/IMG_3584.jpeg",
-    after: "/images/exterior/IMG_6035.jpeg",
+    label: "After — Exterior Detail, Range Rover",
+    src: "/images/before-after/Slider2-after.jpg",
   },
   {
     id: 2,
     category: "exterior",
-    title: "Chevrolet Camaro SS — Exterior Detail",
-    before: "/images/exterior/IMG_3777.jpeg",
-    after: "/images/exterior/IMG_3667.jpeg",
+    label: "After — Full Detail, Ford Raptor",
+    src: "/images/before-after/Slider3-after.jpg",
+  },
+  {
+    id: 3,
+    category: "exterior",
+    label: "After — Exterior Detail, Chevrolet Camaro SS",
+    src: "/images/exterior/IMG_3667.jpeg",
+  },
+  {
+    id: 4,
+    category: "exterior",
+    label: "After — Exterior Detail, Ford Maverick",
+    src: "/images/exterior/IMG_6035.jpeg",
+  },
+  {
+    id: 5,
+    category: "interior",
+    label: "After — Interior Deep Clean, Lincoln Navigator",
+    src: "/images/before-after/Slider4-after.jpg",
   },
   {
     id: 6,
     category: "interior",
-    title: "Dodge Challenger — Floor & Sill Detail",
-    before: "/images/interior/IMG_5540.jpeg",
-    after: "/images/interior/IMG_5567.jpeg",
+    label: "After — Interior Deep Clean, Dodge Challenger",
+    src: "/images/before-after/Slider1-after.jpg",
+  },
+  {
+    id: 7,
+    category: "interior",
+    label: "After — Interior Floor & Sill Detail, Dodge Challenger",
+    src: "/images/interior/IMG_5567.jpeg",
   },
 ];
 
@@ -70,40 +92,13 @@ const tabs: { key: Category; label: string }[] = [
   { key: "interior", label: "Interior" },
 ];
 
-function PairImage({
-  src,
-  label,
-  title,
-}: {
-  src: string;
-  label: "Before" | "After";
-  title: string;
-}) {
-  return (
-    <div className="relative aspect-[3/4] overflow-hidden bg-navy/10">
-      <Image
-        src={src}
-        alt={`${title} — ${label.toLowerCase()}`}
-        fill
-        sizes="(max-width: 768px) 50vw, 33vw"
-        className="object-cover"
-      />
-      <span
-        className={`absolute top-3 left-3 text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none ${
-          label === "Before" ? "bg-navy/80 text-white" : "bg-gold/90 text-white"
-        }`}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
 export default function GalleryPage() {
   const [active, setActive] = useState<Category>("all");
 
-  const filteredPairs =
-    active === "all" ? pairs : pairs.filter((p) => p.category === active);
+  const filteredShots =
+    active === "all"
+      ? afterShots
+      : afterShots.filter((p) => p.category === active);
 
   const filteredPhotos =
     active === "all"
@@ -140,19 +135,27 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          {/* Before & After pairs — left = before, right = after */}
+          {/* Finished results — the "after" frame from each transformation */}
           <h2 className="text-3xl font-bold text-navy text-center mb-8">
-            Before &amp; After
+            The Finished Result
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-            {filteredPairs.map((pair) => (
-              <div key={pair.id}>
-                <div className="grid grid-cols-2 gap-2 rounded-2xl overflow-hidden shadow-lg">
-                  <PairImage src={pair.before} label="Before" title={pair.title} />
-                  <PairImage src={pair.after} label="After" title={pair.title} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+            {filteredShots.map((shot) => (
+              <div key={shot.id}>
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg bg-navy/10">
+                  <Image
+                    src={shot.src}
+                    alt={shot.label}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                  <span className="absolute top-3 left-3 bg-gold/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none">
+                    After
+                  </span>
                 </div>
                 <p className="text-center text-sm font-medium text-navy/70 mt-3">
-                  {pair.title}
+                  {shot.label}
                 </p>
               </div>
             ))}

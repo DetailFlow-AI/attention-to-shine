@@ -79,6 +79,26 @@ const features = [
   },
 ];
 
+// The two hero sliders. PLACEHOLDERS: these currently reuse existing pairs so
+// the hero renders while the dedicated hero photography is pending. To swap in
+// the real shots, drop the files into /public/images/before-after/ and change
+// only the before/after paths below — nothing else needs to move.
+const heroBeforeAfters = [
+  {
+    label: "Exterior",
+    title: "Chevrolet Camaro SS — exterior detail, Lakeland FL",
+    before: "/images/exterior/IMG_3777.jpeg",
+    after: "/images/exterior/IMG_3667.jpeg",
+  },
+  {
+    label: "Interior",
+    title: "Dodge Challenger — interior deep clean, Lakeland FL",
+    before: "/images/interior/IMG_5540.jpeg",
+    after: "/images/interior/IMG_5567.jpeg",
+  },
+];
+
+// Everything else, shown lower down under "More Transformations".
 const beforeAfters = [
   {
     title: "Detail Transformation 1 — Lakeland, FL",
@@ -99,6 +119,11 @@ const beforeAfters = [
     title: "Detail Transformation 4 — Lakeland, FL",
     before: "/images/before-after/Slider4-before.jpg",
     after: "/images/before-after/Slider4-after.jpg",
+  },
+  {
+    title: "Ford Maverick — exterior detail, Lakeland FL",
+    before: "/images/exterior/IMG_3584.jpeg",
+    after: "/images/exterior/IMG_6035.jpeg",
   },
 ];
 
@@ -140,7 +165,7 @@ export default function HomePage() {
   return (
     <>
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-navy">
+      <section className="relative flex flex-col justify-center overflow-hidden bg-navy">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-1/4 -right-1/4 w-[700px] h-[700px] rounded-full bg-gold/5 blur-3xl" />
           <div className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-gold/5 blur-3xl" />
@@ -154,62 +179,74 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 pt-32 pb-20 md:pt-40 md:pb-28 flex flex-col items-center text-center">
+        <div className="relative max-w-6xl mx-auto px-6 pt-28 pb-16 md:pt-32 md:pb-20 flex flex-col items-center text-center">
           {/* Availability chip */}
-          <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-xs font-semibold px-4 py-2 rounded-full mb-8 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-xs font-semibold px-4 py-2 rounded-full mb-7 backdrop-blur-sm">
             <Sparkles size={12} />
             By Appointment · Limited Weekly Availability
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.05] mb-6 max-w-5xl">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white tracking-tight leading-[1.05] mb-5 max-w-4xl">
             Your car deserves{" "}
             <span className="text-gold">to shine.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl leading-relaxed mb-10">
+          <p className="text-base md:text-lg text-white/60 max-w-2xl leading-relaxed mb-10">
             Specializing in Lakeland's finest vehicles — luxury imports and
             performance cars — while giving every vehicle the same standard of
-            care. We come to you, by appointment, with limited weekly
-            availability.
+            care.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <Link href="/booking" className="btn-gold text-base px-8 py-4">
-              {FLOW_CTA}
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="/services"
-              className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors group"
-            >
-              Explore Services
-              <ChevronRight
-                size={16}
-                className="group-hover:translate-x-0.5 transition-transform"
-              />
-            </Link>
-          </div>
-
-          {/* Stats row — no vehicle count */}
-          <div className="mt-20 grid grid-cols-2 gap-8 md:gap-16 w-full max-w-2xl border-t border-white/10 pt-12">
-            {[
-              { value: "3 hrs", label: "Avg. Service Time" },
-              { value: "100%", label: "Satisfaction Guaranteed" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-xs text-white/40 uppercase tracking-wider">
-                  {stat.label}
-                </div>
+          {/* Proof first: two draggable transformations, exterior and interior */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 w-full mb-10">
+            {heroBeforeAfters.map((pair) => (
+              <div key={pair.label}>
+                <BeforeAfterSlider
+                  beforeSrc={pair.before}
+                  afterSrc={pair.after}
+                  alt={pair.title}
+                  aspectClass="aspect-[4/3]"
+                />
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-white/50">
+                  {pair.label}
+                </p>
               </div>
             ))}
           </div>
-        </div>
+          <p className="text-xs text-white/35 mb-10 -mt-6">
+            Drag any slider to see the difference.
+          </p>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="w-px h-12 bg-gradient-to-b from-transparent to-white/30 animate-pulse" />
+          {/* Single call to action */}
+          <Link href="/booking" className="btn-gold text-base px-8 py-4">
+            {FLOW_CTA}
+            <ArrowRight size={16} />
+          </Link>
+
+          {/* Trust line */}
+          <p className="mt-5 text-sm text-white/50 max-w-xl leading-relaxed">
+            Fully mobile — we come to you. Serving Lakeland, Plant City, Winter
+            Haven, Bartow, Auburndale, and the surrounding Polk County area.
+          </p>
+        </div>
+      </section>
+
+      {/* ── TRUST STRIP ── */}
+      <section className="bg-navy border-t border-white/10 py-10 px-6">
+        <div className="grid grid-cols-2 gap-8 md:gap-16 w-full max-w-2xl mx-auto">
+          {[
+            { value: "3 hrs", label: "Avg. Service Time" },
+            { value: "100%", label: "Satisfaction Guaranteed" },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="text-3xl font-bold text-white mb-1">
+                {stat.value}
+              </div>
+              <div className="text-xs text-white/40 uppercase tracking-wider">
+                {stat.label}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -481,9 +518,7 @@ export default function HomePage() {
         <div className="container-wide">
           <div className="text-center mb-14">
             <span className="label-tag">Before & After</span>
-            <h2 className="section-heading mb-4">
-              See the difference for yourself.
-            </h2>
+            <h2 className="section-heading mb-4">More Transformations</h2>
             <p className="section-subheading max-w-2xl mx-auto">
               Real vehicles, real results. Drag the slider to compare each
               vehicle before and after our detail.

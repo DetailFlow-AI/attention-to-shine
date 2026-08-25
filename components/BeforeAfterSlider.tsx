@@ -7,12 +7,17 @@ interface BeforeAfterSliderProps {
   beforeSrc: string;
   afterSrc: string;
   alt: string;
+  // Tailwind aspect class. Defaults to the tall 3/4 crop used by the grid;
+  // the hero passes a wider ratio so two sliders sit side by side without
+  // pushing the call to action below the fold.
+  aspectClass?: string;
 }
 
 export default function BeforeAfterSlider({
   beforeSrc,
   afterSrc,
   alt,
+  aspectClass = "aspect-[3/4]",
 }: BeforeAfterSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
@@ -37,7 +42,7 @@ export default function BeforeAfterSlider({
   return (
     <div
       ref={containerRef}
-      className="relative aspect-[3/4] rounded-3xl overflow-hidden select-none touch-none cursor-ew-resize shadow-xl"
+      className={`relative ${aspectClass} rounded-3xl overflow-hidden select-none touch-none cursor-ew-resize shadow-xl`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
     >
