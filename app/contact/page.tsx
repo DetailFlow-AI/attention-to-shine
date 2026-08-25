@@ -251,7 +251,7 @@ export default function ContactPage() {
                             <option value="">Select a topic</option>
                             <option value="quote">Request a Quote</option>
                             <option value="booking">Booking Question</option>
-                            <option value="checkup">Checkup Plan Inquiry</option>
+                            <option value="checkup">Shine Standard Maintenance Inquiry</option>
                             <option value="service-area">Service Area Question</option>
                             <option value="other">Other</option>
                           </select>

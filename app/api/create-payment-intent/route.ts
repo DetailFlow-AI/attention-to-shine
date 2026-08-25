@@ -68,22 +68,15 @@ export async function POST(req: NextRequest) {
     const noteUpcharges = detectNoteUpcharges(notes ?? "", vehicleSize);
     const upchargeTotal = noteUpcharges.petHair + noteUpcharges.stains + noteUpcharges.coating;
 
-    let amount = basePrice + sizeSurcharge + upchargeTotal;
-
-    // Apply promo discount on the full total (15% off orders over $200)
-    if (
-      (promoCode ?? "").toUpperCase() === "SUMMER26" &&
-      amount >= 20000
-    ) {
-      amount = Math.round(amount * 0.85);
-    }
+    // No promo code discounts automatically. Any code the customer submits is
+    // carried in metadata below and honored manually by the owner.
+    const amount = basePrice + sizeSurcharge + upchargeTotal;
 
     // Build a readable description for the Stripe receipt
     const lineItems: string[] = [service];
     if (noteUpcharges.petHair)  lineItems.push("pet hair removal");
     if (noteUpcharges.stains)   lineItems.push("stain treatment");
     if (noteUpcharges.coating)  lineItems.push(`1-yr coating (${vehicleSize})`);
-    if ((promoCode ?? "").toUpperCase() === "SUMMER26") lineItems.push("SUMMER26 discount");
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,

@@ -7,7 +7,7 @@ const footerLinks = {
     { label: "Exterior Detail", href: "/services#exterior" },
     { label: "Interior Detail", href: "/services#interior" },
     { label: "Full Detail Package", href: "/services#full" },
-    { label: "Monthly Checkup Plan", href: "/services#checkup" },
+    { label: "Shine Standard Maintenance", href: "/services#checkup" },
   ],
   Company: [
     { label: "About Us", href: "/#about" },

@@ -126,7 +126,7 @@ const reviews = [
       "I almost feel bad taking my car out of the driveway now — I don't want it to get dirty!",
     name: "Steve B.",
     initials: "SB",
-    detail: "Lakeland, FL — Checkup Detailing Plan",
+    detail: "Lakeland, FL — Shine Standard Maintenance",
   },
   {
     quote: "I'll definitely be calling them out again. Highly recommend!",
@@ -155,13 +155,10 @@ export default function HomePage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 pt-32 pb-20 md:pt-40 md:pb-28 flex flex-col items-center text-center">
-          {/* Promo badge */}
+          {/* Availability chip */}
           <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-xs font-semibold px-4 py-2 rounded-full mb-8 backdrop-blur-sm">
             <Sparkles size={12} />
-            Summer Special — 15% off packages over $200 · Use code{" "}
-            <span className="font-mono bg-gold/20 px-1.5 py-0.5 rounded">
-              SUMMER26
-            </span>
+            By Appointment · Limited Weekly Availability
           </div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.05] mb-6 max-w-5xl">
@@ -170,9 +167,10 @@ export default function HomePage() {
           </h1>
 
           <p className="text-lg md:text-xl text-white/60 max-w-2xl leading-relaxed mb-10">
-            Professional mobile detailing in Lakeland, Florida. We bring
-            everything we need directly to you — no driving, no waiting around.
-            Just a spotless result.
+            Specializing in Lakeland's finest vehicles — luxury imports and
+            performance cars — while giving every vehicle the same standard of
+            care. We come to you, by appointment, with limited weekly
+            availability.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -242,7 +240,9 @@ export default function HomePage() {
                 Whether your car is a daily driver that needs a reset or a
                 prized vehicle you want kept in showroom condition, we show up
                 with the same level of care and the same commitment to getting
-                it right.
+                it right. From daily drivers to Range Rovers, Lincoln
+                Navigators, and custom Raptors, we bring the same unhurried,
+                professional approach to every vehicle we touch.
               </p>
               <Link href="/services" className="btn-primary">
                 See Our Services
@@ -404,7 +404,7 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center">
             <span className="label-tag">Premium Subscription</span>
             <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">
-              The Checkup Detailing Plan
+              Shine Standard Maintenance
             </h2>
             <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
               A maintenance plan for already-clean vehicles. After your initial
@@ -465,7 +465,7 @@ export default function HomePage() {
             </div>
 
             <p className="text-xs text-white/30 mb-8">
-              * The Checkup Plan is available only after your vehicle's initial
+              * Shine Standard Maintenance is available only after your vehicle's initial
               full detail with us.
             </p>
             <Link href="/booking" className="btn-gold">

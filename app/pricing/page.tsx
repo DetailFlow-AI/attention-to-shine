@@ -84,7 +84,7 @@ const comparisonRows = [
 const monthlyPlans = [
   {
     name: "Essential Plan",
-    price: "$75",
+    price: "$100",
     details: "1 maintenance visit per month",
     features: [
       "Exterior rinse & hand dry",
@@ -93,6 +93,7 @@ const monthlyPlans = [
       "Full interior vacuum",
       "Dashboard & console wipe-down",
       "Priority scheduling & reserved time slot",
+      "Free pet hair removal — no upcharge, ever",
     ],
   },
   {
@@ -108,6 +109,14 @@ const monthlyPlans = [
   },
 ];
 
+// Monthly maintenance plan adjustments — applied on top of the plan price.
+const priceAdjusters = [
+  { factor: "Trucks & SUVs", adj: "+$20/month" },
+  { factor: "Crossovers & family-size vehicles", adj: "+$10/month" },
+  { factor: "Kids in the vehicle", adj: "+$10/month" },
+  { factor: "Work/job-site vehicle", adj: "+$20/month" },
+];
+
 export default function PricingPage() {
   return (
     <>
@@ -121,10 +130,88 @@ export default function PricingPage() {
           No hidden fees. No surprises. Just quality work at fair prices.
         </p>
         <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
-          🌞 Summer Special: 15% off any package over $200 — use code{" "}
-          <span className="font-mono font-bold bg-gold/20 px-2 py-0.5 rounded">
-            SUMMER26
-          </span>
+          By Appointment · Limited Weekly Availability
+        </div>
+      </section>
+
+      {/* Monthly plans */}
+      <section className="section-pad bg-navy border-t border-white/10">
+        <div className="container-wide">
+          <div className="text-center mb-12">
+            <span className="label-tag">Subscription</span>
+            <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
+              Shine Standard Maintenance
+            </h2>
+            <p className="text-white/60 max-w-xl mx-auto">
+              A monthly maintenance plan for already-clean vehicles. Each visit
+              includes an exterior rinse, tire shine, window wipe down, full
+              interior vacuum, and dashboard wipe-down — keeping your detail
+              looking fresh between full services.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {monthlyPlans.map((plan) => (
+              <div
+                key={plan.name}
+                className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/8 transition-colors"
+              >
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  {plan.name}
+                </h3>
+                <p className="text-sm text-white/50 mb-4">{plan.details}</p>
+                <div className="flex items-end gap-1 mb-6">
+                  <span className="text-4xl font-bold text-white">
+                    {plan.price}
+                  </span>
+                  <span className="text-white/40 text-sm mb-1">/month</span>
+                </div>
+                <ul className="space-y-2.5 mb-8">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-center gap-2 text-sm text-white/70"
+                    >
+                      <CheckCircle2 size={14} className="text-gold shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 w-full justify-center border border-gold/40 text-gold px-6 py-3 rounded-full text-sm font-medium hover:bg-gold hover:text-white hover:border-gold transition-all duration-200"
+                >
+                  Inquire About This Plan
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-white/30 text-xs mt-8">
+            * The Shine Standard Maintenance plan requires an initial full
+            detail. Contact us to get started.
+          </p>
+
+          {/* What Can Adjust Your Price */}
+          <div className="max-w-3xl mx-auto mt-16 pt-12 border-t border-white/10">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-white tracking-tight">
+                What Can Adjust Your Price
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {priceAdjusters.map((row) => (
+                <div
+                  key={row.factor}
+                  className="flex items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4"
+                >
+                  <p className="text-sm text-white/70">{row.factor}</p>
+                  <p className="text-base font-bold text-gold whitespace-nowrap">
+                    {row.adj}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -355,65 +442,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Monthly plans */}
-      <section className="section-pad bg-navy">
-        <div className="container-wide">
-          <div className="text-center mb-12">
-            <span className="label-tag">Subscription</span>
-            <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
-              Checkup Detailing Plan
-            </h2>
-            <p className="text-white/60 max-w-xl mx-auto">
-              A monthly maintenance plan for already-clean vehicles. Each visit
-              includes an exterior rinse, tire shine, window wipe down, full
-              interior vacuum, and dashboard wipe-down — keeping your detail
-              looking fresh between full services.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {monthlyPlans.map((plan) => (
-              <div
-                key={plan.name}
-                className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/8 transition-colors"
-              >
-                <h3 className="text-lg font-semibold text-white mb-1">
-                  {plan.name}
-                </h3>
-                <p className="text-sm text-white/50 mb-4">{plan.details}</p>
-                <div className="flex items-end gap-1 mb-6">
-                  <span className="text-4xl font-bold text-white">
-                    {plan.price}
-                  </span>
-                  <span className="text-white/40 text-sm mb-1">/month</span>
-                </div>
-                <ul className="space-y-2.5 mb-8">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-2 text-sm text-white/70"
-                    >
-                      <CheckCircle2 size={14} className="text-gold shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 w-full justify-center border border-gold/40 text-gold px-6 py-3 rounded-full text-sm font-medium hover:bg-gold hover:text-white hover:border-gold transition-all duration-200"
-                >
-                  Inquire About This Plan
-                </Link>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-white/30 text-xs mt-8">
-            * The Checkup Plan requires an initial full detail. Contact us to
-            get started.
-          </p>
-        </div>
-      </section>
-
       {/* FAQ */}
       <section className="section-pad bg-apple-gray">
         <div className="max-w-3xl mx-auto">
@@ -435,12 +463,6 @@ export default function PricingPage() {
                 a: INSTANT_BOOKING_ENABLED
                   ? "Payment is made in person on the day of your appointment — cash or card, once your detail is finished. Booking online simply reserves your time slot; nothing is charged up front."
                   : "Payment is made in person once your detail is finished — cash or card. Sending a request costs nothing and charges nothing; we quote you first and confirm the appointment with you before any work happens.",
-              },
-              {
-                q: "How do I use the SUMMER26 discount?",
-                a: INSTANT_BOOKING_ENABLED
-                  ? "Enter the code SUMMER26 when you book online. The 15% discount applies to any package totaling over $200 and comes off the total you pay in person."
-                  : "Enter the code SUMMER26 on your request. The 15% discount applies to any package totaling over $200 and will be reflected in the quote we send back.",
               },
               {
                 q: "Do I need to be home during the detail?",

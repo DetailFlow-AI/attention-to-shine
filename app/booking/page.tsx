@@ -129,19 +129,6 @@ export default function BookingPage() {
                 </div>
               </div>
             </div>
-
-            <div className="bg-gold/10 border border-gold/20 rounded-3xl p-5">
-              <p className="text-sm font-semibold text-apple-text-primary mb-1">
-                🌞 Summer discount
-              </p>
-              <p className="text-sm text-apple-text-secondary">
-                Use code{" "}
-                <span className="font-mono font-bold bg-gold/20 px-1.5 py-0.5 rounded text-xs">
-                  SUMMER26
-                </span>{" "}
-                to save 15% on any package over $200.
-              </p>
-            </div>
           </div>
         </div>
       </section>

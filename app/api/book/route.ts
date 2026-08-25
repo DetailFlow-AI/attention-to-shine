@@ -38,10 +38,8 @@ export async function POST(req: NextRequest) {
     const sizeSurcharge = (SIZE_SURCHARGE[vehicleSize] ?? 0) * 100;
     const upcharges = detectNoteUpcharges(notes ?? "", vehicleSize);
     const upchargeCents = (upcharges.petHair + upcharges.stains + upcharges.coating) * 100;
-    let amount = basePrice + sizeSurcharge + upchargeCents;
-    if ((promoCode ?? "").toUpperCase() === "SUMMER26" && amount >= 20000) {
-      amount = Math.round(amount * 0.85);
-    }
+    // No promo code discounts automatically; codes are honored manually.
+    const amount = basePrice + sizeSurcharge + upchargeCents;
 
     const summaryLines = [
       `NEW BOOKING — PAY IN PERSON`,

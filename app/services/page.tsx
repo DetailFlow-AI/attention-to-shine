@@ -79,13 +79,13 @@ const services = [
   },
   {
     id: "checkup",
-    label: "Checkup Detailing Plan",
+    label: "Shine Standard Maintenance",
     tagline: "Always clean. No effort required.",
-    price: "Starting at $75 / month",
+    price: "Starting at $100 / month",
     intro:
-      "The Checkup Detailing Plan is a maintenance subscription built for vehicles that are already clean and need to stay that way. Once your car has had its initial full detail with us, this plan keeps it in showroom condition month after month — you book once, lock in your preferred time slot, and we show up on schedule, every time.",
+      "Shine Standard Maintenance is a maintenance subscription built for vehicles that are already clean and need to stay that way. Once your car has had its initial full detail with us, this plan keeps it in showroom condition month after month — you book once, lock in your preferred time slot, and we show up on schedule, every time.",
     body:
-      "Each Checkup visit is a focused maintenance service designed to preserve the results of your full detail. We give the exterior a thorough rinse and hand dry to clear away dust, pollen, and light road film before it can bond to the paint. Your tires get a fresh coat of tire shine for that just-detailed look, and every window is wiped down inside and out for crystal-clear visibility. Inside, we run a complete interior vacuum across seats, carpets, and mats, then finish with a full dashboard and console wipe-down. It's the smartest way to protect the investment you made in your initial detail — regular upkeep at a fraction of the cost of starting over.",
+      "Each maintenance visit is a focused service designed to preserve the results of your full detail. We give the exterior a thorough rinse and hand dry to clear away dust, pollen, and light road film before it can bond to the paint. Your tires get a fresh coat of tire shine for that just-detailed look, and every window is wiped down inside and out for crystal-clear visibility. Inside, we run a complete interior vacuum across seats, carpets, and mats, then finish with a full dashboard and console wipe-down. It's the smartest way to protect the investment you made in your initial detail — regular upkeep at a fraction of the cost of starting over.",
     included: [
       "Exterior rinse and hand dry to remove dust and light film",
       "Tire shine applied to all four tires",

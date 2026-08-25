@@ -131,30 +131,26 @@ interface Pricing {
   total:         number;
 }
 
+// Promo codes are no longer applied automatically. Any code the customer
+// enters rides along on the request and is honored manually by the owner when
+// quoting, so nothing here discounts the displayed estimate.
 function calcPricing(
   service:     Service,
   size:        VehicleSize,
   notes:       string,
-  promoCode:   string,
 ): Pricing {
   const base          = BASE_PRICES[service] ?? 0;
   const sizeSurcharge = SIZE_SURCHARGES[size] ?? 0;
   const upcharges     = detectUpcharges(notes, size);
   const preDiscount   = base + sizeSurcharge + upcharges.total;
 
-  const discountApplies =
-    promoCode.toUpperCase() === "SUMMER26" && preDiscount >= 200;
-  const discount = discountApplies
-    ? Math.round(preDiscount * 0.15 * 100) / 100
-    : 0;
-
   return {
     base,
     sizeSurcharge,
     upcharges,
     preDiscount,
-    discount,
-    total: preDiscount - discount,
+    discount: 0,
+    total: preDiscount,
   };
 }
 
@@ -391,7 +387,6 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     data.service,
     data.vehicleSize,
     data.notes,
-    data.promoCode,
   );
 
   const timeSlots = [
@@ -1079,29 +1074,18 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </div>
           </div>
 
-          {/* Promo code */}
+          {/* Promo code — passed through on the request, applied manually */}
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-1.5 flex items-center gap-1">
-              <Tag size={11} /> Promo Code (optional)
+              <Tag size={11} /> Have a promo code?
             </label>
             <input
               type="text"
-              placeholder="e.g. SUMMER26"
+              placeholder="Optional"
               value={data.promoCode}
-              onChange={(e) => set("promoCode", e.target.value.toUpperCase())}
-              className={`${inputClass} uppercase`}
+              onChange={(e) => set("promoCode", e.target.value)}
+              className={inputClass}
             />
-            {data.promoCode.toUpperCase() === "SUMMER26" && pricing.discount > 0 && (
-              <p className="text-green-600 text-xs mt-1.5 flex items-center gap-1">
-                <CheckCircle2 size={12} />
-                Code applied — saving ${pricing.discount.toFixed(2)}!
-              </p>
-            )}
-            {data.promoCode.toUpperCase() === "SUMMER26" && pricing.discount === 0 && (
-              <p className="text-apple-text-tertiary text-xs mt-1.5">
-                Discount applies to orders over $200.
-              </p>
-            )}
           </div>
 
           {/* ── Full order summary ── */}
@@ -1144,14 +1128,6 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                   {data.vehicleSize ? ` (${SIZE_LABELS[data.vehicleSize]})` : ""}
                 </span>
                 <span>+${pricing.upcharges.coatingAmount.toFixed(2)}</span>
-              </div>
-            )}
-
-            {/* Promo discount */}
-            {pricing.discount > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span>Promo discount (SUMMER26 — 15%)</span>
-                <span>−${pricing.discount.toFixed(2)}</span>
               </div>
             )}
 
