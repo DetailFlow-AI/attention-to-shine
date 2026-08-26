@@ -187,13 +187,13 @@ export default function HomePage() {
                     beforeSrc={pair.before}
                     afterSrc={pair.after}
                     alt={pair.title ?? pair.label}
-                    aspectClass="aspect-[4/3]"
+                    aspectClass="aspect-[3/4]"
                   />
                 ) : (
                   <BeforeAfterPlaceholder
                     label={pair.label}
                     note="Vehicle and photos to be confirmed"
-                    aspectClass="aspect-[4/3]"
+                    aspectClass="aspect-[3/4]"
                   />
                 )}
                 <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-white/50">

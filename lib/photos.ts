@@ -140,9 +140,10 @@ const VEHICLE_WORDS = new Set([
 
 function titleCaseToken(token: string): string {
   if (ACRONYMS.has(token)) return token.toUpperCase();
-  // "f150" → "F-150", a common truck naming pattern.
-  const truck = token.match(/^([a-z])(\d{2,3})$/);
-  if (truck) return `${truck[1].toUpperCase()}-${truck[2]}`;
+  // "f150" → "F-150". Restricted to the Ford F-series pattern so trims like
+  // "m60" or "q50" keep their usual unhyphenated form.
+  const fSeries = token.match(/^f(\d{3})$/);
+  if (fSeries) return `F-${fSeries[1]}`;
   return token.charAt(0).toUpperCase() + token.slice(1);
 }
 
