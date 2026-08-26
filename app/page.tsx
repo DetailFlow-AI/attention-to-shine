@@ -1,10 +1,9 @@
-"use client";
-
 import Link from "next/link";
 import BeforeAfterSlider, {
   BeforeAfterPlaceholder,
 } from "@/components/BeforeAfterSlider";
 import ReviewsCarousel from "@/components/ReviewsCarousel";
+import { findPair } from "@/lib/photos";
 import {
   ArrowRight,
   Shield,
@@ -83,9 +82,10 @@ const features = [
 ];
 
 // ── Before/after slots ────────────────────────────────────────────────────────
-// Photos for these are being supplied separately. Each slot renders an empty
-// placeholder until `before` and `after` are filled in; adding the two paths
-// (and the vehicle name in `title`) is the only change needed to go live.
+// Photos are picked up straight off the filesystem at build time, so adding a
+// transformation means dropping two files into /public/images/before-after/
+// and rebuilding — no code change. A slot only becomes a live slider once BOTH
+// halves of its pair exist; until then it renders as a placeholder.
 
 interface PairSlot {
   label: string;
@@ -94,19 +94,20 @@ interface PairSlot {
   after?: string;
 }
 
-// Hero: one exterior, one interior, both on specific vehicles to be confirmed.
+const HERO_DIR = "images/before-after/hero";
+const TRANSFORMATIONS_DIR = "images/before-after/transformations";
+
+// Hero: exterior-before/after.jpg and interior-before/after.jpg
 const heroBeforeAfters: PairSlot[] = [
-  { label: "Exterior" },
-  { label: "Interior" },
+  { label: "Exterior", ...(findPair(HERO_DIR, "exterior") ?? {}) },
+  { label: "Interior", ...(findPair(HERO_DIR, "interior") ?? {}) },
 ];
 
-// Lower section: four transformations.
-const beforeAfters: PairSlot[] = [
-  { label: "Transformation 1" },
-  { label: "Transformation 2" },
-  { label: "Transformation 3" },
-  { label: "Transformation 4" },
-];
+// Lower section: transformation-1..4-before/after.jpg
+const beforeAfters: PairSlot[] = [1, 2, 3, 4].map((n) => ({
+  label: `Transformation ${n}`,
+  ...(findPair(TRANSFORMATIONS_DIR, `transformation-${n}`) ?? {}),
+}));
 
 const reviews = [
   {
