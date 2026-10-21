@@ -107,6 +107,52 @@ skipped (and logged).
 
 ---
 
+### 6. Google reviews on the homepage
+
+The homepage pulls your real Google reviews through the Places API, server-side,
+cached for about a day. If anything fails it silently falls back to the built-in
+reviews, so the section can never render empty.
+
+**a. Enable the API.** In the [Google Cloud console](https://console.cloud.google.com/),
+select the same project your calendar service account lives in. Go to
+**APIs & Services → Library**, search for **Places API (New)**, and click **Enable**.
+
+**b. Create the key.** Go to **APIs & Services → Credentials →
+Create credentials → API key**. Copy it.
+
+**c. Restrict the key.** Click the new key to edit it:
+
+- **Application restrictions: None.** This key is used only from the server, and
+  Vercel's outbound IPs are not fixed, so IP and HTTP-referrer restrictions will
+  break the call. The key is never sent to the browser, so "None" is correct here.
+- **API restrictions: Restrict key → Places API (New).** This is the important
+  one — it means a leaked key can't be used against any other Google service.
+
+Do **not** reuse `GOOGLE_CALENDAR_API_KEY` for this. Keep one key per API so
+either can be rotated on its own.
+
+**d. Find your Place ID.** Open the
+[Place ID Finder](https://developers.google.com/maps/documentation/places/web-service/place-id)
+and search for your business. The ID looks like `ChIJ...`. Confirm it is the right
+listing: the CID on the public listing is `8798533128764867224`.
+
+**e. Set the environment variables** in Vercel (**Settings → Environment Variables**),
+for Production, Preview and Development:
+
+```
+GOOGLE_PLACES_API_KEY=<the key from step b>
+GOOGLE_PLACE_ID=<the ChIJ... id from step d>
+```
+
+Neither may be prefixed with `NEXT_PUBLIC_` — that would inline the key into the
+browser bundle and expose it publicly.
+
+**Notes.** The Places API returns at most **5 reviews**, chosen by Google; there is
+no API that returns all of them, which is why the "See all reviews on Google" link
+is there. Reviews are shown exactly as Google returns them, unfiltered by star
+rating. The homepage revalidates about once a day, so a new review can take up to
+24 hours to appear.
+
 ## Deploy to Vercel
 
 1. Push this folder to a GitHub repository

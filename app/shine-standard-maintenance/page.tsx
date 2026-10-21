@@ -2,11 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Info } from "lucide-react";
 import MaintenanceQuote from "@/components/MaintenanceQuote";
+import {
+  QUARTERLY_PLAN,
+  MONTHLY_PLAN,
+  QUARTERLY_ANNUAL_SAVINGS,
+} from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Shine Standard Maintenance",
   description:
-    "A standing monthly appointment that keeps your vehicle in the condition we left it in. Essential from $100/month, Premium from $150/month, in Lakeland, FL.",
+    `A standing appointment that keeps your vehicle in the condition we left it in. ${QUARTERLY_PLAN.name} from $${QUARTERLY_PLAN.pricePerVisit} a visit every 3 months, ${MONTHLY_PLAN.name} from $${MONTHLY_PLAN.pricePerMonth}/month, in Lakeland, FL.`,
 };
 
 const includedGroups = [
@@ -46,13 +51,17 @@ export default function ShineStandardMaintenancePage() {
           Shine Standard Maintenance
         </h1>
         <p className="text-xl text-white/60 max-w-2xl mx-auto mb-8 leading-relaxed">
-          A standing monthly appointment that keeps your vehicle in exactly the
+          A standing appointment that keeps your vehicle in exactly the
           condition we left it in — so it never needs rescuing again.
         </p>
         <div className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
-          <span>Essential from $100/month</span>
+          <span>
+            {QUARTERLY_PLAN.name} from ${QUARTERLY_PLAN.pricePerVisit} a visit
+          </span>
           <span className="text-gold/40">·</span>
-          <span>Premium from $150/month</span>
+          <span>
+            {MONTHLY_PLAN.name} from ${MONTHLY_PLAN.pricePerMonth}/month
+          </span>
         </div>
       </section>
 
@@ -65,10 +74,12 @@ export default function ShineStandardMaintenancePage() {
               A brand-new-looking car, every time we're there.
             </h2>
             <p className="section-subheading max-w-2xl mx-auto">
-              Once a month — or twice, on the Premium plan — your vehicle gets
-              reset back to showroom condition. Not "cleaned." Brand-new
-              looking, protected, and cared for, for less than the cost of a
-              single detail spread across the month.
+              Once every 3 months on {QUARTERLY_PLAN.name}, or every month on{" "}
+              {MONTHLY_PLAN.name}, your vehicle gets reset back to showroom
+              condition. Not "cleaned." Brand-new looking, protected, and cared
+              for — the quarterly plan alone saves ${QUARTERLY_ANNUAL_SAVINGS} a
+              year against booking a full detail {QUARTERLY_PLAN.visitsPerYear}×
+              a year.
             </p>
           </div>
 
@@ -125,7 +136,7 @@ export default function ShineStandardMaintenancePage() {
             <p className="text-white/60 max-w-2xl mx-auto">
               Plans start at the base rate and adjust for what the vehicle
               actually asks of us. Answer three quick questions for a rough
-              monthly figure.
+              figure — an estimate, not a final quote.
             </p>
           </div>
 

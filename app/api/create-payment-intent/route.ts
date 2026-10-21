@@ -1,24 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { SIZE_SURCHARGE, detectNoteUpcharges as detectDollars } from "@/lib/pricing";
+import {
+  BASE_PRICES as BASE_PRICE_DOLLARS,
+  COATING_NAME,
+  SIZE_SURCHARGE,
+  detectNoteUpcharges as detectDollars,
+} from "@/lib/pricing";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
-// ── Base prices (cents) ───────────────────────────────────────────────────────
-
-const BASE_PRICES: Record<string, number> = {
-  exterior: 10000,
-  interior: 14000,
-  full:     20000,
-};
-
 interface NoteUpcharges {
   petHair: number; // cents
   stains:  number;
   coating: number;
 }
 
-// Shared detection works in dollars; convert to cents for Stripe.
+// Shared detection works in dollars; convert to cents for Stripe. Add-ons are
+// ranges now — charge the low end, which is what most jobs actually cost. The
+// owner adjusts afterwards if the vehicle turns out to be worse than described.
 function detectNoteUpcharges(
   notes: string,
   vehicleSize: string,
@@ -26,9 +25,9 @@ function detectNoteUpcharges(
 ): NoteUpcharges {
   const d = detectDollars(notes, vehicleSize, membership);
   return {
-    petHair: d.petHair * 100,
-    stains:  d.stains  * 100,
-    coating: d.coating * 100,
+    petHair: d.petHair.min * 100,
+    stains:  d.stains.min  * 100,
+    coating: d.coating.min * 100,
   };
 }
 
@@ -62,10 +61,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const basePrice = BASE_PRICES[service];
-    if (basePrice === undefined) {
+    const baseDollars = BASE_PRICE_DOLLARS[service];
+    if (baseDollars === undefined) {
       return NextResponse.json({ error: "Invalid service" }, { status: 400 });
     }
+    const basePrice = baseDollars * 100;
 
     const sizeSurcharge = (SIZE_SURCHARGE[vehicleSize] ?? 0) * 100;
 
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     const lineItems: string[] = [service];
     if (noteUpcharges.petHair)  lineItems.push("pet hair removal");
     if (noteUpcharges.stains)   lineItems.push("stain treatment");
-    if (noteUpcharges.coating)  lineItems.push(`1-yr coating (${vehicleSize})`);
+    if (noteUpcharges.coating)  lineItems.push(`${COATING_NAME} (${vehicleSize})`);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,

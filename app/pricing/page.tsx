@@ -5,20 +5,33 @@ import {
   INSTANT_BOOKING_ENABLED,
   FLOW_CTA_SHORT,
 } from "@/lib/bookingMode";
+import {
+  BASE_PRICES,
+  TRUCK_SUV_UPCHARGE,
+  TRUCK_SUV_PLAN_UPCHARGE,
+  QUARTERLY_PLAN,
+  MONTHLY_PLAN,
+  QUARTERLY_ANNUAL_SAVINGS,
+} from "@/lib/pricing";
+
+// What the bundled Full Detail saves against booking the two halves
+// separately. Derived so it can never contradict the prices themselves.
+const BUNDLE_SAVINGS =
+  BASE_PRICES.exterior + BASE_PRICES.interior - BASE_PRICES.full;
 
 const bookVerb = INSTANT_BOOKING_ENABLED ? "Book" : "Request";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Clear, honest pricing for all Attention to Shine mobile detailing packages in Lakeland, FL. No hidden fees, no surprises.",
+    "Starting prices for every Attention to Shine mobile detailing package and maintenance plan in Lakeland, FL. Request a quote — no hidden fees, no surprises.",
 };
 
 const packages = [
   {
     id: "exterior",
     name: "Exterior Detail",
-    price: "$100",
+    price: `Starting at $${BASE_PRICES.exterior}`,
     description:
       "Deep gloss, no swirl marks, no road film — paint that looks like it just left the showroom. Great for routine upkeep or before a special occasion.",
     features: [
@@ -33,7 +46,7 @@ const packages = [
   {
     id: "full",
     name: "Full Detail Package",
-    price: "$200",
+    price: `Starting at $${BASE_PRICES.full}`,
     description:
       "A car that looks — and feels — brand new, inside and out, in one appointment. Our most requested service and our best value. Ideal for any vehicle that's due for a full reset.",
     features: [
@@ -48,7 +61,7 @@ const packages = [
   {
     id: "interior",
     name: "Interior Detail",
-    price: "$140",
+    price: `Starting at $${BASE_PRICES.interior}`,
     description:
       "Step in and it feels like a different car — no stains, no odors, no dust anywhere you'd notice. Adjusted to your vehicle's specific condition.",
     features: [
@@ -79,22 +92,25 @@ const comparisonRows = [
 
 const monthlyPlans = [
   {
-    name: "Essential Plan",
-    price: "$100",
-    details: "1 maintenance visit per month",
+    name: QUARTERLY_PLAN.name,
+    price: `Starting at $${QUARTERLY_PLAN.pricePerVisit}`,
+    unit: "per visit",
+    details: `${QUARTERLY_PLAN.cadence} · ${QUARTERLY_PLAN.minVisits}-visit minimum`,
     features: [
-      "Looks freshly detailed, every visit",
+      `Saves $${QUARTERLY_ANNUAL_SAVINGS} a year versus a full detail ${QUARTERLY_PLAN.visitsPerYear}× a year`,
+      "Your car reset every season, before it ever looks neglected",
       "A reserved slot — never a scramble to rebook",
       "Free pet hair removal, always — no upcharge",
     ],
   },
   {
-    name: "Premium Plan",
-    price: "$150",
-    details: "2 maintenance visits per month",
+    name: MONTHLY_PLAN.name,
+    price: `Starting at $${MONTHLY_PLAN.pricePerMonth}`,
+    unit: "per month",
+    details: MONTHLY_PLAN.cadence,
     features: [
-      "Everything in the Essential Plan",
-      "Twice the upkeep, twice a month",
+      `Everything in ${QUARTERLY_PLAN.name}`,
+      "Looks freshly detailed all month, every month",
       "Paint stays protected with a complimentary refresh",
       "The same detailer, every time — knows your car",
     ],
@@ -148,7 +164,9 @@ export default function PricingPage() {
                   <span className="text-4xl font-bold text-white">
                     {plan.price}
                   </span>
-                  <span className="text-white/40 text-sm mb-1">/month</span>
+                  <span className="text-white/40 text-sm mb-1">
+                    {plan.unit}
+                  </span>
                 </div>
                 <ul className="space-y-2.5 mb-8">
                   {plan.features.map((f) => (
@@ -171,8 +189,8 @@ export default function PricingPage() {
             ))}
           </div>
           <p className="text-center text-white/30 text-xs mt-8">
-            * The Shine Standard Maintenance plan requires an initial full
-            detail. Contact us to get started.
+            * Both plans require an initial full detail, and trucks and SUVs add
+            ${TRUCK_SUV_PLAN_UPCHARGE}. Contact us to get started.
           </p>
 
         </div>
@@ -303,19 +321,19 @@ export default function PricingPage() {
                   <th className="font-semibold px-4 py-4 text-center">
                     Exterior
                     <span className="block text-xs font-normal text-white/50">
-                      Starting at $100
+                      Starting at ${BASE_PRICES.exterior}
                     </span>
                   </th>
                   <th className="font-semibold px-4 py-4 text-center">
                     Interior
                     <span className="block text-xs font-normal text-white/50">
-                      Starting at $140
+                      Starting at ${BASE_PRICES.interior}
                     </span>
                   </th>
                   <th className="font-semibold px-4 py-4 text-center bg-gold/90">
                     Full Detail
                     <span className="block text-xs font-normal text-white/80">
-                      Starting at $200
+                      Starting at ${BASE_PRICES.full}
                     </span>
                   </th>
                 </tr>
@@ -356,7 +374,7 @@ export default function PricingPage() {
 
           <p className="text-xs text-apple-text-tertiary mt-4 text-center">
             The Full Detail Package bundles every exterior and interior service
-            at our best rate — saving $40 versus booking separately.
+            at our best rate — saving ${BUNDLE_SAVINGS} versus booking separately.
           </p>
         </div>
       </section>
@@ -368,21 +386,23 @@ export default function PricingPage() {
             <Info size={18} className="text-gold shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-apple-text-primary mb-1">
-                Pricing adjusts for larger vehicles
+                Trucks and SUVs are the only size upcharge
               </h3>
               <p className="text-sm text-apple-text-secondary">
-                Larger vehicles take more time and product. All prices below are
-                starting rates — final pricing is based on vehicle size and
-                condition.
+                Trucks and SUVs take more time and product, so they add $
+                {TRUCK_SUV_UPCHARGE} to a one-time detail and $
+                {TRUCK_SUV_PLAN_UPCHARGE} on a maintenance plan. Every other
+                vehicle is the starting price — no size upcharge at all.
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { size: "Sedan / Coupe", adj: "Starting at base price" },
-              { size: "Minivan", adj: "Starting at +$20" },
-              { size: "SUV", adj: "Starting at +$40" },
-              { size: "Large Truck / Van", adj: "Starting at +$40" },
+              { size: "Car, sedan or coupe", adj: "No upcharge" },
+              {
+                size: "Truck or SUV",
+                adj: `+$${TRUCK_SUV_UPCHARGE} one-time · +$${TRUCK_SUV_PLAN_UPCHARGE} on a plan`,
+              },
             ].map((row) => (
               <div
                 key={row.size}
@@ -419,7 +439,11 @@ export default function PricingPage() {
             {[
               {
                 q: "Do prices include all vehicle types?",
-                a: "Base prices apply to standard sedans and coupes. Minivans add $20, and SUVs and large trucks or vans add $40 to any service.",
+                a: `Trucks and SUVs are the only vehicles with a size upcharge — $${TRUCK_SUV_UPCHARGE} on a one-time detail and $${TRUCK_SUV_PLAN_UPCHARGE} on a maintenance plan. Every other vehicle starts at the listed price.`,
+              },
+              {
+                q: "Is the price I see a firm quote?",
+                a: "No — every price on this site is a starting estimate. Most vehicles come in right at the starting price, but how dirty a vehicle is and the condition it was left in can affect the final number. We confirm your quote with you before any work begins.",
               },
               {
                 q: "What payment methods do you accept?",

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  BASE_PRICES,
+  SERVICE_LABELS,
+  SIZE_LABELS,
   SIZE_SURCHARGE,
   detectNoteUpcharges,
+  formatRange,
   isMember,
   MEMBERSHIP_LABELS,
   type Membership,
@@ -19,25 +23,6 @@ import {
 //
 // The estimate below is FOR THE OWNER ONLY — a starting point for the quote
 // they send. It is never presented to the customer as a price.
-
-const BASE_PRICES: Record<string, number> = {
-  exterior: 100,
-  interior: 140,
-  full:     200,
-};
-
-const SERVICE_LABELS: Record<string, string> = {
-  exterior: "Exterior Detail",
-  interior: "Interior Detail",
-  full:     "Full Detail Package",
-};
-
-const SIZE_LABELS: Record<string, string> = {
-  sedan:   "Sedan / Coupe",
-  minivan: "Minivan",
-  suv:     "SUV",
-  truck:   "Large Truck / Van",
-};
 
 export async function POST(req: NextRequest) {
   try {
@@ -62,10 +47,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Owner-facing estimate only — the quote is written by hand afterwards.
+    // Add-ons are ranges, so the estimate is a range too: the low end is what
+    // most jobs cost, the high end only if the vehicle is genuinely severe.
     const sizeSurcharge = SIZE_SURCHARGE[vehicleSize] ?? 0;
     const upcharges = detectNoteUpcharges(condition ?? "", vehicleSize, membership);
-    const upchargeTotal = upcharges.petHair + upcharges.stains + upcharges.coating;
-    const estimate = basePrice + sizeSurcharge + upchargeTotal;
+    const estimateLow  = basePrice + sizeSurcharge + upcharges.min;
+    const estimateHigh = basePrice + sizeSurcharge + upcharges.max;
+    const estimate = estimateLow === estimateHigh
+      ? `$${estimateLow.toFixed(2)}`
+      : `$${estimateLow.toFixed(2)}–$${estimateHigh.toFixed(2)}`;
 
     // Conditional lines are `undefined` (not "") so the blank spacer lines
     // between blocks survive the filter and the email stays scannable.
@@ -93,12 +83,12 @@ export async function POST(req: NextRequest) {
       `Vehicle condition (customer's words):`,
       condition ? condition : "(not provided)",
       ``,
-      `Starting estimate for your quote: $${estimate.toFixed(2)}`,
+      `Starting estimate for your quote: ${estimate}`,
       `  base ${SERVICE_LABELS[service] ?? service} $${basePrice.toFixed(2)}`,
-      sizeSurcharge ? `  vehicle size +$${sizeSurcharge.toFixed(2)}` : undefined,
-      upcharges.petHair ? `  pet hair +$${upcharges.petHair.toFixed(2)}` : undefined,
-      upcharges.stains  ? `  staining +$${upcharges.stains.toFixed(2)}` : undefined,
-      upcharges.coating ? `  coating +$${upcharges.coating.toFixed(2)}` : undefined,
+      sizeSurcharge ? `  truck / SUV +$${sizeSurcharge.toFixed(2)}` : undefined,
+      upcharges.petHair.max ? `  pet hair +${formatRange(upcharges.petHair)}` : undefined,
+      upcharges.stains.max  ? `  staining +${formatRange(upcharges.stains)}`  : undefined,
+      upcharges.coating.max ? `  ceramic + clay bar +${formatRange(upcharges.coating)}` : undefined,
       `  (auto-detected from the condition text — confirm before quoting)`,
       ``,
       `No calendar event was created for this request.`,

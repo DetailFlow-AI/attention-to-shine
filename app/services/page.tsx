@@ -8,11 +8,24 @@ import {
   FLOW_CTA,
   FLOW_CTA_SHORT,
 } from "@/lib/bookingMode";
+import {
+  BASE_PRICES,
+  COATING_NAME,
+  COATING_RANGE,
+  PET_HAIR_RANGE,
+  STAIN_RANGE,
+  TRUCK_SUV_UPCHARGE,
+  TRUCK_SUV_PLAN_UPCHARGE,
+  QUARTERLY_PLAN,
+  MONTHLY_PLAN,
+  QUARTERLY_ANNUAL_SAVINGS,
+  formatRange,
+} from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Explore Attention to Shine's mobile detailing services — exterior detail, interior deep clean, full detail packages, and monthly maintenance plans in Lakeland, FL.",
+    "Explore Attention to Shine's mobile detailing services — exterior detail, interior deep clean, full detail packages, and quarterly or monthly maintenance plans in Lakeland, FL.",
 };
 
 const services = [
@@ -20,7 +33,7 @@ const services = [
     id: "exterior",
     label: "Exterior Detail",
     tagline: "A deep, protective shine.",
-    price: "From $100",
+    price: `From $${BASE_PRICES.exterior}`,
     intro:
       "Road grime, tree sap, bird droppings, Florida sun — it all adds up. This detail undoes it: a deep, protective shine that actually lasts.",
     body:
@@ -38,7 +51,7 @@ const services = [
     id: "interior",
     label: "Interior Detail",
     tagline: "Clean, fresh, and well cared for.",
-    price: "From $140",
+    price: `From $${BASE_PRICES.interior}`,
     intro:
       "Dust on the dash, crumbs in the seats, smells that have built up over time — gone. Step back in and it genuinely feels like a different car.",
     body:
@@ -56,7 +69,7 @@ const services = [
     id: "full",
     label: "Full Detail Package",
     tagline: "Every inch, done right.",
-    price: "From $200",
+    price: `From $${BASE_PRICES.full}`,
     intro:
       "Our most requested service, and the best value we offer — the complete exterior and interior process, done in one visit.",
     body:
@@ -73,11 +86,10 @@ const services = [
     id: "checkup",
     label: "Shine Standard Maintenance",
     tagline: "Always clean. No effort required.",
-    price: "Starting at $100 / month",
+    price: `Starting at $${QUARTERLY_PLAN.pricePerVisit} per visit`,
     intro:
       "Once your car's had its initial full detail, this keeps it looking that way — month after month, without you lifting a finger.",
-    body:
-      "A reserved time slot, every month (Premium: twice a month). Your car looks freshly detailed each time we leave — for a fraction of what it'd cost to keep re-detailing from scratch.",
+    body: `Two ways to stay on top of it. ${QUARTERLY_PLAN.name} comes out once every 3 months (${QUARTERLY_PLAN.minVisits}-visit minimum) and saves you $${QUARTERLY_ANNUAL_SAVINGS} a year against booking a full detail ${QUARTERLY_PLAN.visitsPerYear}× a year. ${MONTHLY_PLAN.name} comes out every month, starting at $${MONTHLY_PLAN.pricePerMonth}. Your car looks freshly detailed each time we leave — for a fraction of what it'd cost to keep re-detailing from scratch.`,
     included: [
       "Looks freshly detailed, every single visit",
       "A reserved slot — never a scramble to rebook",
@@ -206,15 +218,17 @@ export default function ServicesPage() {
             Pricing by Vehicle Size
           </h2>
           <p className="text-apple-text-secondary mb-8">
-            Larger vehicles take more time and product. All prices listed are
-            base rates for standard sedans and coupes.
+            Trucks and SUVs take more time and product, so they're the only
+            vehicles with a size upcharge. Everything else starts at the listed
+            price.
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             {[
-              { size: "Sedan / Coupe", adj: "Base price" },
-              { size: "Minivan", adj: "+ $20" },
-              { size: "SUV", adj: "+ $40" },
-              { size: "Large Truck / Van", adj: "+ $40" },
+              { size: "Car, sedan or coupe", adj: "No upcharge" },
+              {
+                size: "Truck or SUV",
+                adj: `+ $${TRUCK_SUV_UPCHARGE} one-time · + $${TRUCK_SUV_PLAN_UPCHARGE} on a plan`,
+              },
             ].map((row) => (
               <div
                 key={row.size}
@@ -243,28 +257,34 @@ export default function ServicesPage() {
               Factors that can impact your quote
             </h2>
             <p className="text-apple-text-secondary max-w-2xl mx-auto">
-              Every vehicle is different. These factors can adjust the final
-              price of your detail — we'll always confirm your total before any
-              work begins.
+              Every price on this site is a starting estimate, not a firm quote.
+              Most vehicles come in right at the starting price — these are the
+              things that can move it. We'll always confirm your total before
+              any work begins.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             {[
               {
-                factor: "Vehicle Size",
-                adj: "+$20 – $40",
-                note: "Minivans add $20; SUVs and large trucks or vans add $40 to the base price.",
+                factor: "Truck or SUV",
+                adj: `+$${TRUCK_SUV_UPCHARGE}`,
+                note: `Trucks and SUVs add $${TRUCK_SUV_UPCHARGE} to a one-time detail and $${TRUCK_SUV_PLAN_UPCHARGE} on a maintenance plan. No other vehicle type has a size upcharge.`,
               },
               {
                 factor: "Pet Hair",
-                adj: "From +$20",
-                note: "Light pet hair starts at $20; severe pet hair is $40, as it takes extra time and specialized tools.",
+                adj: `+${formatRange(PET_HAIR_RANGE)}`,
+                note: `Most vehicles are just the $${PET_HAIR_RANGE.min} upcharge. Genuinely severe pet hair runs up to $${PET_HAIR_RANGE.max}, as it takes extra time and specialized tools.`,
               },
               {
                 factor: "Staining",
-                adj: "From +$30",
-                note: "Light staining starts at $30; heavy or severe staining is $50, requiring extra treatment and extraction.",
+                adj: `+${formatRange(STAIN_RANGE)}`,
+                note: `Most vehicles are just the $${STAIN_RANGE.min} upcharge. Heavy staining runs up to $${STAIN_RANGE.max}, depending on condition and how much extraction it needs.`,
+              },
+              {
+                factor: "Condition",
+                adj: "Varies",
+                note: "How dirty the vehicle is and the condition it was left in can affect the price. Normally it's just the standard base price — this is here for the occasional very dirty vehicle.",
               },
             ].map((row) => (
               <div
@@ -306,10 +326,10 @@ export default function ServicesPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-2xl font-bold text-apple-text-primary mb-1">
-                      1-Year Protection Coating
+                      {COATING_NAME}
                     </h3>
                     <p className="text-gold font-semibold text-sm">
-                      Starting at $50 upcharge
+                      {formatRange(COATING_RANGE)} upcharge, by vehicle size
                     </p>
                   </div>
                   <span className="bg-navy text-white text-xs font-semibold px-3 py-1.5 rounded-full shrink-0 ml-4">
@@ -318,19 +338,20 @@ export default function ServicesPage() {
                 </div>
 
                 <p className="text-apple-text-secondary leading-relaxed mb-6">
-                  This one-year protective wax coating works similarly to a
-                  ceramic sealant — lasting far longer than a standard wax. It
-                  creates a durable layer of protection over your paint that
-                  repels water, helps pollen and debris glide off easily, and
-                  shields your vehicle from sun damage and rain spots.
+                  A clay bar treatment pulls the embedded grit that washing
+                  alone leaves behind, then six months of ceramic protection
+                  goes on over genuinely clean paint. The result is a durable
+                  layer that repels water, helps pollen and debris glide off
+                  easily, and shields your vehicle from sun damage and rain
+                  spots.
                 </p>
 
                 <ul className="space-y-2.5 mb-8">
                   {[
-                    "Lasts up to a year — far longer than standard wax",
+                    "Clay bar lifts embedded contaminants a wash can't reach",
+                    "Six months of ceramic protection — far longer than wax",
                     "Water beads and rolls right off, taking dirt with it",
                     "Protects against sun damage and rain spots",
-                    "Ceramic-level protection at a fraction of the cost",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2.5 text-sm text-apple-text-secondary">
                       <CheckCircle2 size={15} className="text-gold shrink-0 mt-0.5" />

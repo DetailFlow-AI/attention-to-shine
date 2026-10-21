@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BASE_PRICES, QUARTERLY_PLAN, MONTHLY_PLAN } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: {
@@ -9,21 +10,21 @@ export const metadata: Metadata = {
     template: "%s | Attention to Shine",
   },
   description:
-    "Premium mobile car detailing in Lakeland, Florida. We bring the shine to you — expert interior & exterior detailing, paint protection, and monthly maintenance packages. Book online today.",
+    "Mobile car detailing in Lakeland, Florida — we come to you. Request a quote in under two minutes, or keep your car showroom-clean year-round with a Shine Standard maintenance plan.",
   keywords: [
     "car detailing Lakeland FL",
     "mobile detailing Florida",
     "auto detailing Lakeland",
     "car wash Lakeland",
-
+    "request a detailing quote Lakeland",
+    "car maintenance plan Lakeland",
     "interior detailing",
     "exterior detailing",
     "Attention to Shine",
   ],
   openGraph: {
     title: "Attention to Shine | Mobile Car Detailing in Lakeland, FL",
-    description:
-      "Expert mobile car detailing that comes to you. Interior, exterior, and full detail packages starting at $100.",
+    description: `Mobile detailing that comes to you in Lakeland, FL. Full details start at $${BASE_PRICES.full}, plus ${QUARTERLY_PLAN.name} and ${MONTHLY_PLAN.name} plans. Request a quote — no payment up front.`,
     url: "https://www.attentiontoshinedetailing.com",
     siteName: "Attention to Shine",
     locale: "en_US",

@@ -8,9 +8,18 @@ import {
   PREP_HOURS,
 } from "@/lib/bookingRules";
 import {
+  BASE_PRICES,
+  SERVICE_LABELS,
+  SIZE_LABELS,
+  VEHICLE_SIZE_OPTIONS,
+  COATING_NAME,
+  COATING_RANGE,
+  PET_HAIR_RANGE,
+  STAIN_RANGE,
   SIZE_SURCHARGE as SIZE_SURCHARGES,
-  COATING_PRICE as COATING_PRICES,
   detectNoteUpcharges,
+  formatRange,
+  type PriceRange,
   type Membership,
 } from "@/lib/pricing";
 import { INSTANT_BOOKING_ENABLED } from "@/lib/bookingMode";
@@ -73,26 +82,8 @@ interface BookingData {
   membership:   Membership;
 }
 
-// ── Base pricing ───────────────────────────────────────────────────────────────
-
-const BASE_PRICES: Record<string, number> = {
-  exterior: 100,
-  interior: 140,
-  full:     200,
-};
-
-const SERVICE_LABELS: Record<string, string> = {
-  exterior: "Exterior Detail",
-  interior: "Interior Detail",
-  full:     "Full Detail Package",
-};
-
-const SIZE_LABELS: Record<string, string> = {
-  sedan:   "Sedan / Coupe",
-  minivan: "Minivan",
-  suv:     "SUV",
-  truck:   "Large Truck / Van",
-};
+// Base prices, service labels and size labels all come from lib/pricing.ts so
+// the form, the pages and the API routes can never quote different numbers.
 
 // ── Keyword detection (tiered amounts live in lib/pricing.ts) ──────────────────
 
@@ -100,29 +91,33 @@ interface DetectedUpcharges {
   hasPetHair:    boolean;
   hasStains:     boolean;
   hasCoating:    boolean;
-  petHairAmount: number;
-  stainsAmount:  number;
-  coatingAmount: number;
-  total:         number;
+  petHairAmount: PriceRange;
+  stainsAmount:  PriceRange;
+  coatingAmount: PriceRange;
+  totalMin:      number;
+  totalMax:      number;
 }
 
 // Wraps the shared server/client detection so the estimate shown here always
-// matches what the API charges. Pet hair and staining are tiered (a "severe"
-// or "heavy" mention costs more); coating is priced by vehicle size.
+// matches what the API records. Pet hair and staining are shown as ranges —
+// most jobs land at the low end, and the owner confirms the real number after
+// seeing the vehicle. The ceramic treatment is priced by vehicle size.
 function detectUpcharges(
   notes: string,
   vehicleSize: VehicleSize,
   membership: Membership,
 ): DetectedUpcharges {
-  const { petHair, stains, coating } = detectNoteUpcharges(notes, vehicleSize, membership);
+  const { petHair, stains, coating, min, max } =
+    detectNoteUpcharges(notes, vehicleSize, membership);
   return {
-    hasPetHair: petHair > 0,
-    hasStains:  stains > 0,
-    hasCoating: coating > 0,
+    hasPetHair: petHair.max > 0,
+    hasStains:  stains.max > 0,
+    hasCoating: coating.max > 0,
     petHairAmount: petHair,
     stainsAmount:  stains,
     coatingAmount: coating,
-    total: petHair + stains + coating,
+    totalMin: min,
+    totalMax: max,
   };
 }
 
@@ -132,9 +127,12 @@ interface Pricing {
   base:          number;
   sizeSurcharge: number;
   upcharges:     DetectedUpcharges;
-  preDiscount:   number;
-  discount:      number;
-  total:         number;
+  /** What the job costs in the ordinary case. */
+  totalMin:      number;
+  /** The ceiling, only reached on genuinely severe vehicles. */
+  totalMax:      number;
+  /** "Starting at $175" or "$200–$255" — never presented as a firm quote. */
+  label:         string;
 }
 
 // Promo codes are no longer applied automatically. Any code the customer
@@ -149,15 +147,18 @@ function calcPricing(
   const base          = BASE_PRICES[service] ?? 0;
   const sizeSurcharge = SIZE_SURCHARGES[size] ?? 0;
   const upcharges     = detectUpcharges(notes, size, membership);
-  const preDiscount   = base + sizeSurcharge + upcharges.total;
+  const totalMin      = base + sizeSurcharge + upcharges.totalMin;
+  const totalMax      = base + sizeSurcharge + upcharges.totalMax;
 
   return {
     base,
     sizeSurcharge,
     upcharges,
-    preDiscount,
-    discount: 0,
-    total: preDiscount,
+    totalMin,
+    totalMax,
+    label: totalMin === totalMax
+      ? `Starting at $${totalMin}`
+      : `$${totalMin}–$${totalMax}`,
   };
 }
 
@@ -240,38 +241,35 @@ function UpchargeCallout({
         {upcharges.hasPetHair && (
           <li className="flex justify-between text-xs text-amber-700">
             <span>Pet hair removal</span>
-            <span className="font-semibold">+${upcharges.petHairAmount.toFixed(2)}</span>
+            <span className="font-semibold">+{formatRange(upcharges.petHairAmount)}</span>
           </li>
         )}
         {upcharges.hasStains && (
           <li className="flex justify-between text-xs text-amber-700">
             <span>Stain treatment</span>
-            <span className="font-semibold">+${upcharges.stainsAmount.toFixed(2)}</span>
+            <span className="font-semibold">+{formatRange(upcharges.stainsAmount)}</span>
           </li>
         )}
         {upcharges.hasCoating && (
           <li className="flex justify-between text-xs text-amber-700">
             <span>
-              1-Year Protection Coating
+              {COATING_NAME}
               {vehicleSize ? ` (${SIZE_LABELS[vehicleSize]})` : ""}
             </span>
-            <span className="font-semibold">+${upcharges.coatingAmount.toFixed(2)}</span>
+            <span className="font-semibold">+{formatRange(upcharges.coatingAmount)}</span>
           </li>
         )}
         <li className="flex justify-between text-xs text-amber-800 font-semibold border-t border-amber-200 pt-1.5 mt-1">
+          <span>Estimated add-ons</span>
           <span>
-            {INSTANT_BOOKING_ENABLED
-              ? "Additional charges total"
-              : "Estimated add-ons total"}
+            +{formatRange({ min: upcharges.totalMin, max: upcharges.totalMax })}
           </span>
-          <span>+${upcharges.total.toFixed(2)}</span>
         </li>
       </ul>
-      {upcharges.hasCoating && (
-        <p className="text-[10px] text-amber-600 mt-2 italic">
-          * Coating rate applies to 2015 and newer models. Contact us if your vehicle is older.
-        </p>
-      )}
+      <p className="text-[10px] text-amber-600 mt-2 italic">
+        Most vehicles land at the lower figure — the higher end only applies if
+        the condition turns out to be severe. We confirm before any work starts.
+      </p>
     </div>
   );
 }
@@ -661,9 +659,9 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           <div className="space-y-3">
             {(
               [
-                { id: "exterior", name: "Exterior Detail",     price: "From $100", desc: "Foam wash, rim cleaning, tire shine, sealant" },
-                { id: "interior", name: "Interior Detail",     price: "From $140", desc: "Steam clean, vacuum, UV protection, odor treatment" },
-                { id: "full",     name: "Full Detail Package", price: "From $200", desc: "Complete interior + exterior — best value", popular: true },
+                { id: "exterior", name: SERVICE_LABELS.exterior, price: `From $${BASE_PRICES.exterior}`, desc: "Foam wash, rim cleaning, tire shine, sealant" },
+                { id: "interior", name: SERVICE_LABELS.interior, price: `From $${BASE_PRICES.interior}`, desc: "Steam clean, vacuum, UV protection, odor treatment" },
+                { id: "full",     name: SERVICE_LABELS.full,     price: `From $${BASE_PRICES.full}`,     desc: "Complete interior + exterior — best value", popular: true },
               ] as { id: Service; name: string; price: string; desc: string; popular?: boolean }[]
             ).map((svc) => (
               <button
@@ -706,14 +704,13 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <label className="block text-xs font-medium text-apple-text-secondary mb-2">
               Vehicle Size
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(
-                [
-                  { id: "sedan",   label: "Sedan / Coupe",  adj: "Base price" },
-                  { id: "minivan", label: "Minivan",        adj: "+$20" },
-                  { id: "suv",     label: "SUV",            adj: "+$40" },
-                  { id: "truck",   label: "Truck / Van",    adj: "+$40" },
-                ] as { id: VehicleSize; label: string; adj: string }[]
+                VEHICLE_SIZE_OPTIONS.map((o) => ({
+                  id: o.id as VehicleSize,
+                  label: o.label,
+                  adj: o.adj ? `+$${o.adj}` : "No upcharge",
+                }))
               ).map((sz) => (
                 <button
                   key={sz.id}
@@ -737,20 +734,22 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <div className="bg-apple-gray rounded-2xl p-4 border border-apple-gray-2 text-sm">
               <div className="flex justify-between text-apple-text-secondary">
                 <span>{SERVICE_LABELS[data.service]}</span>
-                <span>${BASE_PRICES[data.service].toFixed(2)}</span>
+                <span>Starting at ${BASE_PRICES[data.service]}</span>
               </div>
               {SIZE_SURCHARGES[data.vehicleSize] > 0 && (
                 <div className="flex justify-between text-apple-text-secondary mt-1">
-                  <span>Vehicle size adjustment</span>
-                  <span>+${SIZE_SURCHARGES[data.vehicleSize].toFixed(2)}</span>
+                  <span>Truck / SUV</span>
+                  <span>+${SIZE_SURCHARGES[data.vehicleSize]}</span>
                 </div>
               )}
               <div className="flex justify-between font-semibold text-apple-text-primary border-t border-apple-gray-2 mt-2 pt-2">
-                <span>Estimated starting total</span>
-                <span>${(BASE_PRICES[data.service] + SIZE_SURCHARGES[data.vehicleSize]).toFixed(2)}+</span>
+                <span>Estimate starts at</span>
+                <span>${BASE_PRICES[data.service] + SIZE_SURCHARGES[data.vehicleSize]}</span>
               </div>
               <p className="text-[10px] text-apple-text-tertiary mt-1">
-                Additional charges may apply based on special notes in the next step.
+                An estimate, not a final quote. The condition your vehicle is
+                left in can affect the price — we confirm your total before any
+                work begins.
               </p>
             </div>
           )}
@@ -974,21 +973,12 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
 
             {/* Helper hint */}
             <p className="text-[11px] text-apple-text-tertiary mt-2">
-              {INSTANT_BOOKING_ENABLED ? (
-                <>
-                  Mentioning pet hair (from +$20), staining (from +$30), or the
-                  1-Year Protection Coating (+$50–$150 by vehicle size)
-                  automatically adds those charges. Note "severe pet hair"
-                  (+$40) or "heavy staining" (+$50) for heavier jobs.
-                </>
-              ) : (
-                <>
-                  Pet hair (from +$20), staining (from +$30), and the 1-Year
-                  Protection Coating (+$50–$150 by vehicle size) each add to a
-                  detail. Mentioning them here means your quote accounts for
-                  them up front — nothing is charged now.
-                </>
-              )}
+              Pet hair (+{formatRange(PET_HAIR_RANGE)}), staining (+
+              {formatRange(STAIN_RANGE)}) and the {COATING_NAME} (+
+              {formatRange(COATING_RANGE)} by vehicle size) each add to a
+              detail. Most vehicles land at the lower figure. Mentioning them
+              here means your estimate accounts for them up front — nothing is
+              charged now.
             </p>
           </div>
 
@@ -1107,14 +1097,14 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             {/* Base service */}
             <div className="flex justify-between text-apple-text-secondary">
               <span>{SERVICE_LABELS[data.service]}</span>
-              <span>${pricing.base.toFixed(2)}</span>
+              <span>Starting at ${pricing.base}</span>
             </div>
 
             {/* Size surcharge */}
             {pricing.sizeSurcharge > 0 && (
               <div className="flex justify-between text-apple-text-secondary">
-                <span>Vehicle size ({SIZE_LABELS[data.vehicleSize]})</span>
-                <span>+${pricing.sizeSurcharge.toFixed(2)}</span>
+                <span>Truck / SUV</span>
+                <span>+${pricing.sizeSurcharge}</span>
               </div>
             )}
 
@@ -1122,43 +1112,37 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             {pricing.upcharges.hasPetHair && (
               <div className="flex justify-between text-amber-700">
                 <span>Pet hair removal</span>
-                <span>+${pricing.upcharges.petHairAmount.toFixed(2)}</span>
+                <span>+{formatRange(pricing.upcharges.petHairAmount)}</span>
               </div>
             )}
             {pricing.upcharges.hasStains && (
               <div className="flex justify-between text-amber-700">
                 <span>Stain treatment</span>
-                <span>+${pricing.upcharges.stainsAmount.toFixed(2)}</span>
+                <span>+{formatRange(pricing.upcharges.stainsAmount)}</span>
               </div>
             )}
             {pricing.upcharges.hasCoating && (
               <div className="flex justify-between text-amber-700">
                 <span>
-                  1-Year Protection Coating
+                  {COATING_NAME}
                   {data.vehicleSize ? ` (${SIZE_LABELS[data.vehicleSize]})` : ""}
                 </span>
-                <span>+${pricing.upcharges.coatingAmount.toFixed(2)}</span>
+                <span>+{formatRange(pricing.upcharges.coatingAmount)}</span>
               </div>
             )}
 
-            {/* Total — an estimate only in request mode; the real number is the
-                quote the owner sends after reviewing the request. */}
+            {/* An estimate, never a firm quote — the real number is the one the
+                owner sends after reviewing the request. */}
             <div className="flex justify-between font-bold text-apple-text-primary border-t border-apple-gray-2 pt-2 mt-1">
-              <span>
-                {!INSTANT_BOOKING_ENABLED
-                  ? "Estimated starting price"
-                  : payMethod === "in_person"
-                  ? "Estimated total — due after service"
-                  : "Total due today"}
-              </span>
-              <span>${pricing.total.toFixed(2)}</span>
+              <span>Estimated price</span>
+              <span>{pricing.label}</span>
             </div>
-            {!INSTANT_BOOKING_ENABLED && (
-              <p className="text-[11px] text-apple-text-secondary">
-                An estimate, not a final price — we'll send you a proper quote
-                once we've read through your vehicle's details.
-              </p>
-            )}
+            <p className="text-[11px] text-apple-text-secondary">
+              An estimate, not a final price. Most vehicles come in at the
+              starting figure — how dirty the vehicle is and the condition it
+              was left in can affect the total. We'll confirm your quote before
+              any work begins.
+            </p>
 
             {/* Appointment details */}
             <div className="text-xs text-apple-text-tertiary pt-1 space-y-0.5">
@@ -1179,7 +1163,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             {/* Coating year note — shown for all vehicle types */}
             {pricing.upcharges.hasCoating && (
               <p className="text-[10px] text-apple-text-tertiary italic border-t border-apple-gray-2 pt-2">
-                * Coating rate applies to 2015 and newer models. Contact us if your vehicle is older.
+                * Ceramic protection rate applies to 2015 and newer models. Contact us if your vehicle is older.
               </p>
             )}
           </div>

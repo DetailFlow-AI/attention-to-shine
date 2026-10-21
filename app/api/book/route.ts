@@ -2,20 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createBookingEvent } from "@/lib/googleCalendar";
 import { CALENDAR_SERVICE_LABELS } from "@/lib/bookingRules";
 import {
+  BASE_PRICES as BASE_PRICE_DOLLARS,
   SIZE_SURCHARGE,
   detectNoteUpcharges,
   isMember,
   MEMBERSHIP_LABELS,
   type Membership,
 } from "@/lib/pricing";
-
-// ── Base prices (cents) — mirrors create-payment-intent exactly ───────────────
-
-const BASE_PRICES: Record<string, number> = {
-  exterior: 10000,
-  interior: 14000,
-  full:     20000,
-};
 
 // ── Route handler — records a pay-in-person booking and notifies the owner ────
 
@@ -35,15 +28,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const basePrice = BASE_PRICES[service];
-    if (basePrice === undefined) {
+    const baseDollars = BASE_PRICE_DOLLARS[service];
+    if (baseDollars === undefined) {
       return NextResponse.json({ error: "Invalid service" }, { status: 400 });
     }
 
     // Shared rules are in dollars; this route works in cents.
+    const basePrice = baseDollars * 100;
     const sizeSurcharge = (SIZE_SURCHARGE[vehicleSize] ?? 0) * 100;
     const upcharges = detectNoteUpcharges(notes ?? "", vehicleSize, membership);
-    const upchargeCents = (upcharges.petHair + upcharges.stains + upcharges.coating) * 100;
+    // Add-ons are ranges now; record the low end — the owner confirms the rest.
+    const upchargeCents = upcharges.min * 100;
     // No promo code discounts automatically; codes are honored manually.
     const amount = basePrice + sizeSurcharge + upchargeCents;
 

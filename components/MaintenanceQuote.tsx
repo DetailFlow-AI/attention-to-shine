@@ -3,34 +3,48 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import {
+  QUARTERLY_PLAN,
+  MONTHLY_PLAN,
+  QUARTERLY_ANNUAL_SAVINGS,
+  TRUCK_SUV_PLAN_UPCHARGE,
+} from "@/lib/pricing";
 
 // ── Plan pricing ──────────────────────────────────────────────────────────────
 // These adjustment rules are deliberately shown ONLY on this page — the main
-// pricing section stays a clean two-tier list. Bases are monthly.
+// pricing section stays a clean two-tier list.
+//
+// The two plans bill on different units: the quarterly plan is priced per
+// VISIT, the monthly plan per MONTH. Every adjustment below is applied in the
+// selected plan's own unit, so the running estimate always reads correctly.
 
 const PLANS = [
   {
-    id: "essential" as const,
-    name: "Essential",
-    base: 100,
-    details: "1 maintenance visit per month",
+    id: QUARTERLY_PLAN.id,
+    name: QUARTERLY_PLAN.name,
+    base: QUARTERLY_PLAN.pricePerVisit,
+    unit: "visit" as const,
+    details: `${QUARTERLY_PLAN.cadence} · ${QUARTERLY_PLAN.minVisits}-visit minimum`,
+    note: `Saves $${QUARTERLY_ANNUAL_SAVINGS} a year versus booking a full detail ${QUARTERLY_PLAN.visitsPerYear}× a year.`,
   },
   {
-    id: "premium" as const,
-    name: "Premium",
-    base: 150,
-    details: "2 maintenance visits per month",
+    id: MONTHLY_PLAN.id,
+    name: MONTHLY_PLAN.name,
+    base: MONTHLY_PLAN.pricePerMonth,
+    unit: "month" as const,
+    details: MONTHLY_PLAN.cadence,
+    note: null,
   },
 ];
 
 // Vehicle size is a single choice — a vehicle is one of these, never two.
+// Only trucks and SUVs carry an upcharge; everything else is the plan rate.
 const VEHICLE_TYPES = [
   { id: "car" as const, label: "Car, sedan or coupe", adj: 0 },
-  { id: "crossover" as const, label: "Crossover or family-size vehicle", adj: 10 },
-  { id: "truck" as const, label: "Truck or SUV", adj: 20 },
+  { id: "truck" as const, label: "Truck or SUV", adj: TRUCK_SUV_PLAN_UPCHARGE },
 ];
 
-// Flat monthly add-ons, each independent of the others.
+// Flat add-ons, each independent of the others, in the plan's own unit.
 const KIDS_ADJ = 10;
 const WORK_ADJ = 20;
 
@@ -38,7 +52,7 @@ type PlanId = (typeof PLANS)[number]["id"];
 type VehicleId = (typeof VEHICLE_TYPES)[number]["id"];
 
 export default function MaintenanceQuote() {
-  const [planId, setPlanId] = useState<PlanId>("essential");
+  const [planId, setPlanId] = useState<PlanId>(QUARTERLY_PLAN.id);
   const [vehicleId, setVehicleId] = useState<VehicleId>("car");
   const [kids, setKids] = useState(false);
   const [work, setWork] = useState(false);
@@ -46,8 +60,11 @@ export default function MaintenanceQuote() {
   const plan = PLANS.find((p) => p.id === planId)!;
   const vehicle = VEHICLE_TYPES.find((v) => v.id === vehicleId)!;
 
+  // "/visit" on the quarterly plan, "/mo" on the monthly one.
+  const unitSuffix = plan.unit === "visit" ? "/visit" : "/mo";
+
   const lines = [
-    { label: `${plan.name} plan — ${plan.details}`, amount: plan.base },
+    { label: `${plan.name} — ${plan.details}`, amount: plan.base },
     ...(vehicle.adj ? [{ label: vehicle.label, amount: vehicle.adj }] : []),
     ...(kids ? [{ label: "Kids in the vehicle", amount: KIDS_ADJ }] : []),
     ...(work ? [{ label: "Work / job-site vehicle", amount: WORK_ADJ }] : []),
@@ -78,7 +95,8 @@ export default function MaintenanceQuote() {
               >
                 <span className="block font-semibold">{p.name}</span>
                 <span className="block text-sm text-white/50 mt-0.5">
-                  ${p.base}/month · {p.details}
+                  Starting at ${p.base}
+                  {p.unit === "visit" ? " per visit" : "/month"} · {p.details}
                 </span>
               </button>
             ))}
@@ -102,7 +120,7 @@ export default function MaintenanceQuote() {
               >
                 <span>{v.label}</span>
                 <span className="text-sm font-semibold text-gold whitespace-nowrap">
-                  {v.adj ? `+$${v.adj}/mo` : "Included"}
+                  {v.adj ? `+$${v.adj}${unitSuffix}` : "No upcharge"}
                 </span>
               </button>
             ))}
@@ -148,7 +166,7 @@ export default function MaintenanceQuote() {
                   {row.label}
                 </span>
                 <span className="text-sm font-semibold text-gold whitespace-nowrap">
-                  +${row.adj}/mo
+                  +${row.adj}{unitSuffix}
                 </span>
               </button>
             ))}
@@ -177,17 +195,24 @@ export default function MaintenanceQuote() {
 
           <div className="flex items-end justify-between gap-3 border-t border-white/10 pt-5">
             <span className="text-sm font-semibold text-white">
-              Estimated monthly
+              {plan.unit === "visit" ? "Estimated per visit" : "Estimated monthly"}
             </span>
             <span className="text-4xl font-bold text-white leading-none">
               ${total}
-              <span className="text-white/40 text-sm font-normal">/mo</span>
+              <span className="text-white/40 text-sm font-normal">
+                {unitSuffix}
+              </span>
             </span>
           </div>
 
+          {plan.note && (
+            <p className="text-xs text-gold mt-4 leading-relaxed">{plan.note}</p>
+          )}
+
           <p className="text-xs text-white/40 mt-4 leading-relaxed">
-            A rough estimate, not a final quote. We confirm your monthly rate
-            after seeing the vehicle at your first detail.
+            A rough estimate, not a final quote. We confirm your rate after
+            seeing the vehicle at your first detail — how dirty it is and the
+            condition it was left in can affect the price.
           </p>
 
           <Link

@@ -2,8 +2,18 @@ import Link from "next/link";
 import BeforeAfterSlider, {
   BeforeAfterPlaceholder,
 } from "@/components/BeforeAfterSlider";
-import ReviewsCarousel from "@/components/ReviewsCarousel";
+import ReviewsCarousel, { Stars } from "@/components/ReviewsCarousel";
+import {
+  getGoogleReviews,
+  REVIEWS_REVALIDATE_SECONDS,
+} from "@/lib/googleReviews";
 import { findPair } from "@/lib/photos";
+import {
+  BASE_PRICES,
+  QUARTERLY_PLAN,
+  MONTHLY_PLAN,
+  QUARTERLY_ANNUAL_SAVINGS,
+} from "@/lib/pricing";
 import {
   ArrowRight,
   Shield,
@@ -27,7 +37,7 @@ const services = [
     tagline: "A mirror finish, every time.",
     description:
       "Your paint comes back to life — deep gloss, no swirl marks, no road film. The kind of shine that turns heads in your own driveway.",
-    price: "From $100",
+    price: `From $${BASE_PRICES.exterior}`,
     icon: "✦",
     href: "/services#exterior",
   },
@@ -37,7 +47,7 @@ const services = [
     tagline: "Clean from the inside out.",
     description:
       "Step in and it feels like a new car — no stains, no odors, no dust anywhere you'd notice. The cabin you actually want to sit in.",
-    price: "From $140",
+    price: `From $${BASE_PRICES.interior}`,
     icon: "◈",
     href: "/services#interior",
   },
@@ -47,7 +57,7 @@ const services = [
     tagline: "The complete transformation.",
     description:
       "Our most popular service, and our best rate. The result: a car that looks — and feels — brand new, inside and out.",
-    price: "From $200",
+    price: `From $${BASE_PRICES.full}`,
     icon: "◉",
     href: "/services#full",
     popular: true,
@@ -109,41 +119,17 @@ const beforeAfters: PairSlot[] = [1, 2, 3, 4].map((n) => ({
   ...(findPair(TRANSFORMATIONS_DIR, `transformation-${n}`) ?? {}),
 }));
 
-const reviews = [
-  {
-    quote: "Wow! It looks like new again!",
-    name: "John Travis",
-    initials: "JT",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote: "My car hasn't looked this good since the day I bought it!",
-    name: "Mike L.",
-    initials: "ML",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote: "It looks like it should be in a showroom.",
-    name: "Mr. David",
-    initials: "MD",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote:
-      "I almost feel bad taking my car out of the driveway now — I don't want it to get dirty!",
-    name: "Steve B.",
-    initials: "SB",
-    detail: "Lakeland, FL — Shine Standard Maintenance",
-  },
-  {
-    quote: "I'll definitely be calling them out again. Highly recommend!",
-    name: "Eric K.",
-    initials: "EK",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-];
 
-export default function HomePage() {
+// Re-render the homepage about once a day so newly posted Google reviews show
+// up without a redeploy. Stated here as well as on the fetch so the page still
+// refreshes on the fallback path, when there is no fetch to carry it.
+export const revalidate = REVIEWS_REVALIDATE_SECONDS;
+
+// Server Component: the Places call happens here, during the server render,
+// so the API key never reaches the browser. Next caches the result for a day.
+export default async function HomePage() {
+  const { reviews, rating, totalRatings, googleUrl, source } =
+    await getGoogleReviews();
   return (
     <>
       {/* ── HERO ── */}
@@ -444,16 +430,16 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mb-10">
               {[
                 {
-                  plan: "Essential Plan",
-                  price: "$100",
-                  freq: "/ month",
-                  details: "1 maintenance visit per month",
+                  plan: QUARTERLY_PLAN.name,
+                  price: `$${QUARTERLY_PLAN.pricePerVisit}`,
+                  freq: "/ visit",
+                  details: `${QUARTERLY_PLAN.cadence} · ${QUARTERLY_PLAN.minVisits}-visit minimum · saves $${QUARTERLY_ANNUAL_SAVINGS} a year`,
                 },
                 {
-                  plan: "Premium Plan",
-                  price: "$150",
+                  plan: MONTHLY_PLAN.name,
+                  price: `$${MONTHLY_PLAN.pricePerMonth}`,
                   freq: "/ month",
-                  details: "2 maintenance visits per month",
+                  details: MONTHLY_PLAN.cadence,
                 },
               ].map((tier) => (
                 <div
@@ -544,22 +530,46 @@ export default function HomePage() {
             <h2 className="section-heading mb-4">
               What our customers say.
             </h2>
+
+            {/* Overall rating straight from the Google listing. Hidden when
+                we're on the fallback list, so we never show a number we
+                can't currently verify. */}
+            {rating !== null && (
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl font-bold text-apple-text-primary leading-none">
+                    {rating.toFixed(1)}
+                  </span>
+                  <Stars rating={rating} size={18} />
+                </div>
+                <p className="text-sm text-apple-text-tertiary">
+                  {totalRatings !== null
+                    ? `Based on ${totalRatings} Google review${totalRatings === 1 ? "" : "s"}`
+                    : "Rated on Google"}
+                </p>
+              </div>
+            )}
           </div>
 
           <ReviewsCarousel reviews={reviews} />
 
-          {/* Separate from the testimonials above — links out to the live
-              Google listing so leads can read unfiltered reviews. */}
+          {/* Links out to the live Google listing so leads can read every
+              review, not just the handful the API returns. */}
           <div className="text-center mt-12">
             <a
-              href="https://maps.app.goo.gl/dqWzddQBFShN4KqB8?g_st=ic"
+              href={googleUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm font-medium text-navy border border-navy/20 px-6 py-3 rounded-full hover:bg-navy hover:text-white transition-colors duration-200"
             >
-              See our Google Reviews
+              See all reviews on Google
               <ExternalLink size={14} />
             </a>
+            {source === "google" && (
+              <p className="text-xs text-apple-text-tertiary mt-3">
+                Pulled live from our Google Business Profile.
+              </p>
+            )}
           </div>
         </div>
       </section>
