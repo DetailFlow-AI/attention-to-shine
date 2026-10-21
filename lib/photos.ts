@@ -81,14 +81,15 @@ export function listImages(dirRelativeToPublic: string): string[] {
 // "interior". Each maps to how it should read in a caption.
 const SERVICE_PHRASES: { tokens: string[]; label: string }[] = [
   { tokens: ["interior", "deep", "clean"], label: "Interior Deep Clean" },
-  { tokens: ["protection", "coating"], label: "1-Year Protection Coating" },
-  { tokens: ["ceramic", "coating"], label: "Ceramic Coating" },
+  { tokens: ["clay", "bar"], label: "Ceramic Protection & Clay Bar" },
+  { tokens: ["protection", "coating"], label: "Ceramic Protection" },
+  { tokens: ["ceramic", "coating"], label: "Ceramic Protection" },
   { tokens: ["full", "detail"], label: "Full Detail" },
   { tokens: ["exterior", "detail"], label: "Exterior Detail" },
   { tokens: ["interior", "detail"], label: "Interior Detail" },
   { tokens: ["deep", "clean"], label: "Interior Deep Clean" },
   { tokens: ["maintenance"], label: "Shine Standard Maintenance" },
-  { tokens: ["coating"], label: "1-Year Protection Coating" },
+  { tokens: ["coating"], label: "Ceramic Protection" },
   { tokens: ["exterior"], label: "Exterior Detail" },
   { tokens: ["interior"], label: "Interior Detail" },
   { tokens: ["full"], label: "Full Detail" },

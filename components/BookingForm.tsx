@@ -957,8 +957,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
               rows={4}
               placeholder={
                 INSTANT_BOOKING_ENABLED
-                  ? "Describe your vehicle's condition — e.g. pet hair, stains, or if you'd like the 1-Year Protection Coating added.\n\nOther details: access instructions, gate codes, etc."
-                  : "How does the vehicle look right now? For example: pet hair on the back seats, coffee stains in the carpet, heavy road film on the paint, smoker's odor — or if you'd like the 1-Year Protection Coating added.\n\nAnything else we should know: access instructions, gate codes, etc."
+                  ? "Describe your vehicle's condition — e.g. pet hair, stains, or if you'd like the ceramic protection and clay bar treatment added.\n\nOther details: access instructions, gate codes, etc."
+                  : "How does the vehicle look right now? For example: pet hair on the back seats, coffee stains in the carpet, heavy road film on the paint, smoker's odor — or if you'd like the ceramic protection and clay bar treatment added.\n\nAnything else we should know: access instructions, gate codes, etc."
               }
               value={data.notes}
               onChange={(e) => set("notes", e.target.value)}
