@@ -4,7 +4,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BASE_PRICES, QUARTERLY_PLAN, MONTHLY_PLAN } from "@/lib/pricing";
 
+// The live domain. This previously read "attentiontoshinedetailing.com",
+// which is missing "mobile" and does not resolve — every link preview pointed
+// at a dead host. Kept in one constant so the canonical URL and the OpenGraph
+// URL can't drift apart again.
+const SITE_URL = "https://www.attentiontoshinemobiledetailing.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  alternates: {
+    canonical: "/",
+  },
   title: {
     default: "Attention to Shine | Mobile Car Detailing in Lakeland, FL",
     template: "%s | Attention to Shine",
@@ -25,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Attention to Shine | Mobile Car Detailing in Lakeland, FL",
     description: `Mobile detailing that comes to you in Lakeland, FL. Full details start at $${BASE_PRICES.full}, plus ${QUARTERLY_PLAN.name} and ${MONTHLY_PLAN.name} plans. Request a quote — no payment up front.`,
-    url: "https://www.attentiontoshinedetailing.com",
+    url: SITE_URL,
     siteName: "Attention to Shine",
     locale: "en_US",
     type: "website",
