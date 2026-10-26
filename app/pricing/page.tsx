@@ -94,9 +94,9 @@ const monthlyPlans = [
     name: QUARTERLY_PLAN.name,
     price: `Starting at $${QUARTERLY_PLAN.pricePerVisit}`,
     unit: "per visit",
-    details: `${QUARTERLY_PLAN.cadence} · ${QUARTERLY_PLAN.minVisits}-visit minimum`,
+    details: `${QUARTERLY_PLAN.cadence} · Start with ${QUARTERLY_PLAN.minVisits} visits`,
     features: [
-      `Saves $${QUARTERLY_ANNUAL_SAVINGS} a year versus a full detail ${QUARTERLY_PLAN.visitsPerYear}× a year`,
+      `Costs $${QUARTERLY_ANNUAL_SAVINGS} less a year than booking ${QUARTERLY_PLAN.visitsPerYear} full details`,
       "Your car reset every season, before it ever looks neglected",
       "A reserved slot — never a scramble to rebook",
       "Free pet hair removal, always — no upcharge",
@@ -145,10 +145,10 @@ export default function PricingPage() {
               Shine Standard Maintenance
             </h2>
             <p className="text-white/60 max-w-xl mx-auto">
-              A monthly maintenance plan for already-clean vehicles. Each visit
-              includes an exterior rinse, tire shine, window wipe down, full
-              interior vacuum, and dashboard wipe-down — keeping your detail
-              looking fresh between full services.
+              Maintenance plans are exclusively for vehicles we&apos;ve recently
+              detailed. Every visit includes an exterior rinse, tire shine,
+              window wipe down, full interior vacuum, and dashboard wipe-down —
+              so your car still looks detailed months later.
             </p>
           </div>
 

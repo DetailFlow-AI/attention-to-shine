@@ -24,8 +24,8 @@ const PLANS = [
     name: QUARTERLY_PLAN.name,
     base: QUARTERLY_PLAN.pricePerVisit,
     unit: "visit" as const,
-    details: `${QUARTERLY_PLAN.cadence} · ${QUARTERLY_PLAN.minVisits}-visit minimum`,
-    note: `Saves $${QUARTERLY_ANNUAL_SAVINGS} a year versus booking a full detail ${QUARTERLY_PLAN.visitsPerYear}× a year.`,
+    details: `${QUARTERLY_PLAN.cadence} · Start with ${QUARTERLY_PLAN.minVisits} visits`,
+    note: `Over a year that is $${QUARTERLY_ANNUAL_SAVINGS} less than booking ${QUARTERLY_PLAN.visitsPerYear} full details.`,
   },
   {
     id: MONTHLY_PLAN.id,

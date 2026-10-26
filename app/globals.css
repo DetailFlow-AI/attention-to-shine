@@ -510,17 +510,30 @@
   transform: scaleX(var(--p, 0));
 }
 
-/* Paired cards that slide together from either side. */
+/* Paired cards that slide together from either side.
+   The travel distance has to fit inside the section's 24px side padding,
+   or the card starts off hanging past the edge of the screen and the whole
+   page can be scrolled sideways — a white strip down the side on a phone.
+   20px fits on any screen; the original 60px is kept only where the
+   centred container leaves margins wide enough to absorb it. */
 .fx-ready .fx-from-left,
 .fx-ready .fx-from-right {
   opacity: calc(0.25 + var(--p, 0) * 0.75);
   will-change: transform;
 }
 .fx-ready .fx-from-left {
-  transform: translate3d(calc((1 - var(--p, 0)) * -60px), 0, 0);
+  transform: translate3d(calc((1 - var(--p, 0)) * -20px), 0, 0);
 }
 .fx-ready .fx-from-right {
-  transform: translate3d(calc((1 - var(--p, 0)) * 60px), 0, 0);
+  transform: translate3d(calc((1 - var(--p, 0)) * 20px), 0, 0);
+}
+@media (min-width: 1440px) {
+  .fx-ready .fx-from-left {
+    transform: translate3d(calc((1 - var(--p, 0)) * -60px), 0, 0);
+  }
+  .fx-ready .fx-from-right {
+    transform: translate3d(calc((1 - var(--p, 0)) * 60px), 0, 0);
+  }
 }
 
 /* Photos settle from a slight zoom as they scroll in. */
