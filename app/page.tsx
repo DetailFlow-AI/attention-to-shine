@@ -1,7 +1,5 @@
 import Link from "next/link";
-import BeforeAfterSlider, {
-  BeforeAfterPlaceholder,
-} from "@/components/BeforeAfterSlider";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import GoogleReviews from "@/components/GoogleReviews";
 import HeroBackdrop from "@/components/HeroBackdrop";
 import HeroScene from "@/components/HeroScene";
@@ -217,66 +215,23 @@ export default async function HomePage() {
         </div>
       </HeroScene>
 
-      {/* ── PROOF: hero before/afters ── */}
-      <section className="relative bg-navy-ink px-6 pb-20 md:pb-28">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10" data-reveal>
-            <span className="label-tag">Real Results</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-              See the difference.
-            </h2>
-          </div>
-
-          {/* Two draggable transformations, exterior and interior */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-8 w-full">
-            {heroBeforeAfters.map((pair, i) => (
-              <div
-                key={pair.label}
-                data-reveal
-                style={{ "--reveal-delay": `${i * 120}ms` } as React.CSSProperties}
-              >
-                {pair.before && pair.after ? (
-                  <BeforeAfterSlider
-                    beforeSrc={pair.before}
-                    afterSrc={pair.after}
-                    alt={pair.title ?? pair.label}
-                    aspectClass="aspect-[3/4]"
-                  />
-                ) : (
-                  <BeforeAfterPlaceholder
-                    label={pair.label}
-                    note="Vehicle and photos to be confirmed"
-                    aspectClass="aspect-[3/4]"
-                  />
-                )}
-                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/50 text-center">
-                  {pair.label}
-                </p>
+      {/* ── TRUST STRIP ── (the hero scene above already shows the
+          exterior and interior before/afters, so no sliders repeat here) */}
+      <section className="relative bg-navy-ink px-6 py-14 md:py-20">
+        <div className="grid grid-cols-2 gap-8 md:gap-16 w-full max-w-2xl mx-auto">
+          {[
+            { value: "3 hrs", label: "Avg. Service Time" },
+            { value: "100%", label: "Satisfaction Guaranteed" },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center" data-reveal>
+              <div className="font-display text-4xl md:text-5xl font-bold text-white mb-2">
+                {stat.value}
               </div>
-            ))}
-          </div>
-          {heroBeforeAfters.some((p) => p.before && p.after) && (
-            <p className="text-center text-xs text-white/55 mt-6">
-              Drag any slider to see the difference.
-            </p>
-          )}
-
-          {/* Trust strip */}
-          <div className="grid grid-cols-2 gap-8 md:gap-16 w-full max-w-2xl mx-auto mt-16 pt-12 border-t border-white/10">
-            {[
-              { value: "3 hrs", label: "Avg. Service Time" },
-              { value: "100%", label: "Satisfaction Guaranteed" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center" data-reveal>
-                <div className="font-display text-4xl md:text-5xl font-bold text-white mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-xs text-white/45 uppercase tracking-[0.16em]">
-                  {stat.label}
-                </div>
+              <div className="text-xs text-white/45 uppercase tracking-[0.16em]">
+                {stat.label}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -576,15 +531,11 @@ export default async function HomePage() {
                 style={{ "--reveal-delay": `${(i % 3) * 120}ms` } as React.CSSProperties}
                 className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] max-w-md"
               >
-                {pair.before && pair.after ? (
-                  <BeforeAfterSlider
-                    beforeSrc={pair.before}
-                    afterSrc={pair.after}
-                    alt={pair.title ?? pair.label}
-                  />
-                ) : (
-                  <BeforeAfterPlaceholder label={pair.label} tone="light" />
-                )}
+                <BeforeAfterSlider
+                  beforeSrc={pair.before!}
+                  afterSrc={pair.after!}
+                  alt={pair.title ?? pair.label}
+                />
                 <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
                   {pair.title ?? pair.label}
                 </p>
