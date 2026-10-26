@@ -33,15 +33,18 @@ export default function GalleryPage() {
 
   return (
     <>
-      <section className="bg-navy pt-36 pb-20 px-6 text-center">
-        <span className="label-tag">Gallery</span>
-        <h1 className="text-6xl md:text-6xl font-bold text-white tracking-tight mb-4">
-          The results speak for themselves.
-        </h1>
-        <p className="text-xl text-white/60 max-w-xl mx-auto">
-          Real vehicles. Real transformations. Every photo is a job completed
-          right here in the Lakeland area.
-        </p>
+      {/* Scroll-linked: content drifts up and fades, light sweeps across. */}
+      <section data-scroll="exit" className="fx-scrub-shine hero-stage pt-36 pb-24 px-6 text-center">
+        <div className="fx-hero-out relative">
+          <span className="label-tag">Gallery</span>
+          <h1 className="text-[2.75rem] leading-[1.05] sm:text-6xl font-bold text-white tracking-tight mb-4">
+            The results speak for themselves.
+          </h1>
+          <p className="text-xl text-white/60 max-w-xl mx-auto">
+            Real vehicles. Real transformations. Every photo is a job completed
+            right here in the Lakeland area.
+          </p>
+        </div>
       </section>
 
       <section className="bg-white py-16 px-6">

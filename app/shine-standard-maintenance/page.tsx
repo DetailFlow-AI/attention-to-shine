@@ -45,23 +45,26 @@ export default function ShineStandardMaintenancePage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-navy pt-36 pb-20 px-6 text-center">
-        <span className="label-tag">Membership</span>
-        <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-5">
-          Shine Standard Maintenance
-        </h1>
-        <p className="text-xl text-white/60 max-w-2xl mx-auto mb-8 leading-relaxed">
-          A standing appointment that keeps your vehicle in exactly the
-          condition we left it in — so it never needs rescuing again.
-        </p>
-        <div className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
-          <span>
-            {QUARTERLY_PLAN.name} from ${QUARTERLY_PLAN.pricePerVisit} a visit
-          </span>
-          <span className="text-gold/40">·</span>
-          <span>
-            {MONTHLY_PLAN.name} from ${MONTHLY_PLAN.pricePerMonth}/month
-          </span>
+      {/* Scroll-linked: content drifts up and fades, light sweeps across. */}
+      <section data-scroll="exit" className="fx-scrub-shine hero-stage pt-36 pb-24 px-6 text-center">
+        <div className="fx-hero-out relative">
+          <span className="label-tag">Membership</span>
+          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-5">
+            Shine Standard Maintenance
+          </h1>
+          <p className="text-xl text-white/60 max-w-2xl mx-auto mb-8 leading-relaxed">
+            A standing appointment that keeps your vehicle in exactly the
+            condition we left it in — so it never needs rescuing again.
+          </p>
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
+            <span>
+              {QUARTERLY_PLAN.name} from ${QUARTERLY_PLAN.pricePerVisit} a visit
+            </span>
+            <span className="text-gold/40">·</span>
+            <span>
+              {MONTHLY_PLAN.name} from ${MONTHLY_PLAN.pricePerMonth}/month
+            </span>
+          </div>
         </div>
       </section>
 
@@ -147,17 +150,17 @@ export default function ShineStandardMaintenancePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-gold py-16 px-6 text-center">
-        <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
+      <section data-scroll className="fx-scrub-shine hero-stage py-20 md:py-28 px-6 text-center">
+        <h2 className="relative text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
           Start with a detail.
         </h2>
-        <p className="text-white/80 max-w-xl mx-auto mb-8">
+        <p className="relative text-white/70 max-w-xl mx-auto mb-8">
           Book your first full detail and we'll set up your standing
           maintenance slot from there.
         </p>
         <Link
           href="/booking"
-          className="inline-flex items-center gap-2 bg-white text-navy px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-colors"
+          className="btn-gold text-base px-8 py-4"
         >
           Request an Appointment
           <ArrowRight size={16} />

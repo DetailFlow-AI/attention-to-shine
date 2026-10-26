@@ -104,17 +104,20 @@ export default function ServicesPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-navy pt-36 pb-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="label-tag">Services</span>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-6">
-            Every service, done right.
-          </h1>
-          <p className="text-xl text-white/60 leading-relaxed">
-            We don't rush. We don't cut corners. We show up, we do the work
-            properly, and we don't leave until it looks exactly the way it
-            should.
-          </p>
+      {/* Scroll-linked: content drifts up and fades, light sweeps across. */}
+      <section data-scroll="exit" className="fx-scrub-shine hero-stage pt-36 pb-24 px-6">
+        <div className="fx-hero-out relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <span className="label-tag">Services</span>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-6">
+              Every service, done right.
+            </h1>
+            <p className="text-xl text-white/60 leading-relaxed">
+              We don't rush. We don't cut corners. We show up, we do the work
+              properly, and we don't leave until it looks exactly the way it
+              should.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -379,7 +382,7 @@ export default function ServicesPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-navy py-20 px-6 text-center">
+      <section data-scroll className="fx-scrub-shine bg-navy py-20 md:py-28 px-6 text-center">
         <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
           {INSTANT_BOOKING_ENABLED ? "Ready to book?" : "Ready to get started?"}
         </h2>

@@ -68,15 +68,18 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-navy pt-36 pb-20 px-6 text-center">
-        <span className="label-tag">Contact</span>
-        <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
-          We'd love to hear from you.
-        </h1>
-        <p className="text-xl text-white/60 max-w-xl mx-auto">
-          Questions about services, pricing, or your area? Reach out and we'll
-          get back to you quickly.
-        </p>
+      {/* Scroll-linked: content drifts up and fades, light sweeps across. */}
+      <section data-scroll="exit" className="fx-scrub-shine hero-stage pt-36 pb-24 px-6 text-center">
+        <div className="fx-hero-out relative">
+          <span className="label-tag">Contact</span>
+          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
+            We'd love to hear from you.
+          </h1>
+          <p className="text-xl text-white/60 max-w-xl mx-auto">
+            Questions about services, pricing, or your area? Reach out and we'll
+            get back to you quickly.
+          </p>
+        </div>
       </section>
 
       {/* Content */}

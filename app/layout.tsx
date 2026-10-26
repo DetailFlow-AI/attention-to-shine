@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RevealObserver from "@/components/RevealObserver";
+import ScrollFx from "@/components/ScrollFx";
 import { BASE_PRICES, QUARTERLY_PLAN, MONTHLY_PLAN } from "@/lib/pricing";
 
 // Self-hosted by next/font: no render-blocking request to Google at runtime.
@@ -75,6 +76,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${archivo.variable}`}>
       <body>
         <RevealObserver />
+        <ScrollFx />
         <Navbar />
         <main>{children}</main>
         <Footer />
