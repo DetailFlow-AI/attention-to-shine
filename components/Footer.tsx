@@ -93,7 +93,7 @@ export default function Footer() {
                 <span>
                   Mon – Sat: 7:00 AM – 7:00 PM
                   <br />
-                  <span className="text-white/40">Sunday: Closed</span>
+                  <span className="text-white/55">Sunday: Closed</span>
                 </span>
               </li>
             </ul>
@@ -104,20 +104,20 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/55">
             © {new Date().getFullYear()} Attention to Shine Detailing. All
             rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link
               href="/privacy"
-              className="text-xs text-white/40 hover:text-white/70 transition-colors"
+              className="text-xs text-white/55 hover:text-white/70 transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
               href="/terms"
-              className="text-xs text-white/40 hover:text-white/70 transition-colors"
+              className="text-xs text-white/55 hover:text-white/70 transition-colors"
             >
               Terms of Service
             </Link>

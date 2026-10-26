@@ -15,9 +15,14 @@ const inter = Inter({
 
 // Display face for headings. The width axis lets headings run slightly
 // expanded — a wide, automotive stance — without loading a second family.
+//
+// "optional" rather than "swap": the headline is the page's Largest Contentful
+// Paint, and swapping fonts under it pushed LCP back ~0.8s on mobile. With
+// "optional" a slow first visit keeps the (metric-matched) fallback for that
+// one page view and gets Archivo from cache after that.
 const archivo = Archivo({
   subsets: ["latin"],
-  display: "swap",
+  display: "optional",
   axes: ["wdth"],
   variable: "--font-display",
 });

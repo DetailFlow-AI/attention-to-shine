@@ -170,7 +170,6 @@ export default async function HomePage() {
           {/* Starting prices, right where people look first */}
           <Link
             href="/pricing"
-            aria-label="See full pricing"
             className="group grid grid-cols-3 w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm divide-x divide-white/10 transition-colors hover:border-gold/40"
           >
             {[
@@ -243,7 +242,7 @@ export default async function HomePage() {
             ))}
           </div>
           {heroBeforeAfters.some((p) => p.before && p.after) && (
-            <p className="text-center text-xs text-white/40 mt-6">
+            <p className="text-center text-xs text-white/55 mt-6">
               Drag any slider to see the difference.
             </p>
           )}
@@ -342,7 +341,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-2xl lg:max-w-none mx-auto">
             {services.map((service, i) => (
               <div
                 key={service.id}
@@ -527,7 +526,7 @@ export default async function HomePage() {
               ))}
             </div>
 
-            <p className="text-xs text-white/45 mb-8">
+            <p className="text-xs text-white/60 mb-8">
               * Shine Standard Maintenance is available only after your vehicle's initial
               full detail with us.
             </p>
@@ -620,7 +619,7 @@ export default async function HomePage() {
               <ExternalLink size={14} />
             </a>
             {source === "google" && (
-              <p className="text-xs text-apple-text-tertiary mt-3">
+              <p className="text-xs text-apple-text-secondary mt-3">
                 Pulled live from our Google Business Profile.
               </p>
             )}

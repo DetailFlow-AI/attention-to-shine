@@ -107,7 +107,7 @@ export default function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
         </button>
       </div>
 
-      <div className="flex justify-center gap-2 mt-8">
+      <div className="flex justify-center mt-6">
         {reviews.map((r, i) => (
           <button
             // Two reviewers can share a display name, so the index keeps keys
@@ -115,10 +115,15 @@ export default function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
             key={`${r.name}-${i}`}
             onClick={() => setIndex(i)}
             aria-label={`Go to review ${i + 1}`}
-            className={`h-2 rounded-full transition-all ${
-              i === safeIndex ? "w-6 bg-gold" : "w-2 bg-apple-gray-2"
-            }`}
-          />
+            // 24px tap target around a small visible dot.
+            className="h-6 min-w-6 px-1 flex items-center justify-center"
+          >
+            <span
+              className={`block h-2 rounded-full transition-all ${
+                i === safeIndex ? "w-6 bg-gold" : "w-2 bg-apple-gray-2"
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>

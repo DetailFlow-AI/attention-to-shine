@@ -80,7 +80,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <a
               href="tel:+18639349779"
-              className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
+              className={`hidden lg:flex items-center gap-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                 dark
                   ? "text-white/80 hover:text-white"
                   : "text-apple-text-secondary hover:text-apple-text-primary"
@@ -89,7 +89,7 @@ export default function Navbar() {
               <Phone size={14} />
               (863) 934-9779
             </a>
-            <Link href="/booking" className="btn-gold text-xs px-5 py-2.5">
+            <Link href="/booking" className="btn-gold text-xs px-5 py-2.5 whitespace-nowrap">
               {FLOW_CTA_SHORT}
             </Link>
           </div>
