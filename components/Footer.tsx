@@ -27,7 +27,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-5">
               <div className="w-8 h-8 bg-gold rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
+                <span className="text-navy font-bold text-sm">A</span>
               </div>
               <span className="font-semibold text-sm tracking-tight">
                 Attention to Shine

@@ -85,7 +85,7 @@ export default function BeforeAfterSlider({
       <span className="absolute top-4 left-4 bg-navy/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none">
         Before
       </span>
-      <span className="absolute top-4 right-4 bg-gold/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none">
+      <span className="absolute top-4 right-4 bg-gold text-navy text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none">
         After
       </span>
     </div>

@@ -13,11 +13,16 @@ const config: Config = {
           DEFAULT: "#0B1D36",
           light: "#132848",
           dark: "#070F1C",
+          ink: "#050A14",
         },
+        // The "shine" accent: a brighter champagne gold. Pair it with navy
+        // text, never white — white on gold fails contrast.
         gold: {
-          DEFAULT: "#C9A84C",
-          light: "#D4B96B",
+          DEFAULT: "#D9B04A",
+          light: "#F2D58A",
           dark: "#A8873A",
+          // For gold TEXT on white/light backgrounds (passes AA).
+          deep: "#86671C",
         },
         apple: {
           gray: "#F5F5F7",
@@ -30,12 +35,17 @@ const config: Config = {
         },
       },
       fontFamily: {
+        // Variables are set by next/font in app/layout.tsx.
         sans: [
+          "var(--font-inter)",
           "-apple-system",
           "BlinkMacSystemFont",
-          '"SF Pro Display"',
-          '"SF Pro Text"',
-          "Inter",
+          "sans-serif",
+        ],
+        display: [
+          "var(--font-display)",
+          "var(--font-inter)",
+          "-apple-system",
           "sans-serif",
         ],
       },

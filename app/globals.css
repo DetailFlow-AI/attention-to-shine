@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -18,35 +16,66 @@
   * {
     box-sizing: border-box;
   }
+
+  /* Display face for big headings: Archivo, run slightly wide. */
+  h1,
+  h2,
+  .font-display {
+    font-family: var(--font-display), var(--font-inter), sans-serif;
+    font-stretch: 112%;
+  }
 }
 
 @layer components {
   .section-heading {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-apple-text-primary;
+    @apply text-[2.5rem] leading-[1.05] sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-apple-text-primary;
   }
 
   .section-subheading {
     @apply text-lg md:text-xl text-apple-text-secondary font-normal leading-relaxed;
   }
 
+  /* Primary and gold buttons carry the shine sweep (see utilities below). */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-navy text-white px-7 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-200 hover:bg-navy-light hover:shadow-lg active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 bg-navy text-white px-7 py-3.5 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-navy-light hover:-translate-y-0.5 hover:shadow-[0_12px_30px_-10px_rgba(11,29,54,0.55)] active:translate-y-0 active:scale-[0.98];
   }
 
   .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 bg-gold text-white px-7 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-200 hover:bg-gold-light hover:shadow-lg active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 text-navy px-7 py-3.5 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
+    background-image: linear-gradient(135deg, #f6dc94 0%, #d9b04a 45%, #b8912f 100%);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset,
+      0 10px 28px -12px rgba(217, 176, 74, 0.75);
+  }
+  .btn-gold:hover {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset,
+      0 16px 36px -12px rgba(217, 176, 74, 0.95);
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 border border-navy text-navy px-7 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-200 hover:bg-navy hover:text-white active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 border border-navy text-navy px-7 py-3.5 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-navy hover:text-white hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
+  }
+
+  /* Secondary button for dark backgrounds. */
+  .btn-ghost-light {
+    @apply inline-flex items-center justify-center gap-2 border border-white/25 text-white px-7 py-3.5 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:border-white/60 hover:bg-white/10 hover:-translate-y-0.5;
   }
 
   .card {
     @apply bg-white rounded-3xl p-8 shadow-sm border border-apple-gray-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
   }
 
+  /* Hover for content cards: lift, deepen the shadow, warm the border. */
+  .card-lift {
+    @apply transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1.5;
+  }
+  .card-lift:hover {
+    border-color: rgba(217, 176, 74, 0.55);
+    box-shadow: 0 30px 60px -30px rgba(11, 29, 54, 0.35),
+      0 0 0 1px rgba(217, 176, 74, 0.25);
+  }
+
   .section-pad {
-    @apply py-24 md:py-32 px-6;
+    @apply py-24 md:py-36 px-6;
   }
 
   .container-wide {
@@ -54,7 +83,219 @@
   }
 
   .label-tag {
-    @apply inline-block text-xs font-semibold uppercase tracking-widest text-gold mb-4;
+    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep mb-5;
+  }
+  .label-tag::before {
+    content: "";
+    @apply inline-block h-px w-6;
+    background: linear-gradient(90deg, transparent, currentColor);
+  }
+  /* On the dark sections the deep gold is too dim — use the bright one. */
+  .bg-navy .label-tag,
+  .bg-navy-dark .label-tag,
+  .bg-navy-ink .label-tag {
+    @apply text-gold;
+  }
+}
+
+/* ── Shine sweep ─────────────────────────────────────────────────────────────
+   A diagonal band of light that crosses an element. Transform-only, so it
+   runs on the compositor. Hover triggers it; .shine-auto repeats it slowly. */
+.shine-sweep,
+.btn-primary,
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.shine-sweep::after,
+.btn-primary::after,
+.btn-gold::after {
+  content: "";
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 45%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  transform: translateX(-160%) skewX(-18deg);
+  z-index: 1;
+}
+.shine-sweep:hover::after,
+.shine-sweep:focus-visible::after,
+.btn-primary:hover::after,
+.btn-primary:focus-visible::after,
+.btn-gold:hover::after,
+.btn-gold:focus-visible::after {
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(330%) skewX(-18deg);
+}
+.btn-primary:disabled,
+.btn-gold:disabled {
+  transform: none;
+}
+.btn-primary:disabled::after,
+.btn-gold:disabled::after {
+  display: none;
+}
+.shine-auto::after {
+  animation: shine-pass 5.5s cubic-bezier(0.22, 1, 0.36, 1) 1.2s infinite;
+}
+
+@keyframes shine-pass {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  18%,
+  100% {
+    transform: translateX(330%) skewX(-18deg);
+  }
+}
+
+/* Gold text with a light glint that travels across it now and then. */
+.text-shine {
+  background-image: linear-gradient(
+    110deg,
+    #d9b04a 0%,
+    #d9b04a 38%,
+    #fff3cf 48%,
+    #d9b04a 58%,
+    #d9b04a 100%
+  );
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #d9b04a;
+  animation: text-glint 7s ease-in-out 1.5s infinite;
+}
+
+@keyframes text-glint {
+  0% {
+    background-position: 100% 0;
+  }
+  22%,
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+/* ── Scroll reveals (driven by components/RevealObserver.tsx) ─────────────── */
+.reveal-ready [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal-ready [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Hero light reflection ───────────────────────────────────────────────────
+   Pure CSS: soft light pools plus a long streak that drifts across, like a
+   studio light sliding along fresh paint. Transform/opacity only. */
+.hero-stage {
+  background: radial-gradient(
+      120% 80% at 50% 110%,
+      rgba(217, 176, 74, 0.16) 0%,
+      transparent 55%
+    ),
+    radial-gradient(90% 60% at 50% -10%, #132848 0%, transparent 70%),
+    #050a14;
+}
+.hero-streak {
+  position: absolute;
+  top: -30%;
+  left: 0;
+  width: 38%;
+  height: 160%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(242, 213, 138, 0.0) 20%,
+    rgba(242, 213, 138, 0.14) 45%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(242, 213, 138, 0.14) 55%,
+    transparent 80%
+  );
+  filter: blur(18px);
+  transform: translateX(-120%) rotate(18deg);
+  animation: streak-drift 11s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  will-change: transform;
+}
+.hero-streak--slow {
+  width: 22%;
+  opacity: 0.6;
+  animation-duration: 17s;
+  animation-delay: -6s;
+}
+@keyframes streak-drift {
+  0% {
+    transform: translateX(-120%) rotate(18deg);
+  }
+  100% {
+    transform: translateX(380%) rotate(18deg);
+  }
+}
+/* A thin horizon line, like a reflection along a car's shoulder line. */
+.hero-horizon {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(242, 213, 138, 0.55) 50%,
+    transparent
+  );
+  animation: horizon-breathe 6s ease-in-out infinite;
+}
+@keyframes horizon-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleX(0.7);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scaleX(1);
+  }
+}
+
+/* ── Reduced motion: no drifting, sweeping or sliding for these users ───── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .shine-auto::after,
+  .text-shine,
+  .hero-streak,
+  .hero-horizon {
+    animation: none !important;
+  }
+  .hero-streak {
+    transform: translateX(110%) rotate(18deg);
+  }
+  .shine-sweep:hover::after,
+  .btn-primary:hover::after,
+  .btn-gold:hover::after {
+    transition: none;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .card-lift,
+  .btn-primary,
+  .btn-gold,
+  .btn-outline,
+  .btn-ghost-light {
+    transition-property: color, background-color, border-color, box-shadow;
+    transform: none !important;
   }
 }
 
@@ -67,7 +308,7 @@
 
 /* Gradient text */
 .text-gradient {
-  background: linear-gradient(135deg, #0B1D36 0%, #C9A84C 100%);
+  background: linear-gradient(120deg, #0B1D36 10%, #86671C 70%, #B8912F 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -91,7 +332,7 @@
   background: #f1f1f1;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c9a84c;
+  background: #d9b04a;
   border-radius: 3px;
 }
 

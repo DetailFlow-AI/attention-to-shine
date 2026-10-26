@@ -1,8 +1,26 @@
 import type { Metadata } from "next";
+import { Inter, Archivo } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import RevealObserver from "@/components/RevealObserver";
 import { BASE_PRICES, QUARTERLY_PLAN, MONTHLY_PLAN } from "@/lib/pricing";
+
+// Self-hosted by next/font: no render-blocking request to Google at runtime.
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+// Display face for headings. The width axis lets headings run slightly
+// expanded — a wide, automotive stance — without loading a second family.
+const archivo = Archivo({
+  subsets: ["latin"],
+  display: "swap",
+  axes: ["wdth"],
+  variable: "--font-display",
+});
 
 // The live domain. This previously read "attentiontoshinedetailing.com",
 // which is missing "mobile" and does not resolve — every link preview pointed
@@ -49,8 +67,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${archivo.variable}`}>
       <body>
+        <RevealObserver />
         <Navbar />
         <main>{children}</main>
         <Footer />
