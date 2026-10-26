@@ -21,10 +21,19 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
+    // Over the homepage's dark, pinned hero scene the bar stays transparent;
+    // it only turns into the light frosted bar once the scene is behind us.
+    const onScroll = () => {
+      const scene = document.querySelector<HTMLElement>(".scene");
+      const overScene = scene
+        ? window.scrollY < scene.offsetTop + scene.offsetHeight - 72
+        : false;
+      setScrolled(window.scrollY > 20 && !overScene);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => setMenuOpen(false), [pathname]);
 

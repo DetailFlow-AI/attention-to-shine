@@ -4,6 +4,8 @@ import BeforeAfterSlider, {
 } from "@/components/BeforeAfterSlider";
 import ReviewsCarousel, { Stars } from "@/components/ReviewsCarousel";
 import HeroBackdrop from "@/components/HeroBackdrop";
+import HeroScene from "@/components/HeroScene";
+import ScrollWords from "@/components/ScrollWords";
 import {
   getGoogleReviews,
   REVIEWS_REVALIDATE_SECONDS,
@@ -115,11 +117,12 @@ const heroBeforeAfters: PairSlot[] = [
   { label: "Interior", ...(findPair(HERO_DIR, "interior") ?? {}) },
 ];
 
-// Lower section: transformation-1..4-before/after.jpg
-const beforeAfters: PairSlot[] = [1, 2, 3, 4].map((n) => ({
-  label: `Transformation ${n}`,
-  ...(findPair(TRANSFORMATIONS_DIR, `transformation-${n}`) ?? {}),
-}));
+// Lower section: transformation-1..4-before/after.jpg. Only pairs that exist
+// are shown (no empty placeholders on the live site), numbered in order.
+const beforeAfters: PairSlot[] = [1, 2, 3, 4]
+  .map((n) => findPair(TRANSFORMATIONS_DIR, `transformation-${n}`))
+  .filter((pair): pair is { before: string; after: string } => Boolean(pair))
+  .map((pair, i) => ({ label: `Transformation ${i + 1}`, ...pair }));
 
 
 // Re-render the homepage about once a day so newly posted Google reviews show
@@ -135,10 +138,15 @@ export default async function HomePage() {
   return (
     <>
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden bg-navy-ink">
-        <HeroBackdrop />
-
-        <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-20 md:pt-40 md:pb-28 min-h-[88svh] flex flex-col items-center justify-center text-center">
+      {/* Scroll-driven: the headline lifts away and the exterior photo is
+          "polished" from before to after as you scroll (HeroScene). */}
+      <HeroScene
+        backdrop={<HeroBackdrop />}
+        before={heroBeforeAfters[0].before}
+        after={heroBeforeAfters[0].after}
+        label="Exterior detail"
+      >
+        <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 md:pt-32 md:pb-16 flex flex-col items-center justify-center text-center">
           {/* Availability chip */}
           <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-gold/30 text-gold text-xs font-semibold tracking-wide px-4 py-2 rounded-full mb-8 backdrop-blur-sm">
             <Sparkles size={12} />
@@ -150,7 +158,7 @@ export default async function HomePage() {
             <span className="text-shine whitespace-nowrap">to shine.</span>
           </h1>
 
-          <p className="text-base md:text-xl text-white/65 max-w-2xl leading-relaxed mb-10">
+          <p className="text-base md:text-xl text-white/65 max-w-2xl leading-relaxed mb-10 [@media(max-height:720px)]:hidden">
             Specializing in Lakeland's finest vehicles — while giving every
             vehicle the same standard of care.
           </p>
@@ -196,12 +204,12 @@ export default async function HomePage() {
           </Link>
 
           {/* Trust line */}
-          <p className="mt-8 text-sm text-white/45 max-w-xl leading-relaxed">
+          <p className="hidden sm:block mt-8 text-sm text-white/55 max-w-xl leading-relaxed [@media(max-height:760px)]:hidden">
             Fully mobile — we come to you. Serving Lakeland, Plant City, Winter
             Haven, Bartow, Auburndale, and the surrounding Polk County area.
           </p>
         </div>
-      </section>
+      </HeroScene>
 
       {/* ── PROOF: hero before/afters ── */}
       <section className="relative bg-navy-ink px-6 pb-20 md:pb-28">
@@ -424,19 +432,22 @@ export default async function HomePage() {
 
       {/* ── WHY CHOOSE US ── */}
       <section className="section-pad bg-white">
-        <div className="container-wide max-w-4xl mx-auto text-center" data-reveal>
-          <span className="label-tag">Why Attention to Shine</span>
-          <h2 className="section-heading mb-6">
-            More than a car wash.{" "}
-            <span className="text-gradient">It's a transformation.</span>
-          </h2>
-          <p className="section-subheading mb-12 max-w-2xl mx-auto">
-            We treat every vehicle as if it were our own. That means using the
-            right products, taking the time to do things properly, and never
-            cutting corners — no matter the vehicle, no matter the job.
-          </p>
+        <div className="container-wide max-w-4xl mx-auto text-center">
+          <div data-reveal>
+            <span className="label-tag">Why Attention to Shine</span>
+            <h2 className="section-heading mb-10">
+              More than a car wash.{" "}
+              <span className="text-gradient">It's a transformation.</span>
+            </h2>
+          </div>
+          {/* Lights up word by word as you scroll, dims again going back. */}
+          <ScrollWords
+            className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold leading-snug tracking-tight text-apple-text-primary mb-6 max-w-3xl mx-auto"
+            text="We treat every vehicle as if it were our own. That means using the right products, taking the time to do things properly, and never cutting corners — no matter the vehicle, no matter the job."
+          />
+          <div data-scroll="enter" className="fx-draw w-40 mx-auto mb-14" />
 
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-2xl mx-auto mb-12">
+          <ul data-reveal className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-2xl mx-auto mb-12">
             {[
               "Paint stays glossy and protected, not stripped",
               "An interior that actually smells and feels clean",
@@ -474,7 +485,8 @@ export default async function HomePage() {
               on a consistent schedule, so your car never slips back.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mb-10">
+            {/* The two plans slide in from either side as you scroll. */}
+            <div data-scroll="enter" className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mb-10">
               {[
                 {
                   plan: QUARTERLY_PLAN.name,
@@ -491,37 +503,37 @@ export default async function HomePage() {
               ].map((tier, i) => (
                 <div
                   key={tier.plan}
-                  data-reveal
-                  style={{ "--reveal-delay": `${i * 120}ms` } as React.CSSProperties}
-                  className="card-lift bg-white/[0.04] border border-white/10 rounded-3xl p-8 hover:bg-white/[0.07]"
+                  className={i === 0 ? "fx-from-left" : "fx-from-right"}
                 >
-                  <p className="text-xs uppercase tracking-widest text-gold font-semibold mb-3">
-                    {tier.plan}
-                  </p>
-                  <div className="flex items-end gap-1 mb-2">
-                    <span className="font-display text-5xl font-bold text-white">
-                      {tier.price}
-                    </span>
-                    <span className="text-white/40 text-sm mb-1">
-                      {tier.freq}
-                    </span>
+                  <div className="card-lift h-full bg-white/[0.04] border border-white/10 rounded-3xl p-8 hover:bg-white/[0.07]">
+                    <p className="text-xs uppercase tracking-widest text-gold font-semibold mb-3">
+                      {tier.plan}
+                    </p>
+                    <div className="flex items-end gap-1 mb-2">
+                      <span className="font-display text-5xl font-bold text-white">
+                        {tier.price}
+                      </span>
+                      <span className="text-white/40 text-sm mb-1">
+                        {tier.freq}
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/50 mb-6">{tier.details}</p>
+                    <ul className="space-y-2.5">
+                      {[
+                        "Your car looks freshly detailed, every visit",
+                        "No streaks, no dust, no slipping back to dirty",
+                        "A reserved slot, never a scramble to rebook",
+                      ].map((item) => (
+                        <li
+                          key={item}
+                          className="flex items-center gap-2 text-sm text-white/70"
+                        >
+                          <CheckCircle2 size={14} className="text-gold shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <p className="text-sm text-white/50 mb-6">{tier.details}</p>
-                  <ul className="space-y-2.5">
-                    {[
-                      "Your car looks freshly detailed, every visit",
-                      "No streaks, no dust, no slipping back to dirty",
-                      "A reserved slot, never a scramble to rebook",
-                    ].map((item) => (
-                      <li
-                        key={item}
-                        className="flex items-center gap-2 text-sm text-white/70"
-                      >
-                        <CheckCircle2 size={14} className="text-gold shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               ))}
             </div>
@@ -550,12 +562,13 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
             {beforeAfters.map((pair, i) => (
               <div
                 key={pair.label}
                 data-reveal
-                style={{ "--reveal-delay": `${(i % 2) * 120}ms` } as React.CSSProperties}
+                style={{ "--reveal-delay": `${(i % 3) * 120}ms` } as React.CSSProperties}
+                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] max-w-md"
               >
                 {pair.before && pair.after ? (
                   <BeforeAfterSlider
@@ -660,10 +673,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── CTA BANNER ── */}
-      <section className="relative overflow-hidden bg-navy-ink py-20 md:py-28 px-6">
-        <div aria-hidden className="absolute inset-0 hero-stage pointer-events-none">
-          <div className="hero-streak hero-streak--slow" />
-        </div>
+      <section data-scroll className="fx-scrub-shine hero-stage py-20 md:py-28 px-6">
         <div className="relative container-wide flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left" data-reveal>
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-3">
