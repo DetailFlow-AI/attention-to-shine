@@ -1,20 +1,26 @@
-// Server-only helpers that let photos be added by dropping files into
-// /public/images/... with no code changes. These read the filesystem at build
-// time, so a new photo appears once the site is rebuilt (committing the image
-// and pushing is enough — Vercel rebuilds on push).
+// Helpers that let photos be added by dropping files into /public/images/...
+// with no code changes. The file list comes from lib/photo-manifest.json,
+// which scripts/generate-photo-manifest.mjs writes before every dev/build, so
+// a new photo appears once the site is rebuilt (committing the image and
+// pushing is enough — Vercel rebuilds on push).
+//
+// Don't go back to reading /public with fs here: the homepage revalidates in
+// a serverless function that has no /public folder (next.config.mjs excludes
+// it), so a runtime directory read finds nothing and every slider silently
+// turns back into a placeholder.
 
-import fs from "fs";
 import path from "path";
+import manifest from "./photo-manifest.json";
 
-const PUBLIC_DIR = path.join(process.cwd(), "public");
+const FOLDERS = manifest as Record<string, string[]>;
 
 // Accepted image types, in the order we prefer them when several exist for the
 // same name. Covers the common phone/camera outputs so a .jpeg or .png works
-// just as well as a .jpg.
+// just as well as a .jpg. (Keep in sync with the generator script.)
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
 
-function isImage(file: string): boolean {
-  return IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase());
+function filesIn(dirRelativeToPublic: string): string[] {
+  return FOLDERS[dirRelativeToPublic.replace(/^\/+|\/+$/g, "")] ?? [];
 }
 
 /**
@@ -26,15 +32,7 @@ export function findImage(
   dirRelativeToPublic: string,
   baseName: string
 ): string | undefined {
-  const dir = path.join(PUBLIC_DIR, dirRelativeToPublic);
-  let entries: string[];
-  try {
-    entries = fs.readdirSync(dir);
-  } catch {
-    // Folder not created yet — treated the same as "no photo".
-    return undefined;
-  }
-
+  const entries = filesIn(dirRelativeToPublic);
   for (const ext of IMAGE_EXTENSIONS) {
     const match = entries.find(
       (f) => f.toLowerCase() === `${baseName}${ext}`.toLowerCase()
@@ -62,15 +60,7 @@ export function findPair(
  * "10-". Returns web paths.
  */
 export function listImages(dirRelativeToPublic: string): string[] {
-  const dir = path.join(PUBLIC_DIR, dirRelativeToPublic);
-  let entries: string[];
-  try {
-    entries = fs.readdirSync(dir);
-  } catch {
-    return [];
-  }
-  return entries
-    .filter(isImage)
+  return [...filesIn(dirRelativeToPublic)]
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
     .map((f) => `/${dirRelativeToPublic}/${f}`);
 }
