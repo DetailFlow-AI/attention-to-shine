@@ -19,8 +19,9 @@ export const metadata: Metadata = {
     default: "Attention to Shine | Mobile Car Detailing in Lakeland, FL",
     template: "%s | Attention to Shine",
   },
-  description:
-    "Mobile car detailing in Lakeland, Florida — we come to you. Request a quote in under two minutes, or keep your car showroom-clean year-round with a Shine Standard maintenance plan.",
+  // Built from lib/pricing.ts so the search snippet can't drift from the
+  // prices on the page.
+  description: `Mobile car detailing in Lakeland, FL — we come to you. Full Detail from $${BASE_PRICES.full}, Exterior from $${BASE_PRICES.exterior}, Interior from $${BASE_PRICES.interior}. Request an appointment in under two minutes.`,
   keywords: [
     "car detailing Lakeland FL",
     "mobile detailing Florida",

@@ -23,8 +23,7 @@ const bookVerb = INSTANT_BOOKING_ENABLED ? "Book" : "Request";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description:
-    "Starting prices for every Attention to Shine mobile detailing package and maintenance plan in Lakeland, FL. Request a quote — no hidden fees, no surprises.",
+  description: `Starting prices for Attention to Shine mobile detailing in Lakeland, FL — Full Detail from $${BASE_PRICES.full}, plus maintenance plans. Request a quote — no hidden fees, no surprises.`,
 };
 
 const packages = [
@@ -33,7 +32,7 @@ const packages = [
     name: "Exterior Detail",
     price: `Starting at $${BASE_PRICES.exterior}`,
     description:
-      "Deep gloss, no swirl marks, no road film — paint that looks like it just left the showroom. Great for routine upkeep or before a special occasion.",
+      "Deep gloss, no road film, careful paint-safe methods — paint that looks like it just left the showroom. Great for routine upkeep or before a special occasion.",
     features: [
       "Paint washed, dried, and sealed for lasting shine",
       "Wheels, wells, and tires cleaned and dressed",

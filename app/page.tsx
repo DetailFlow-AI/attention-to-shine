@@ -36,7 +36,7 @@ const services = [
     title: "Exterior Detail",
     tagline: "A mirror finish, every time.",
     description:
-      "Your paint comes back to life — deep gloss, no swirl marks, no road film. The kind of shine that turns heads in your own driveway.",
+      "Your paint comes back to life — deep gloss, no road film, cleaned with careful, paint-safe methods. The kind of shine that turns heads in your own driveway.",
     price: `From $${BASE_PRICES.exterior}`,
     icon: "✦",
     href: "/services#exterior",
@@ -394,7 +394,7 @@ export default async function HomePage() {
               "Paint stays glossy and protected, not stripped",
               "An interior that actually smells and feels clean",
               "No fading, cracking, or sun damage to plastics",
-              "No swirl marks or scratches, ever",
+              "Careful, paint-safe wash and dry methods",
               "Done at your home or office — no wasted time",
               "A time that fits your week, Monday through Saturday",
             ].map((item) => (
