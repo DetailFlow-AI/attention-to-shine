@@ -69,11 +69,8 @@ interface BookingData {
   vehicleColor: string;
   date:         string;
   time:         string;
-  altDate:      string; // optional second preference (request mode)
-  altTime:      string;
   address:      string;
   city:         string;
-  zip:          string;
   notes:        string;
   name:         string;
   email:        string;
@@ -372,11 +369,8 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
     vehicleColor: "",
     date:         "",
     time:         "",
-    altDate:      "",
-    altTime:      "",
     address:      "",
     city:         "",
-    zip:          "",
     notes:        "",
     name:         "",
     email:        "",
@@ -542,7 +536,6 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
           time:          data.time,
           address:       data.address,
           city:          data.city,
-          zip:           data.zip,
           vehicleMake:   data.vehicleMake,
           vehicleColor:  data.vehicleColor,
         }),
@@ -839,40 +832,6 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             </div>
           </div>
 
-          {/* Second choice of day/time — request mode only, always optional.
-              Gives the owner a fallback to work with when quoting. */}
-          {!INSTANT_BOOKING_ENABLED && (
-            <div className="bg-apple-gray rounded-2xl p-4 border border-apple-gray-2">
-              <p className="text-xs font-medium text-apple-text-secondary mb-1">
-                Another day or time that works (optional)
-              </p>
-              <p className="text-[11px] text-apple-text-tertiary mb-3">
-                Giving us a second option makes it easier to find a slot that
-                suits you both.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <DatePicker
-                  value={data.altDate}
-                  minDate={minDate}
-                  service={data.service}
-                  onChange={(d) => set("altDate", d)}
-                />
-                <select
-                  value={data.altTime}
-                  onChange={(e) => set("altTime", e.target.value)}
-                  className={ic(data.altTime)}
-                >
-                  <option value="">Select a time</option>
-                  {timeSlots.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
           <div>
             <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
               Service Address *
@@ -887,57 +846,32 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
             <RequiredMsg value={data.address} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">City *</label>
-              <input
-                type="text"
-                placeholder="Lakeland"
-                value={data.city}
-                onChange={(e) => set("city", e.target.value)}
-                className={ic(data.city, true)}
-              />
-              <RequiredMsg value={data.city} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">ZIP Code *</label>
-              <input
-                type="text"
-                placeholder="33809"
-                value={data.zip}
-                onChange={(e) => set("zip", e.target.value)}
-                maxLength={5}
-                className={ic(data.zip, true)}
-              />
-              <RequiredMsg value={data.zip} />
-            </div>
+          <div>
+            <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">City *</label>
+            <input
+              type="text"
+              placeholder="Lakeland"
+              value={data.city}
+              onChange={(e) => set("city", e.target.value)}
+              className={ic(data.city, true)}
+            />
+            <RequiredMsg value={data.city} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
-                Vehicle Make / Model
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Toyota Camry 2022"
-                value={data.vehicleMake}
-                onChange={(e) => set("vehicleMake", e.target.value)}
-                className={ic(data.vehicleMake)}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
-                Vehicle Color
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. White"
-                value={data.vehicleColor}
-                onChange={(e) => set("vehicleColor", e.target.value)}
-                className={ic(data.vehicleColor)}
-              />
-            </div>
+          {/* One field instead of separate make/model and colour boxes —
+              vehicleColor stays in the payload (empty) so the server routes
+              and the instant-booking flow keep working unchanged. */}
+          <div>
+            <label className="block text-xs font-medium text-apple-text-secondary mb-1.5">
+              Vehicle color, year, and model
+            </label>
+            <input
+              type="text"
+              placeholder="Black 2022 Toyota Camry"
+              value={data.vehicleMake}
+              onChange={(e) => set("vehicleMake", e.target.value)}
+              className={ic(data.vehicleMake)}
+            />
           </div>
 
           {/* Vehicle condition / notes with live upcharge detection */}
@@ -999,8 +933,7 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                   data.time.trim() &&
                   timeIsValid &&
                   data.address.trim() &&
-                  data.city.trim() &&
-                  data.zip.trim()
+                  data.city.trim()
                 ) {
                   setStep2Attempted(false); // reset for a clean state
                   setStep(3);
@@ -1150,12 +1083,6 @@ export default function BookingForm({ defaultService }: { defaultService?: strin
                 📅 {INSTANT_BOOKING_ENABLED ? "" : "Preferred: "}
                 {data.date} at {data.time}
               </p>
-              {!INSTANT_BOOKING_ENABLED && (data.altDate || data.altTime) && (
-                <p>
-                  📅 Alternate: {data.altDate || data.date}
-                  {data.altTime ? ` at ${data.altTime}` : ""}
-                </p>
-              )}
               <p>📍 {data.address}, {data.city}</p>
               {data.vehicleMake && <p>🚗 {data.vehicleMake}{data.vehicleColor ? ` · ${data.vehicleColor}` : ""}</p>}
             </div>

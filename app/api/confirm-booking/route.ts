@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       ``,
       `Service:  ${SERVICE_LABELS[m.service] ?? m.service}`,
       `Vehicle:  ${m.vehicleSize}${m.vehicleMake ? ` — ${m.vehicleMake}` : ""}${m.vehicleColor ? ` (${m.vehicleColor})` : ""}`,
-      `Address:  ${m.address}, ${m.city ?? ""} ${m.zip ?? ""}`,
+      `Address:  ${m.address}${m.city ? `, ${m.city}` : ""}`,
       m.notes ? `Notes:    ${m.notes}` : "",
       m.promoCode ? `Promo:    ${m.promoCode}` : "",
     ].filter(Boolean).join("\n");

@@ -49,7 +49,6 @@ export async function POST(req: NextRequest) {
       time,
       address,
       city,
-      zip,
       vehicleMake,
       vehicleColor,
     } = body;
@@ -100,7 +99,6 @@ export async function POST(req: NextRequest) {
         time:              time         ?? "",
         address:           (address ?? "").slice(0, 200),
         city:              city         ?? "",
-        zip:               zip          ?? "",
         vehicleMake:       vehicleMake  ?? "",
         vehicleColor:      vehicleColor ?? "",
         notes:             (notes ?? "").slice(0, 500), // truncate for metadata limit

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       service, vehicleSize, vehicleMake, vehicleColor,
-      date, time, address, city, zip, notes,
+      date, time, address, city, notes,
       name, email, phone, promoCode, membership,
     } = body;
 
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       `Service:  ${service}`,
       `Vehicle:  ${vehicleSize}${vehicleMake ? ` — ${vehicleMake}` : ""}${vehicleColor ? ` (${vehicleColor})` : ""}`,
       `Date:     ${date} at ${time}`,
-      `Address:  ${address}, ${city ?? ""} ${zip ?? ""}`,
+      `Address:  ${address}${city ? `, ${city}` : ""}`,
       notes ? `Notes:    ${notes}` : "",
       promoCode ? `Promo:    ${promoCode}` : "",
       isMember(membership)
