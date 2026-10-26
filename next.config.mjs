@@ -7,14 +7,13 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    // lib/photos.ts reads /public at BUILD time to discover vehicle photos.
-    // Next's tracer sees that filesystem access and, left alone, copies every
-    // image in /public into the serverless function — which pushed it past
-    // Vercel's 250MB limit and failed the deploy.
-    //
-    // Excluding them is safe: every page that uses those helpers is statically
-    // prerendered, so the reads have already happened by the time the function
-    // exists, and Vercel serves /public as static assets separately.
+    // Keep every /public image out of the serverless functions. An earlier
+    // lib/photos.ts read /public with fs, so Next's tracer copied all of it into
+    // the function — past Vercel's 250MB limit, failing the deploy. Vercel
+    // serves /public as static assets separately, so the functions never need
+    // it. That also means server code must never read /public at runtime:
+    // photo discovery now goes through lib/photo-manifest.json, generated at
+    // build time by scripts/generate-photo-manifest.mjs.
     outputFileTracingExcludes: {
       "*": ["public/**"],
     },

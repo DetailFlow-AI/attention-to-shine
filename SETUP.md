@@ -107,51 +107,63 @@ skipped (and logged).
 
 ---
 
-### 6. Google reviews on the homepage
+### 6. Live Google reviews on the homepage
 
-The homepage pulls your real Google reviews through the Places API, server-side,
-cached for about a day. If anything fails it silently falls back to the built-in
-reviews, so the section can never render empty.
+The homepage shows your **5 newest Google reviews** (the ones with written
+comments), with each reviewer's stars, words, name and date, plus a "See more
+reviews on Google" button. It re-checks Google about **once an hour**, so new
+reviews appear on their own. Until this is set up, the section shows only the
+"Read our reviews on Google" button, never made-up quotes.
 
-**a. Enable the API.** In the [Google Cloud console](https://console.cloud.google.com/),
-select the same project your calendar service account lives in. Go to
-**APIs & Services → Library**, search for **Places API (New)**, and click **Enable**.
+It uses the official **Google Business Profile API**, which can read your whole
+review list (the simpler Places API can't; Google only gives it 5 reviews of its
+own choosing).
 
-**b. Create the key.** Go to **APIs & Services → Credentials →
-Create credentials → API key**. Copy it.
+**a. Request API access (one time, free).** In the
+[Google Cloud console](https://console.cloud.google.com/), select (or create) a
+project and copy its **project number** (Dashboard → Project info). Then fill in
+Google's [Business Profile API access request form](https://developers.google.com/my-business/content/prereqs#request-access)
+with that project number and the email that manages your Business Profile.
+Google usually replies within a few days, sometimes a couple of weeks. You can
+do steps b–c while you wait, but step d only works once you're approved.
 
-**c. Restrict the key.** Click the new key to edit it:
+**b. Turn on the APIs.** In that same project, go to **APIs & Services →
+Library** and enable all three:
+- Google My Business API
+- My Business Account Management API
+- My Business Business Information API
 
-- **Application restrictions: None.** This key is used only from the server, and
-  Vercel's outbound IPs are not fixed, so IP and HTTP-referrer restrictions will
-  break the call. The key is never sent to the browser, so "None" is correct here.
-- **API restrictions: Restrict key → Places API (New).** This is the important
-  one — it means a leaked key can't be used against any other Google service.
+**c. Create sign-in credentials.** **APIs & Services → OAuth consent screen**:
+choose **External**, fill in the app name and your email, add yourself as a
+**test user**, and save. Then **Credentials → Create credentials → OAuth client
+ID → Desktop app**. Copy the **Client ID** and **Client secret**.
 
-Do **not** reuse `GOOGLE_CALENDAR_API_KEY` for this. Keep one key per API so
-either can be rotated on its own.
+> Set the consent screen's publishing status to **In production** (it's fine
+> for an app only you use). In "Testing" mode Google expires the sign-in after
+> 7 days and the reviews would stop updating.
 
-**d. Find your Place ID.** Open the
-[Place ID Finder](https://developers.google.com/maps/documentation/places/web-service/place-id)
-and search for your business. The ID looks like `ChIJ...`. Confirm it is the right
-listing: the CID on the public listing is `8798533128764867224`.
-
-**e. Set the environment variables** in Vercel (**Settings → Environment Variables**),
-for Production, Preview and Development:
+**d. Connect your profile (after approval).** On your computer, with Node 18+,
+from this project folder:
 
 ```
-GOOGLE_PLACES_API_KEY=<the key from step b>
-GOOGLE_PLACE_ID=<the ChIJ... id from step d>
+node scripts/gbp-setup.mjs YOUR_CLIENT_ID YOUR_CLIENT_SECRET
 ```
 
-Neither may be prefixed with `NEXT_PUBLIC_` — that would inline the key into the
-browser bundle and expose it publicly.
+Open the link it prints, sign in with the Google account that manages the
+business, and approve. The terminal then prints `GBP_CLIENT_ID`,
+`GBP_CLIENT_SECRET`, `GBP_REFRESH_TOKEN`, `GBP_ACCOUNT_ID`, `GBP_LOCATION_ID`
+and `GOOGLE_PLACE_ID`.
 
-**Notes.** The Places API returns at most **5 reviews**, chosen by Google; there is
-no API that returns all of them, which is why the "See all reviews on Google" link
-is there. Reviews are shown exactly as Google returns them, unfiltered by star
-rating. The homepage revalidates about once a day, so a new review can take up to
-24 hours to appear.
+**e. Add them to Vercel** (**Settings → Environment Variables**, Production and
+Preview) and redeploy. These are secrets: never prefix them with
+`NEXT_PUBLIC_`, commit them, or share them.
+
+**Optional stop-gap while you wait for approval:** a Google Places API key shows
+real reviews right away, but Google picks which 5 (not necessarily the newest).
+Enable **Places API (New)**, create an API key restricted to it, and set
+`GOOGLE_PLACES_API_KEY` and `GOOGLE_PLACE_ID` (find the `ChIJ...` id with the
+[Place ID Finder](https://developers.google.com/maps/documentation/places/web-service/place-id)).
+Once the Business Profile values are in, they take over automatically.
 
 ## Deploy to Vercel
 

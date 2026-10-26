@@ -1,96 +1,237 @@
-// Real Google reviews, fetched SERVER-SIDE and cached for a day.
+// Real Google reviews for the homepage, fetched SERVER-SIDE.
 //
-// SECURITY: GOOGLE_PLACES_API_KEY deliberately has no NEXT_PUBLIC_ prefix, so
-// Next.js will never inline it into a client bundle. This module must only
-// ever be imported from a Server Component or a route handler — never from a
-// "use client" file. The homepage calls getGoogleReviews() during its server
-// render and passes the finished, plain-data result down to the carousel.
+// Two sources, tried in this order:
 //
-// FAILURE BEHAVIOUR: this module never throws and never returns an empty list.
-// A missing key, a bad place id, a quota error, a network blip or a malformed
-// payload all fall back to the hand-written reviews below, so the section on
-// the homepage can never render empty.
+// 1. Google Business Profile API (the one we want). Reads the business's
+//    whole review list, so the homepage can show the 5 NEWEST reviews that
+//    have written comments. Checked about once an hour, so a new review
+//    shows up on its own within the hour. Needs the GBP_* variables below;
+//    scripts/gbp-setup.mjs walks through getting them.
 //
-// Reviews are shown exactly as Google returns them — no filtering by star
-// rating, no reordering, no truncation.
+// 2. Google Places API (New), as a stop-gap while Business Profile API access
+//    is being approved. Google returns at most 5 reviews of ITS choosing (not
+//    necessarily the newest). Needs GOOGLE_PLACES_API_KEY + GOOGLE_PLACE_ID.
+//
+// If neither is configured, or Google can't be reached, no quotes are shown —
+// only a link to the reviews on Google. Nothing on the page is ever made up,
+// and reviews are never filtered by star rating or edited.
+//
+// SECURITY: none of these variables has a NEXT_PUBLIC_ prefix, so Next.js
+// never puts them in a browser bundle. Import this module only from Server
+// Components or route handlers — never from a "use client" file.
 
 export interface Review {
   quote: string;
   name: string;
   initials: string;
-  detail: string;
-  rating?: number;
-  profilePhotoUrl?: string | null;
-  url?: string | null;
+  /** "2 weeks ago" (Places) or "Oct 12, 2026" (Business Profile). */
+  when: string;
+  rating: number | null;
+  profilePhotoUrl: string | null;
+  /** The reviewer's Google profile, when Google provides it. */
+  authorUrl: string | null;
 }
 
 export interface ReviewsData {
+  /** "live": real reviews from Google. "unavailable": not configured or failed. */
+  status: "live" | "unavailable";
+  /** Which API produced the reviews — handy when debugging a deploy. */
+  source: "business-profile" | "places" | null;
   reviews: Review[];
   /** Overall business rating, e.g. 4.9 — null when unknown. */
   rating: number | null;
-  /** How many ratings that average is built from. */
+  /** How many reviews that average is built from. */
   totalRatings: number | null;
-  /** Where "See all reviews on Google" points. */
-  googleUrl: string;
-  /** Which path produced this data — handy when debugging a deploy. */
-  source: "google" | "fallback";
+  /** Opens the reviews on the Google Business Profile ("See more"). */
+  reviewsUrl: string;
 }
 
-// The public listing. Used as the link target whenever Google doesn't hand
-// back a googleMapsUri of its own.
+/** How many reviews the homepage shows. */
+const MAX_REVIEWS = 5;
+
+/** Business Profile: re-check for new reviews about once an hour (free API). */
+const GBP_REVALIDATE_SECONDS = 60 * 60;
+
+/** Places fallback: once a day, to stay inside Google's free monthly usage. */
+const PLACES_REVALIDATE_SECONDS = 60 * 60 * 24;
+
+// The public listing — used whenever there's no place id to build a link from.
 export const GOOGLE_LISTING_URL =
   "https://maps.app.goo.gl/dqWzddQBFShN4KqB8?g_st=ic";
 
-// ── Fallback ──────────────────────────────────────────────────────────────────
-// The reviews the site showed before this was wired up. Kept verbatim so a
-// Google outage is invisible to visitors.
+// Google's documented link that opens a place's reviews directly.
+function reviewsUrlFor(placeId: string | undefined): string {
+  return placeId
+    ? `https://search.google.com/local/reviews?placeid=${encodeURIComponent(placeId)}`
+    : GOOGLE_LISTING_URL;
+}
 
-export const FALLBACK_REVIEWS: Review[] = [
-  {
-    quote: "Wow! It looks like new again!",
-    name: "John Travis",
-    initials: "JT",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote: "My car hasn't looked this good since the day I bought it!",
-    name: "Mike L.",
-    initials: "ML",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote: "It looks like it should be in a showroom.",
-    name: "Mr. David",
-    initials: "MD",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote:
-      "I almost feel bad taking my car out of the driveway now — I don't want it to get dirty!",
-    name: "Steve B.",
-    initials: "SB",
-    detail: "Lakeland, FL — Shine Standard Maintenance",
-  },
-  {
-    quote: "I'll definitely be calling them out again. Highly recommend!",
-    name: "Eric K.",
-    initials: "EK",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-];
+// Two letters from a display name: "John Travis" → "JT", "Mike" → "MI".
+function initialsFor(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "G";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
-const FALLBACK: ReviewsData = {
-  reviews: FALLBACK_REVIEWS,
-  rating: null,
-  totalRatings: null,
-  googleUrl: GOOGLE_LISTING_URL,
-  source: "fallback",
+// ── 1. Google Business Profile API ───────────────────────────────────────────
+
+interface GbpReview {
+  reviewId?: string;
+  reviewer?: {
+    displayName?: string;
+    profilePhotoUrl?: string;
+    isAnonymous?: boolean;
+  };
+  starRating?: "ONE" | "TWO" | "THREE" | "FOUR" | "FIVE" | string;
+  comment?: string;
+  createTime?: string;
+  updateTime?: string;
+}
+
+interface GbpReviewsResponse {
+  reviews?: GbpReview[];
+  averageRating?: number;
+  totalReviewCount?: number;
+}
+
+const STARS: Record<string, number> = {
+  ONE: 1,
+  TWO: 2,
+  THREE: 3,
+  FOUR: 4,
+  FIVE: 5,
 };
 
-// ── Google Places API (New) response shapes ───────────────────────────────────
+// Reviews Google auto-translated come back as
+// "(Translated by Google) …\n\n(Original)\n…". Show the reviewer's own words.
+function originalWords(comment: string): string {
+  const marker = "(Original)";
+  const i = comment.indexOf(marker);
+  if (comment.startsWith("(Translated by Google)") && i !== -1) {
+    return comment.slice(i + marker.length).trim();
+  }
+  return comment.trim();
+}
+
+function gbpToReview(r: GbpReview): Review | null {
+  const quote = originalWords(r.comment ?? "");
+  if (!quote) return null; // stars only, no words to quote
+
+  const name = r.reviewer?.isAnonymous
+    ? "A Google user"
+    : (r.reviewer?.displayName ?? "Google reviewer").trim();
+  const created = r.createTime ? new Date(r.createTime) : null;
+
+  return {
+    quote,
+    name,
+    initials: initialsFor(name),
+    when:
+      created && !Number.isNaN(created.getTime())
+        ? created.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            timeZone: "America/New_York",
+          })
+        : "",
+    rating: STARS[r.starRating ?? ""] ?? null,
+    profilePhotoUrl: r.reviewer?.profilePhotoUrl ?? null,
+    authorUrl: null,
+  };
+}
+
+async function gbpAccessToken(): Promise<string> {
+  // Exchange the long-lived refresh token for a short-lived access token.
+  // Not cached by Next (POST), but it only runs when the review list itself
+  // is being re-fetched, i.e. about once an hour.
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: process.env.GBP_CLIENT_ID!,
+      client_secret: process.env.GBP_CLIENT_SECRET!,
+      refresh_token: process.env.GBP_REFRESH_TOKEN!,
+      grant_type: "refresh_token",
+    }),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`token ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const data = (await res.json()) as { access_token?: string };
+  if (!data.access_token) throw new Error("token response had no access_token");
+  return data.access_token;
+}
+
+async function fromBusinessProfile(): Promise<ReviewsData | null> {
+  const { GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN } = process.env;
+  const account = process.env.GBP_ACCOUNT_ID;
+  const location = process.env.GBP_LOCATION_ID;
+  if (
+    !GBP_CLIENT_ID ||
+    !GBP_CLIENT_SECRET ||
+    !GBP_REFRESH_TOKEN ||
+    !account ||
+    !location
+  ) {
+    return null; // not set up yet
+  }
+
+  try {
+    const token = await gbpAccessToken();
+    // Most recently updated first; a page of 50 is plenty to find the 5
+    // newest with written comments.
+    const url =
+      `https://mybusiness.googleapis.com/v4/accounts/${encodeURIComponent(account)}` +
+      `/locations/${encodeURIComponent(location)}/reviews` +
+      `?pageSize=50&orderBy=${encodeURIComponent("updateTime desc")}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: GBP_REVALIDATE_SECONDS },
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(
+        `[reviews] Business Profile API ${res.status}: ${body.slice(0, 300)}`
+      );
+      return null;
+    }
+    const data = (await res.json()) as GbpReviewsResponse;
+
+    // "Newest" means when the review was written, not when it was last edited.
+    const reviews = [...(data.reviews ?? [])]
+      .sort(
+        (a, b) =>
+          Date.parse(b.createTime ?? "") - Date.parse(a.createTime ?? "") || 0
+      )
+      .map(gbpToReview)
+      .filter((r): r is Review => r !== null)
+      .slice(0, MAX_REVIEWS);
+
+    return {
+      status: "live",
+      source: "business-profile",
+      reviews,
+      rating: typeof data.averageRating === "number" ? data.averageRating : null,
+      totalRatings:
+        typeof data.totalReviewCount === "number" ? data.totalReviewCount : null,
+      reviewsUrl: reviewsUrlFor(process.env.GOOGLE_PLACE_ID),
+    };
+  } catch (err) {
+    console.error("[reviews] Business Profile API request failed.", err);
+    return null;
+  }
+}
+
+// ── 2. Google Places API (New) — stop-gap ────────────────────────────────────
 
 interface PlacesReview {
   rating?: number;
+  /** RFC 3339 timestamp, e.g. "2026-10-02T14:03:11Z". */
+  publishTime?: string;
   text?: { text?: string };
   originalText?: { text?: string };
   relativePublishTimeDescription?: string;
@@ -104,105 +245,92 @@ interface PlacesReview {
 interface PlacesResponse {
   rating?: number;
   userRatingCount?: number;
-  googleMapsUri?: string;
+  googleMapsLinks?: { reviewsUri?: string };
   reviews?: PlacesReview[];
 }
 
-// Two letters from a display name: "John Travis" → "JT", "Mike" → "MI".
-function initialsFor(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "G";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function toReview(r: PlacesReview): Review | null {
-  // Google's own translation first, then the reviewer's original wording.
-  const quote = (r.text?.text ?? r.originalText?.text ?? "").trim();
-  if (!quote) return null; // a star-only rating with no words to show
+function placesToReview(r: PlacesReview): Review | null {
+  // The reviewer's own words first; Google's translation if that's missing.
+  const quote = (r.originalText?.text ?? r.text?.text ?? "").trim();
+  if (!quote) return null;
 
   const name = (r.authorAttribution?.displayName ?? "Google reviewer").trim();
-
   return {
     quote,
     name,
     initials: initialsFor(name),
-    detail: r.relativePublishTimeDescription ?? "Google review",
-    rating: typeof r.rating === "number" ? r.rating : undefined,
+    when: r.relativePublishTimeDescription ?? "",
+    rating: typeof r.rating === "number" ? r.rating : null,
     profilePhotoUrl: r.authorAttribution?.photoUri ?? null,
-    url: r.authorAttribution?.uri ?? null,
+    authorUrl: r.authorAttribution?.uri ?? null,
   };
 }
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-
-const PLACES_ENDPOINT = "https://places.googleapis.com/v1/places";
-
-// Only the fields we actually render, so the call stays on the cheapest
-// billing SKU that still includes reviews.
-const FIELD_MASK = "rating,userRatingCount,googleMapsUri,reviews";
-
-/** Roughly once a day, per the caching requirement. */
-export const REVIEWS_REVALIDATE_SECONDS = 60 * 60 * 24;
-
-export async function getGoogleReviews(): Promise<ReviewsData> {
+async function fromPlaces(): Promise<ReviewsData | null> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   const placeId = process.env.GOOGLE_PLACE_ID;
-
-  // Not configured yet — this is the expected state until the env vars are set
-  // in Vercel, so it's a log line rather than an error.
-  if (!apiKey || !placeId) {
-    console.log(
-      "[reviews] GOOGLE_PLACES_API_KEY / GOOGLE_PLACE_ID not set — using fallback reviews."
-    );
-    return FALLBACK;
-  }
+  if (!apiKey || !placeId) return null;
 
   try {
     const res = await fetch(
-      `${PLACES_ENDPOINT}/${encodeURIComponent(placeId)}`,
+      `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`,
       {
         headers: {
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": FIELD_MASK,
+          "X-Goog-FieldMask":
+            "rating,userRatingCount,googleMapsLinks,reviews",
         },
-        // Next caches the response and re-fetches about once a day. Every
-        // visitor in between is served from cache, so this costs roughly one
-        // Places call per day rather than one per page view.
-        next: { revalidate: REVIEWS_REVALIDATE_SECONDS },
+        next: { revalidate: PLACES_REVALIDATE_SECONDS },
       }
     );
-
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      console.error(
-        `[reviews] Places API ${res.status} ${res.statusText} — falling back. ${body.slice(0, 300)}`
-      );
-      return FALLBACK;
+      console.error(`[reviews] Places API ${res.status}: ${body.slice(0, 300)}`);
+      return null;
     }
-
     const data = (await res.json()) as PlacesResponse;
 
-    // Exactly what Google returned, in Google's order, unfiltered by rating.
-    const reviews = (data.reviews ?? [])
-      .map(toReview)
-      .filter((r): r is Review => r !== null);
-
-    if (reviews.length === 0) {
-      console.warn("[reviews] Places API returned no usable reviews — falling back.");
-      return FALLBACK;
-    }
+    // Google picks these (up to 5); newest first is the best we can do here.
+    const reviews = [...(data.reviews ?? [])]
+      .sort(
+        (a, b) =>
+          (Date.parse(b.publishTime ?? "") || 0) -
+          (Date.parse(a.publishTime ?? "") || 0)
+      )
+      .map(placesToReview)
+      .filter((r): r is Review => r !== null)
+      .slice(0, MAX_REVIEWS);
 
     return {
+      status: "live",
+      source: "places",
       reviews,
       rating: typeof data.rating === "number" ? data.rating : null,
       totalRatings:
         typeof data.userRatingCount === "number" ? data.userRatingCount : null,
-      googleUrl: data.googleMapsUri ?? GOOGLE_LISTING_URL,
-      source: "google",
+      reviewsUrl: data.googleMapsLinks?.reviewsUri ?? reviewsUrlFor(placeId),
     };
   } catch (err) {
-    console.error("[reviews] Places API request failed — falling back.", err);
-    return FALLBACK;
+    console.error("[reviews] Places API request failed.", err);
+    return null;
   }
+}
+
+// ── Entry point ──────────────────────────────────────────────────────────────
+
+export async function getGoogleReviews(): Promise<ReviewsData> {
+  const data = (await fromBusinessProfile()) ?? (await fromPlaces());
+  if (data) return data;
+
+  console.log(
+    "[reviews] No Google reviews source configured or reachable — showing the link to Google only."
+  );
+  return {
+    status: "unavailable",
+    source: null,
+    reviews: [],
+    rating: null,
+    totalRatings: null,
+    reviewsUrl: reviewsUrlFor(process.env.GOOGLE_PLACE_ID),
+  };
 }

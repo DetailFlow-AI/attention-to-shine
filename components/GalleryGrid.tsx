@@ -62,15 +62,19 @@ export default function GalleryGrid({ slots }: { slots: GallerySlot[] }) {
                 type="button"
                 onClick={() => setLightboxIndex(photoIndex)}
                 aria-label={`Enlarge photo: ${slot.caption ?? `photo ${slot.id}`}`}
+                // Photo settles from a slight zoom as it scrolls in (ScrollFx).
+                data-scroll="enter"
                 className="group relative block w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-lg bg-navy/10 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
               >
-                <Image
-                  src={slot.src}
-                  alt={slot.caption ?? "Detailing work by Attention to Shine"}
-                  fill
-                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+                <div className="absolute inset-0 fx-zoom">
+                  <Image
+                    src={slot.src}
+                    alt={slot.caption ?? "Detailing work by Attention to Shine"}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
               </button>
               {slot.caption && (
                 <p className="text-center text-sm font-medium text-apple-text-secondary mt-3">

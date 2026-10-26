@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 
 interface BeforeAfterSliderProps {
@@ -21,6 +21,29 @@ export default function BeforeAfterSlider({
 }: BeforeAfterSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
+  // Photos load only once the slider is close to the screen. Native lazy
+  // loading starts far earlier on phones, which had these large images
+  // competing with the hero headline on first load.
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !("IntersectionObserver" in window)) {
+      setNear(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const updatePosition = useCallback((clientX: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -42,34 +65,38 @@ export default function BeforeAfterSlider({
   return (
     <div
       ref={containerRef}
-      className={`relative ${aspectClass} rounded-3xl overflow-hidden select-none touch-none cursor-ew-resize shadow-xl`}
+      className={`relative ${aspectClass} rounded-3xl overflow-hidden select-none touch-none cursor-ew-resize shadow-xl bg-navy-light`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
     >
-      {/* After (base layer) */}
-      <Image
-        src={afterSrc}
-        alt={`${alt} — after detailing`}
-        fill
-        sizes="(max-width: 768px) 100vw, 50vw"
-        className="object-cover pointer-events-none"
-        draggable={false}
-      />
+      {near && (
+        <>
+          {/* After (base layer) */}
+          <Image
+            src={afterSrc}
+            alt={`${alt} — after detailing`}
+            fill
+            sizes="(max-width: 640px) 100vw, 50vw"
+            className="object-cover pointer-events-none"
+            draggable={false}
+          />
 
-      {/* Before (clipped overlay) */}
-      <div
-        className="absolute inset-0"
-        style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
-      >
-        <Image
-          src={beforeSrc}
-          alt={`${alt} — before detailing`}
-          fill
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-cover pointer-events-none"
-          draggable={false}
-        />
-      </div>
+          {/* Before (clipped overlay) */}
+          <div
+            className="absolute inset-0"
+            style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
+          >
+            <Image
+              src={beforeSrc}
+              alt={`${alt} — before detailing`}
+              fill
+              sizes="(max-width: 640px) 100vw, 50vw"
+              className="object-cover pointer-events-none"
+              draggable={false}
+            />
+          </div>
+        </>
+      )}
 
       {/* Divider + handle */}
       <div
@@ -85,7 +112,7 @@ export default function BeforeAfterSlider({
       <span className="absolute top-4 left-4 bg-navy/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none">
         Before
       </span>
-      <span className="absolute top-4 right-4 bg-gold/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none">
+      <span className="absolute top-4 right-4 bg-gold text-navy text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none">
         After
       </span>
     </div>

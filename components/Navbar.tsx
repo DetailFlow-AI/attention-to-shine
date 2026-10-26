@@ -21,10 +21,19 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
+    // Over the homepage's dark, pinned hero scene the bar stays transparent;
+    // it only turns into the light frosted bar once the scene is behind us.
+    const onScroll = () => {
+      const scene = document.querySelector<HTMLElement>(".scene");
+      const overScene = scene
+        ? window.scrollY < scene.offsetTop + scene.offsetHeight - 72
+        : false;
+      setScrolled(window.scrollY > 20 && !overScene);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => setMenuOpen(false), [pathname]);
 
@@ -80,7 +89,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <a
               href="tel:+18639349779"
-              className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
+              className={`hidden lg:flex items-center gap-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                 dark
                   ? "text-white/80 hover:text-white"
                   : "text-apple-text-secondary hover:text-apple-text-primary"
@@ -89,7 +98,7 @@ export default function Navbar() {
               <Phone size={14} />
               (863) 934-9779
             </a>
-            <Link href="/booking" className="btn-gold text-xs px-5 py-2.5">
+            <Link href="/booking" className="btn-gold text-xs px-5 py-2.5 whitespace-nowrap">
               {FLOW_CTA_SHORT}
             </Link>
           </div>

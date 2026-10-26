@@ -23,8 +23,7 @@ const bookVerb = INSTANT_BOOKING_ENABLED ? "Book" : "Request";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description:
-    "Starting prices for every Attention to Shine mobile detailing package and maintenance plan in Lakeland, FL. Request a quote — no hidden fees, no surprises.",
+  description: `Starting prices for Attention to Shine mobile detailing in Lakeland, FL — Full Detail from $${BASE_PRICES.full}, plus maintenance plans. Request a quote — no hidden fees, no surprises.`,
 };
 
 const packages = [
@@ -33,7 +32,7 @@ const packages = [
     name: "Exterior Detail",
     price: `Starting at $${BASE_PRICES.exterior}`,
     description:
-      "Deep gloss, no swirl marks, no road film — paint that looks like it just left the showroom. Great for routine upkeep or before a special occasion.",
+      "Deep gloss, no road film, careful paint-safe methods — paint that looks like it just left the showroom. Great for routine upkeep or before a special occasion.",
     features: [
       "Paint washed, dried, and sealed for lasting shine",
       "Wheels, wells, and tires cleaned and dressed",
@@ -121,16 +120,19 @@ export default function PricingPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-navy pt-36 pb-20 px-6 text-center">
-        <span className="label-tag">Pricing</span>
-        <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
-          Clear, honest pricing.
-        </h1>
-        <p className="text-xl text-white/60 max-w-xl mx-auto mb-8">
-          No hidden fees. No surprises. Just quality work at fair prices.
-        </p>
-        <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
-          By Appointment Only. Book Yours Now.
+      {/* Scroll-linked: content drifts up and fades, light sweeps across. */}
+      <section data-scroll="exit" className="fx-scrub-shine hero-stage pt-36 pb-24 px-6 text-center">
+        <div className="fx-hero-out relative">
+          <span className="label-tag">Pricing</span>
+          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
+            Clear, honest pricing.
+          </h1>
+          <p className="text-xl text-white/60 max-w-xl mx-auto mb-8">
+            No hidden fees. No surprises. Just quality work at fair prices.
+          </p>
+          <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-sm font-medium px-5 py-3 rounded-full">
+            By Appointment Only. Book Yours Now.
+          </div>
         </div>
       </section>
 
@@ -477,18 +479,18 @@ export default function PricingPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-gold py-16 px-6 text-center">
-        <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
+      <section data-scroll className="fx-scrub-shine hero-stage py-20 md:py-28 px-6 text-center">
+        <h2 className="relative text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
           {INSTANT_BOOKING_ENABLED ? "Ready to book?" : "Ready to get started?"}
         </h2>
-        <p className="text-white/80 mb-8">
+        <p className="relative text-white/70 max-w-xl mx-auto mb-8">
           {INSTANT_BOOKING_ENABLED
             ? "Online booking takes under 2 minutes. Select your service, pick a time, and pay in person once your detail is done."
             : "Sending a request takes under 2 minutes. Tell us your service and preferred times, and we'll reply with a quote."}
         </p>
         <Link
           href="/booking"
-          className="inline-flex items-center gap-2 bg-white text-gold px-8 py-4 rounded-full font-semibold text-sm hover:bg-white/90 transition-colors"
+          className="btn-gold text-base px-8 py-4"
         >
           {FLOW_CTA_SHORT}
           <ArrowRight size={16} />
