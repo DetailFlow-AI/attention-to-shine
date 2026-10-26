@@ -116,6 +116,19 @@ const heroBeforeAfters: PairSlot[] = [
   { label: "Interior", ...(findPair(HERO_DIR, "interior") ?? {}) },
 ];
 
+// The scroll scene at the top polishes the exterior, then the interior.
+const SCENE_TEXT: Record<string, { label: string; intro: string }> = {
+  Exterior: { label: "Exterior detail", intro: "Keep scrolling to detail it" },
+  Interior: { label: "Interior detail", intro: "Now the inside" },
+};
+const scenePairs = heroBeforeAfters
+  .filter((pair) => pair.before && pair.after)
+  .map((pair) => ({
+    before: pair.before!,
+    after: pair.after!,
+    ...SCENE_TEXT[pair.label],
+  }));
+
 // Lower section: transformation-1..4-before/after.jpg. Only pairs that exist
 // are shown (no empty placeholders on the live site), numbered in order.
 const beforeAfters: PairSlot[] = [1, 2, 3, 4]
@@ -136,14 +149,9 @@ export default async function HomePage() {
   return (
     <>
       {/* ── HERO ── */}
-      {/* Scroll-driven: the headline lifts away and the exterior photo is
-          "polished" from before to after as you scroll (HeroScene). */}
-      <HeroScene
-        backdrop={<HeroBackdrop />}
-        before={heroBeforeAfters[0].before}
-        after={heroBeforeAfters[0].after}
-        label="Exterior detail"
-      >
+      {/* Scroll-driven: the headline lifts away, then the exterior and the
+          interior are each "polished" from before to after (HeroScene). */}
+      <HeroScene backdrop={<HeroBackdrop />} pairs={scenePairs}>
         <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 md:pt-32 md:pb-16 flex flex-col items-center justify-center text-center">
           {/* Availability chip */}
           <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-gold/30 text-gold text-xs font-semibold tracking-wide px-4 py-2 rounded-full mb-8 backdrop-blur-sm">

@@ -267,13 +267,12 @@
 }
 
 /* ── Hero scene (components/HeroScene.tsx) ────────────────────────────────
-   One number, --p (0 → 1 as you scroll through the pinned section), drives
-   everything below. Derived phases:
-     --a  headline lifts away        (p 0.00 → 0.30)
-     --b  photo card tilts into view (p 0.12 → 0.45)
-     --w  polish pass, before → after (p 0.50 → 0.88)                    */
+   The component writes these as you scroll the pinned section:
+     --a              on .scene      headline lifts away (0 → 1)
+     --b, --w, --o    on each slot   card rises / polish before→after / card
+                                     tilts away for the next one          */
 .scene {
-  --p: 0;
+  --a: 0;
 }
 .scene-sticky {
   position: relative;
@@ -303,7 +302,8 @@
 }
 
 .scene.is-live {
-  height: 260svh;
+  /* One screen for the headline plus about 1.6 screens per photo card. */
+  height: calc(100svh + var(--cards, 1) * 160svh);
 }
 .scene.is-live .scene-sticky {
   position: sticky;
@@ -312,7 +312,6 @@
   min-height: 0;
 }
 .scene.is-live .scene-copy {
-  --a: clamp(0, var(--p) / 0.3, 1);
   opacity: calc(1 - var(--a));
   transform: translate3d(0, calc(var(--a) * -10vh), 0)
     scale(calc(1 - var(--a) * 0.06));
@@ -325,17 +324,24 @@
   position: absolute;
   inset: 0;
   z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: block;
   padding-top: 3.5rem;
   pointer-events: none;
   perspective: 1200px;
 }
+.scene-slot {
+  --b: 0;
+  --w: 0;
+  --o: 0;
+  position: absolute;
+  inset: 3.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+}
 .scene-card {
-  --b: clamp(0, (var(--p) - 0.12) / 0.33, 1);
-  --w: clamp(0, (var(--p) - 0.5) / 0.38, 1);
   position: relative;
   height: min(62svh, 104vw);
   aspect-ratio: 3 / 4;
@@ -344,9 +350,11 @@
   background: #132848;
   box-shadow: 0 50px 120px -40px rgba(217, 176, 74, 0.45),
     0 0 0 1px rgba(255, 255, 255, 0.08);
-  transform: translate3d(0, calc((1 - var(--b)) * 75vh), 0)
-    rotateX(calc((1 - var(--b)) * 28deg)) scale(calc(0.8 + var(--b) * 0.2));
-  opacity: clamp(0, var(--b) * 4, 1);
+  /* Rise and tilt up (--b), then tilt away upward (--o). */
+  transform: translate3d(0, calc((1 - var(--b)) * 75vh - var(--o) * 65vh), 0)
+    rotateX(calc((1 - var(--b)) * 28deg - var(--o) * 24deg))
+    scale(calc(0.8 + var(--b) * 0.2 - var(--o) * 0.12));
+  opacity: clamp(0, min(var(--b) * 4, 1 - var(--o) * 1.2), 1);
   will-change: transform, opacity;
 }
 .scene-after {
@@ -400,8 +408,6 @@
 }
 @media (min-width: 1024px) {
   .scene-word {
-    --b: clamp(0, (var(--p) - 0.12) / 0.33, 1);
-    --w: clamp(0, (var(--p) - 0.5) / 0.38, 1);
     display: block;
     position: absolute;
     top: 50%;
@@ -416,19 +422,17 @@
     right: calc(50% + min(31svh, 52vw) * 0.75 + 2.5rem);
     color: transparent;
     -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.35);
-    opacity: calc(var(--b) * (1 - var(--w)));
+    opacity: calc(var(--b) * (1 - var(--w)) * (1 - var(--o)));
     transform: translate3d(calc((1 - var(--b)) * -80px), -50%, 0);
   }
   .scene-word--after {
     left: calc(50% + min(31svh, 52vw) * 0.75 + 2.5rem);
     color: #d9b04a;
-    opacity: var(--w);
+    opacity: calc(var(--w) * (1 - var(--o) * 1.5));
     transform: translate3d(calc((1 - var(--w)) * 80px), -50%, 0);
   }
 }
 .scene-caption {
-  --b: clamp(0, (var(--p) - 0.12) / 0.33, 1);
-  --w: clamp(0, (var(--p) - 0.5) / 0.38, 1);
   display: grid;
   margin-top: 1.25rem;
   font-size: 0.75rem;
@@ -437,7 +441,8 @@
   text-transform: uppercase;
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
-  opacity: var(--b);
+  /* Only once the card has nearly arrived, gone as soon as it leaves. */
+  opacity: clamp(0, (var(--b) - 0.6) * 2.5 - var(--o) * 3, 1);
 }
 .scene-caption > span {
   grid-area: 1 / 1;
