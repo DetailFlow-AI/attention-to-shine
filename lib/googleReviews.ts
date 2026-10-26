@@ -11,8 +11,8 @@
 // payload all fall back to the hand-written reviews below, so the section on
 // the homepage can never render empty.
 //
-// Reviews are shown exactly as Google returns them — no filtering by star
-// rating, no reordering, no truncation.
+// Reviews are never filtered by star rating or edited. They are shown newest
+// first, at most MAX_REVIEWS of them.
 
 export interface Review {
   quote: string;
@@ -91,6 +91,8 @@ const FALLBACK: ReviewsData = {
 
 interface PlacesReview {
   rating?: number;
+  /** RFC 3339 timestamp, e.g. "2026-10-02T14:03:11Z". */
+  publishTime?: string;
   text?: { text?: string };
   originalText?: { text?: string };
   relativePublishTimeDescription?: string;
@@ -142,6 +144,21 @@ const PLACES_ENDPOINT = "https://places.googleapis.com/v1/places";
 // billing SKU that still includes reviews.
 const FIELD_MASK = "rating,userRatingCount,googleMapsUri,reviews";
 
+// Newest first. Google picks which reviews it returns (up to 5) and has no
+// "sort by newest" option in this API, so this orders what it sends; reviews
+// without a date keep their place at the end.
+function newestFirst(a: PlacesReview, b: PlacesReview): number {
+  const ta = a.publishTime ? Date.parse(a.publishTime) : NaN;
+  const tb = b.publishTime ? Date.parse(b.publishTime) : NaN;
+  if (Number.isNaN(ta) && Number.isNaN(tb)) return 0;
+  if (Number.isNaN(ta)) return 1;
+  if (Number.isNaN(tb)) return -1;
+  return tb - ta;
+}
+
+/** How many reviews the homepage shows. Google returns at most 5 anyway. */
+const MAX_REVIEWS = 5;
+
 /** Roughly once a day, per the caching requirement. */
 export const REVIEWS_REVALIDATE_SECONDS = 60 * 60 * 24;
 
@@ -183,10 +200,12 @@ export async function getGoogleReviews(): Promise<ReviewsData> {
 
     const data = (await res.json()) as PlacesResponse;
 
-    // Exactly what Google returned, in Google's order, unfiltered by rating.
-    const reviews = (data.reviews ?? [])
+    // Newest first, unfiltered by rating, capped at MAX_REVIEWS.
+    const reviews = [...(data.reviews ?? [])]
+      .sort(newestFirst)
       .map(toReview)
-      .filter((r): r is Review => r !== null);
+      .filter((r): r is Review => r !== null)
+      .slice(0, MAX_REVIEWS);
 
     if (reviews.length === 0) {
       console.warn("[reviews] Places API returned no usable reviews — falling back.");
