@@ -2,7 +2,7 @@ import Link from "next/link";
 import BeforeAfterSlider, {
   BeforeAfterPlaceholder,
 } from "@/components/BeforeAfterSlider";
-import ReviewsCarousel, { Stars } from "@/components/ReviewsCarousel";
+import GoogleReviews from "@/components/GoogleReviews";
 import HeroBackdrop from "@/components/HeroBackdrop";
 import HeroScene from "@/components/HeroScene";
 import ScrollWords from "@/components/ScrollWords";
@@ -25,7 +25,6 @@ import {
   MapPin,
   ChevronRight,
   CheckCircle2,
-  ExternalLink,
   Phone,
 } from "lucide-react";
 import {
@@ -133,8 +132,7 @@ export const revalidate = REVIEWS_REVALIDATE_SECONDS;
 // Server Component: the Places call happens here, during the server render,
 // so the API key never reaches the browser. Next caches the result for a day.
 export default async function HomePage() {
-  const { reviews, rating, totalRatings, googleUrl, source } =
-    await getGoogleReviews();
+  const reviewsData = await getGoogleReviews();
   return (
     <>
       {/* ── HERO ── */}
@@ -588,57 +586,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── REVIEWS ── */}
-      <section className="section-pad bg-apple-gray">
-        <div className="container-wide">
-          <div className="text-center mb-14" data-reveal>
-            <span className="label-tag">Reviews</span>
-            <h2 className="section-heading mb-4">
-              What our customers say.
-            </h2>
-
-            {/* Overall rating straight from the Google listing. Hidden when
-                we're on the fallback list, so we never show a number we
-                can't currently verify. */}
-            {rating !== null && (
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-2xl font-bold text-apple-text-primary leading-none">
-                    {rating.toFixed(1)}
-                  </span>
-                  <Stars rating={rating} size={18} />
-                </div>
-                <p className="text-sm text-apple-text-tertiary">
-                  {totalRatings !== null
-                    ? `Based on ${totalRatings} Google review${totalRatings === 1 ? "" : "s"}`
-                    : "Rated on Google"}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <ReviewsCarousel reviews={reviews} />
-
-          {/* Links out to the live Google listing so leads can read every
-              review, not just the handful the API returns. */}
-          <div className="text-center mt-12">
-            <a
-              href={googleUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-medium text-navy border border-navy/20 px-6 py-3 rounded-full hover:bg-navy hover:text-white transition-colors duration-200"
-            >
-              See all reviews on Google
-              <ExternalLink size={14} />
-            </a>
-            {source === "google" && (
-              <p className="text-xs text-apple-text-secondary mt-3">
-                Pulled live from our Google Business Profile.
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* ── REVIEWS: live from the Google Business Profile ── */}
+      <GoogleReviews data={reviewsData} />
 
       {/* ── SERVICE AREA ── */}
       <section className="section-pad bg-white">

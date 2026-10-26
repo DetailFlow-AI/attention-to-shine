@@ -4,88 +4,50 @@
 // Next.js will never inline it into a client bundle. This module must only
 // ever be imported from a Server Component or a route handler — never from a
 // "use client" file. The homepage calls getGoogleReviews() during its server
-// render and passes the finished, plain-data result down to the carousel.
+// render and passes plain data to components/GoogleReviews.tsx.
 //
-// FAILURE BEHAVIOUR: this module never throws and never returns an empty list.
-// A missing key, a bad place id, a quota error, a network blip or a malformed
-// payload all fall back to the hand-written reviews below, so the section on
-// the homepage can never render empty.
+// HONESTY: only reviews that actually come from Google are ever shown. There
+// is no hand-written fallback. If the key is missing or Google can't be
+// reached, the section says so politely and links to the Google profile
+// instead of inventing quotes.
 //
 // Reviews are never filtered by star rating or edited. They are shown newest
-// first, at most MAX_REVIEWS of them.
+// first, at most MAX_REVIEWS of them (Google returns at most 5).
 
 export interface Review {
   quote: string;
   name: string;
   initials: string;
-  detail: string;
-  rating?: number;
-  profilePhotoUrl?: string | null;
-  url?: string | null;
+  /** "2 weeks ago", as Google words it. */
+  when: string;
+  rating: number | null;
+  profilePhotoUrl: string | null;
+  /** The reviewer's Google profile. */
+  authorUrl: string | null;
 }
 
 export interface ReviewsData {
+  /** "live": real reviews from Google. "unavailable": not configured or failed. */
+  status: "live" | "unavailable";
   reviews: Review[];
   /** Overall business rating, e.g. 4.9 — null when unknown. */
   rating: number | null;
   /** How many ratings that average is built from. */
   totalRatings: number | null;
-  /** Where "See all reviews on Google" points. */
-  googleUrl: string;
-  /** Which path produced this data — handy when debugging a deploy. */
-  source: "google" | "fallback";
+  /** Opens the reviews panel on the Google Business Profile ("See more"). */
+  reviewsUrl: string;
 }
 
-// The public listing. Used as the link target whenever Google doesn't hand
-// back a googleMapsUri of its own.
+// The public listing — used whenever Google doesn't hand back a reviews link.
 export const GOOGLE_LISTING_URL =
   "https://maps.app.goo.gl/dqWzddQBFShN4KqB8?g_st=ic";
 
-// ── Fallback ──────────────────────────────────────────────────────────────────
-// The reviews the site showed before this was wired up. Kept verbatim so a
-// Google outage is invisible to visitors.
-
-export const FALLBACK_REVIEWS: Review[] = [
-  {
-    quote: "Wow! It looks like new again!",
-    name: "John Travis",
-    initials: "JT",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote: "My car hasn't looked this good since the day I bought it!",
-    name: "Mike L.",
-    initials: "ML",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote: "It looks like it should be in a showroom.",
-    name: "Mr. David",
-    initials: "MD",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-  {
-    quote:
-      "I almost feel bad taking my car out of the driveway now — I don't want it to get dirty!",
-    name: "Steve B.",
-    initials: "SB",
-    detail: "Lakeland, FL — Shine Standard Maintenance",
-  },
-  {
-    quote: "I'll definitely be calling them out again. Highly recommend!",
-    name: "Eric K.",
-    initials: "EK",
-    detail: "Lakeland, FL — Full Detail Package",
-  },
-];
-
-const FALLBACK: ReviewsData = {
-  reviews: FALLBACK_REVIEWS,
-  rating: null,
-  totalRatings: null,
-  googleUrl: GOOGLE_LISTING_URL,
-  source: "fallback",
-};
+// Google's documented link that opens a place's reviews directly.
+function reviewsUrlFor(placeId: string | undefined): string {
+  return placeId
+    ? `https://search.google.com/local/reviews?placeid=${encodeURIComponent(placeId)}`
+    : GOOGLE_LISTING_URL;
+}
 
 // ── Google Places API (New) response shapes ───────────────────────────────────
 
@@ -107,6 +69,7 @@ interface PlacesResponse {
   rating?: number;
   userRatingCount?: number;
   googleMapsUri?: string;
+  googleMapsLinks?: { reviewsUri?: string };
   reviews?: PlacesReview[];
 }
 
@@ -119,8 +82,8 @@ function initialsFor(name: string): string {
 }
 
 function toReview(r: PlacesReview): Review | null {
-  // Google's own translation first, then the reviewer's original wording.
-  const quote = (r.text?.text ?? r.originalText?.text ?? "").trim();
+  // The reviewer's own words first; Google's translation if that's missing.
+  const quote = (r.originalText?.text ?? r.text?.text ?? "").trim();
   if (!quote) return null; // a star-only rating with no words to show
 
   const name = (r.authorAttribution?.displayName ?? "Google reviewer").trim();
@@ -129,20 +92,12 @@ function toReview(r: PlacesReview): Review | null {
     quote,
     name,
     initials: initialsFor(name),
-    detail: r.relativePublishTimeDescription ?? "Google review",
-    rating: typeof r.rating === "number" ? r.rating : undefined,
+    when: r.relativePublishTimeDescription ?? "",
+    rating: typeof r.rating === "number" ? r.rating : null,
     profilePhotoUrl: r.authorAttribution?.photoUri ?? null,
-    url: r.authorAttribution?.uri ?? null,
+    authorUrl: r.authorAttribution?.uri ?? null,
   };
 }
-
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-
-const PLACES_ENDPOINT = "https://places.googleapis.com/v1/places";
-
-// Only the fields we actually render, so the call stays on the cheapest
-// billing SKU that still includes reviews.
-const FIELD_MASK = "rating,userRatingCount,googleMapsUri,reviews";
 
 // Newest first. Google picks which reviews it returns (up to 5) and has no
 // "sort by newest" option in this API, so this orders what it sends; reviews
@@ -156,6 +111,14 @@ function newestFirst(a: PlacesReview, b: PlacesReview): number {
   return tb - ta;
 }
 
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+
+const PLACES_ENDPOINT = "https://places.googleapis.com/v1/places";
+
+// Only the fields we actually render.
+const FIELD_MASK =
+  "rating,userRatingCount,googleMapsUri,googleMapsLinks,reviews";
+
 /** How many reviews the homepage shows. Google returns at most 5 anyway. */
 const MAX_REVIEWS = 5;
 
@@ -166,13 +129,19 @@ export async function getGoogleReviews(): Promise<ReviewsData> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   const placeId = process.env.GOOGLE_PLACE_ID;
 
-  // Not configured yet — this is the expected state until the env vars are set
-  // in Vercel, so it's a log line rather than an error.
+  const unavailable: ReviewsData = {
+    status: "unavailable",
+    reviews: [],
+    rating: null,
+    totalRatings: null,
+    reviewsUrl: reviewsUrlFor(placeId),
+  };
+
   if (!apiKey || !placeId) {
     console.log(
-      "[reviews] GOOGLE_PLACES_API_KEY / GOOGLE_PLACE_ID not set — using fallback reviews."
+      "[reviews] GOOGLE_PLACES_API_KEY / GOOGLE_PLACE_ID not set — showing the link to Google only."
     );
-    return FALLBACK;
+    return unavailable;
   }
 
   try {
@@ -193,35 +162,29 @@ export async function getGoogleReviews(): Promise<ReviewsData> {
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       console.error(
-        `[reviews] Places API ${res.status} ${res.statusText} — falling back. ${body.slice(0, 300)}`
+        `[reviews] Places API ${res.status} ${res.statusText}. ${body.slice(0, 300)}`
       );
-      return FALLBACK;
+      return unavailable;
     }
 
     const data = (await res.json()) as PlacesResponse;
 
-    // Newest first, unfiltered by rating, capped at MAX_REVIEWS.
     const reviews = [...(data.reviews ?? [])]
       .sort(newestFirst)
       .map(toReview)
       .filter((r): r is Review => r !== null)
       .slice(0, MAX_REVIEWS);
 
-    if (reviews.length === 0) {
-      console.warn("[reviews] Places API returned no usable reviews — falling back.");
-      return FALLBACK;
-    }
-
     return {
+      status: "live",
       reviews,
       rating: typeof data.rating === "number" ? data.rating : null,
       totalRatings:
         typeof data.userRatingCount === "number" ? data.userRatingCount : null,
-      googleUrl: data.googleMapsUri ?? GOOGLE_LISTING_URL,
-      source: "google",
+      reviewsUrl: data.googleMapsLinks?.reviewsUri ?? reviewsUrlFor(placeId),
     };
   } catch (err) {
-    console.error("[reviews] Places API request failed — falling back.", err);
-    return FALLBACK;
+    console.error("[reviews] Places API request failed.", err);
+    return unavailable;
   }
 }
