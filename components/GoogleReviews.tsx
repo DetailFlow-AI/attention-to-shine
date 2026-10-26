@@ -96,7 +96,7 @@ function ReviewCard({ review, index }: { review: Review; index: number }) {
 }
 
 export default function GoogleReviews({ data }: { data: ReviewsData }) {
-  const { status, reviews, rating, totalRatings, reviewsUrl } = data;
+  const { status, source, reviews, rating, totalRatings, reviewsUrl } = data;
   const live = status === "live" && reviews.length > 0;
 
   return (
@@ -148,7 +148,9 @@ export default function GoogleReviews({ data }: { data: ReviewsData }) {
           </a>
           {live && (
             <p className="text-xs text-apple-text-secondary mt-4">
-              Reviews from our Google Business Profile, newest first.
+              {source === "business-profile"
+                ? "Our newest reviews, straight from our Google Business Profile."
+                : "Reviews from our Google Business Profile."}
             </p>
           )}
         </div>

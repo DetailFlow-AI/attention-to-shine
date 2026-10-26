@@ -4,10 +4,7 @@ import GoogleReviews from "@/components/GoogleReviews";
 import HeroBackdrop from "@/components/HeroBackdrop";
 import HeroScene from "@/components/HeroScene";
 import ScrollWords from "@/components/ScrollWords";
-import {
-  getGoogleReviews,
-  REVIEWS_REVALIDATE_SECONDS,
-} from "@/lib/googleReviews";
+import { getGoogleReviews } from "@/lib/googleReviews";
 import { findPair } from "@/lib/photos";
 import {
   BASE_PRICES,
@@ -135,10 +132,10 @@ const beforeAfters: PairSlot[] = [1, 2, 3, 4]
   .map((pair, i) => ({ label: `Transformation ${i + 1}`, ...pair }));
 
 
-// Re-render the homepage about once a day so newly posted Google reviews show
-// up without a redeploy. Stated here as well as on the fetch so the page still
-// refreshes on the fallback path, when there is no fetch to carry it.
-export const revalidate = REVIEWS_REVALIDATE_SECONDS;
+// Re-render the homepage about once an hour so a new Google review shows up on
+// its own, without a redeploy (see lib/googleReviews.ts). Must be a plain
+// number for Next.js to read it.
+export const revalidate = 3600;
 
 // Server Component: the Places call happens here, during the server render,
 // so the API key never reaches the browser. Next caches the result for a day.
