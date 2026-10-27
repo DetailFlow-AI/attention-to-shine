@@ -94,11 +94,6 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
     alt: "Exterior detail on a Lincoln Navigator in Lakeland, Florida",
   },
   {
-    file: "lincoln-navigator-interior-rear.jpg",
-    caption: "Lincoln Navigator — Rear seats",
-    alt: "Interior detail on the rear seats of a Lincoln Navigator",
-  },
-  {
     file: "range-rover-exterior-black.jpg",
     caption: "Range Rover — Exterior",
     alt: "Exterior detail on a black Range Rover in Lakeland, Florida",
@@ -119,8 +114,133 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
     alt: "Interior detail on the tan leather seats of a Range Rover",
   },
   {
-    file: "toyota-highlander-interior.jpg",
-    caption: "Toyota Highlander — Interior",
-    alt: "Interior detail inside a Toyota Highlander",
+    file: "lincoln-mkz-exterior.jpg",
+    caption: "Lincoln MKZ — Exterior",
+    alt: "Exterior detail on a white Lincoln MKZ in Lakeland, Florida",
+  },
+  {
+    file: "lincoln-mkz-interior.jpg",
+    caption: "Lincoln MKZ — Interior",
+    alt: "Interior detail on the cream leather front seats of a Lincoln MKZ",
+  },
+  {
+    file: "ford-explorer-exterior-maroon.jpg",
+    caption: "Ford Explorer — Exterior",
+    alt: "Exterior detail on a maroon Ford Explorer in Lakeland, Florida",
+  },
+  {
+    file: "saab-93-exterior.jpg",
+    caption: "Saab 9-3 — Exterior",
+    alt: "Exterior detail on a dark blue Saab 9-3 convertible",
+  },
+  {
+    file: "gmc-acadia-exterior.jpg",
+    caption: "GMC Acadia — Exterior",
+    alt: "Exterior detail on a white GMC Acadia in Lakeland, Florida",
+  },
+  {
+    file: "toyota-sienna-exterior.jpg",
+    caption: "Toyota Sienna — Exterior",
+    alt: "Exterior detail on a red Toyota Sienna minivan",
+  },
+  {
+    file: "toyota-sienna-interior.jpg",
+    caption: "Toyota Sienna — Interior",
+    alt: "Interior detail on the tan front seats of a Toyota Sienna",
+  },
+  {
+    file: "jeep-grand-cherokee-exterior.jpg",
+    caption: "Jeep Grand Cherokee — Exterior",
+    alt: "Exterior detail on a white Jeep Grand Cherokee in Lakeland, Florida",
+  },
+  {
+    file: "large-suv-cargo-area.jpg",
+    caption: "Large SUV — Cargo area",
+    alt: "Detailed cargo area and folded rear seats in a large SUV",
+  },
+  {
+    file: "lincoln-navigator-interior-front.jpg",
+    caption: "Lincoln Navigator — Interior",
+    alt: "Interior detail on the front seats and floor of a Lincoln Navigator",
+  },
+  {
+    file: "lincoln-wheel-detail.jpg",
+    caption: "Lincoln — Wheel detail",
+    alt: "Cleaned and dressed wheel and tire on a Lincoln",
+  },
+  {
+    file: "lincoln-aviator-interior.jpg",
+    caption: "Lincoln Aviator — Interior",
+    alt: "Interior detail on the front seats of a Lincoln Aviator",
+  },
+  {
+    file: "lincoln-navigator-exterior-white.jpg",
+    caption: "Lincoln Navigator — Exterior",
+    alt: "Exterior detail on a white Lincoln Navigator in Lakeland, Florida",
+  },
+  {
+    file: "ford-f150-exterior-black.jpg",
+    caption: "Ford F-150 — Exterior",
+    alt: "Exterior detail on a black Ford F-150 pickup",
+  },
+  {
+    file: "mercedes-amg-gle-interior.jpg",
+    caption: "Mercedes-AMG GLE — Interior",
+    alt: "Interior detail on the front seats of a Mercedes-AMG GLE",
+  },
+  {
+    file: "ford-expedition-exterior-twotone.jpg",
+    caption: "Ford Expedition — Exterior",
+    alt: "Exterior detail on a two-tone Ford Expedition in Lakeland, Florida",
+  },
+  {
+    file: "dodge-charger-interior.jpg",
+    caption: "Dodge Charger — Interior",
+    alt: "Interior detail on the front seats of a Dodge Charger",
+  },
+  {
+    file: "ford-f150-exterior-red.jpg",
+    caption: "Ford F-150 — Exterior",
+    alt: "Exterior detail on a red Ford F-150 pickup in Lakeland, Florida",
+  },
+  {
+    file: "ford-f150-interior.jpg",
+    caption: "Ford F-150 — Interior",
+    alt: "Interior detail on the front seats of a Ford F-150",
+  },
+  {
+    file: "toyota-tacoma-interior-gallery.jpg",
+    caption: "Toyota Tacoma — Interior",
+    alt: "Interior detail on the front seats and console of a Toyota Tacoma",
+  },
+  {
+    file: "lincoln-navigator-front-seats.jpg",
+    caption: "Lincoln Navigator — Front seats",
+    alt: "Interior detail on the brown leather front seats of a Lincoln Navigator",
+  },
+  {
+    file: "ford-f250-exterior.jpg",
+    caption: "Ford F-250 — Exterior",
+    alt: "Exterior detail on a black Ford F-250 long bed pickup",
+  },
+  {
+    file: "ford-expedition-exterior-black.jpg",
+    caption: "Ford Expedition — Exterior",
+    alt: "Exterior detail on a black Ford Expedition in Lakeland, Florida",
+  },
+  {
+    file: "ford-expedition-interior.jpg",
+    caption: "Ford Expedition — Interior",
+    alt: "Interior detail on the tan leather front seats of a Ford Expedition",
+  },
+  {
+    file: "gmc-sierra-denali-exterior.jpg",
+    caption: "GMC Sierra Denali — Exterior",
+    alt: "Exterior detail on a white GMC Sierra Denali pickup",
+  },
+  {
+    file: "gmc-sierra-interior.jpg",
+    caption: "GMC Sierra — Interior",
+    alt: "Interior detail on the front seats of a GMC Sierra",
   },
 ];

@@ -45,8 +45,18 @@ export const HERO_PAIRS: BeforeAfterPair[] = [
   },
 ];
 
-/** The "More Transformations" row further down the homepage. */
+/** The "Transformations" sliders on the gallery page. */
 export const TRANSFORMATION_PAIRS: BeforeAfterPair[] = [
+  {
+    label: "Exterior — Mercedes-AMG GLE",
+    before: "/images/before-after/transformations/mercedes-gle-exterior-before.jpg",
+    after: "/images/before-after/transformations/mercedes-gle-exterior-after.jpg",
+  },
+  {
+    label: "Interior — Toyota Tacoma",
+    before: "/images/before-after/transformations/tacoma-interior-before.jpg",
+    after: "/images/before-after/transformations/tacoma-interior-after.jpg",
+  },
   {
     label: "Interior — Ford Explorer",
     before: "/images/before-after/transformations/ford-explorer-interior-before.jpg",
