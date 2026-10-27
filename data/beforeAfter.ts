@@ -3,6 +3,10 @@
 // ── HOW TO CHANGE THESE ───────────────────────────────────────────────────────
 // 1. Drop the two photos into  public/images/before-after/transformations/
 //    (any name you like, e.g. accord-interior-before.jpg / -after.jpg)
+//    REPLACING a photo? Give the new one a NEW file name rather than writing
+//    over the old one. Phones and Google's servers remember a picture by its
+//    file name, so reusing a name leaves people looking at the old photo for
+//    days. A new name shows the new photo to everyone straight away.
 // 2. Copy a { ... } block below, paste it, and point `before` and `after` at
 //    your two files. Give it a short label.
 // 3. To remove a pair, delete its block. To reorder them, move the blocks.
@@ -36,8 +40,8 @@ export const HERO_PAIRS: BeforeAfterPair[] = [
   },
   {
     label: "Interior",
-    before: "/images/before-after/hero/interior-before.jpg",
-    after: "/images/before-after/hero/interior-after.jpg",
+    before: "/images/before-after/hero/raptor-interior-before.jpg",
+    after: "/images/before-after/hero/raptor-interior-after.jpg",
   },
 ];
 
