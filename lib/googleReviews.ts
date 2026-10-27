@@ -58,8 +58,9 @@ const GBP_REVALIDATE_SECONDS = 60 * 60;
 const PLACES_REVALIDATE_SECONDS = 60 * 60 * 24;
 
 // The public listing — used whenever there's no place id to build a link from.
-export const GOOGLE_LISTING_URL =
-  "https://maps.app.goo.gl/dqWzddQBFShN4KqB8?g_st=ic";
+// Linked by CID (the listing's permanent id), so it always opens the business
+// profile and all of its reviews. See the note in data/reviews.ts.
+export const GOOGLE_LISTING_URL = "https://www.google.com/maps?cid=8798533128764867224";
 
 // Google's documented link that opens a place's reviews directly.
 function reviewsUrlFor(placeId: string | undefined): string {

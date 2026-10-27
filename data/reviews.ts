@@ -58,7 +58,13 @@ My car looks like it did the day I bought it. I’d highly recommend him!!!`,
 //              above, so the site is never left with no reviews.
 export const REVIEWS_SOURCE: "manual" | "google" = "manual";
 
-// The "See all reviews on Google" button. This is the share link from the
-// Google Business Profile.
-export const GOOGLE_REVIEWS_URL =
-  "https://maps.app.goo.gl/dqWzddQBFShN4KqB8?g_st=ic";
+// The "See all reviews on Google" button.
+//
+// This links by CID — the permanent id Google gives the business listing
+// itself, taken from Google's own Business Profile emails. It opens the whole
+// profile, with every review on it.
+//
+// Do NOT put a maps.app.goo.gl share link here. Those are copied from whatever
+// was on screen at the time, so a link shared off one person's review opens
+// only that review — which is exactly what this button used to do.
+export const GOOGLE_REVIEWS_URL = "https://www.google.com/maps?cid=8798533128764867224";
