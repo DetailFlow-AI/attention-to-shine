@@ -23,6 +23,10 @@ export interface BeforeAfterPair {
  * The two big sliders in the scroll scene at the very top of the homepage.
  * Keep the labels "Exterior" and "Interior" — the scene's wording is tied to
  * them.
+ *
+ * Both sliders should show THE SAME VEHICLE (currently the black Ford Raptor),
+ * outside then inside. A visitor seeing one car cleaned top to bottom pictures
+ * their own car getting the same treatment; two different cars breaks that.
  */
 export const HERO_PAIRS: BeforeAfterPair[] = [
   {
@@ -60,9 +64,9 @@ export const TRANSFORMATION_PAIRS: BeforeAfterPair[] = [
     after: "/images/before-after/transformations/ford-expedition-interior-after.jpg",
   },
   {
-    label: "Interior — Ford truck",
-    before: "/images/before-after/transformations/transformation-2-before.jpg",
-    after: "/images/before-after/transformations/transformation-2-after.jpg",
+    label: "Interior — Lincoln Navigator",
+    before: "/images/before-after/transformations/lincoln-navigator-interior-before.jpg",
+    after: "/images/before-after/transformations/lincoln-navigator-interior-after.jpg",
   },
   {
     label: "Wheels & tires — Ford truck",
