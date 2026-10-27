@@ -40,6 +40,16 @@ export const HERO_PAIRS: BeforeAfterPair[] = [
 /** The "More Transformations" row further down the homepage. */
 export const TRANSFORMATION_PAIRS: BeforeAfterPair[] = [
   {
+    label: "Interior — Ford Explorer",
+    before: "/images/before-after/transformations/ford-explorer-interior-before.jpg",
+    after: "/images/before-after/transformations/ford-explorer-interior-after.jpg",
+  },
+  {
+    label: "Cargo area — SUV",
+    before: "/images/before-after/transformations/suv-cargo-before.jpg",
+    after: "/images/before-after/transformations/suv-cargo-after.jpg",
+  },
+  {
     label: "Interior — Jeep console",
     before: "/images/before-after/transformations/jeep-console-interior-before.jpg",
     after: "/images/before-after/transformations/jeep-console-interior-after.jpg",
