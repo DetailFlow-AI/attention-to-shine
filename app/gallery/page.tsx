@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import GalleryGrid, { type GallerySlot } from "@/components/GalleryGrid";
-import { listImages, captionFromFilename } from "@/lib/photos";
+import { GALLERY_DIR, GALLERY_PHOTOS } from "@/data/gallery";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -8,24 +8,18 @@ export const metadata: Metadata = {
     "Recent detailing work by Attention to Shine — real vehicles detailed in Lakeland, Florida and the surrounding Polk County area.",
 };
 
-const GALLERY_DIR = "images/gallery";
-const MAX_SLOTS = 20;
-
 /**
- * Photos come straight from /public/images/gallery — every image in that
- * folder is picked up, in filename order, up to 20. Captions are derived from
- * the filenames, so adding a photo needs no code change at all. Any remaining
- * slots render as empty placeholders.
+ * The photos listed in data/gallery.ts, in that order. Add or remove a photo
+ * by editing that one file — the grid, the lightbox and the alt text all
+ * follow from it.
  */
 function buildSlots(): GallerySlot[] {
-  const photos = listImages(GALLERY_DIR).slice(0, MAX_SLOTS);
-
-  return Array.from({ length: MAX_SLOTS }, (_, i) => {
-    const src = photos[i];
-    return src
-      ? { id: i + 1, src, caption: captionFromFilename(src) }
-      : { id: i + 1 };
-  });
+  return GALLERY_PHOTOS.map((photo, i) => ({
+    id: i + 1,
+    src: `${GALLERY_DIR}/${photo.file}`,
+    caption: photo.caption,
+    alt: photo.alt,
+  }));
 }
 
 export default function GalleryPage() {
