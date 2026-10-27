@@ -94,11 +94,6 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
     alt: "Exterior detail on a Lincoln Navigator in Lakeland, Florida",
   },
   {
-    file: "lincoln-navigator-interior-rear.jpg",
-    caption: "Lincoln Navigator — Rear seats",
-    alt: "Interior detail on the rear seats of a Lincoln Navigator",
-  },
-  {
     file: "range-rover-exterior-black.jpg",
     caption: "Range Rover — Exterior",
     alt: "Exterior detail on a black Range Rover in Lakeland, Florida",
@@ -117,10 +112,5 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
     file: "range-rover-interior-tan.jpg",
     caption: "Range Rover — Interior",
     alt: "Interior detail on the tan leather seats of a Range Rover",
-  },
-  {
-    file: "toyota-highlander-interior.jpg",
-    caption: "Toyota Highlander — Interior",
-    alt: "Interior detail inside a Toyota Highlander",
   },
 ];
