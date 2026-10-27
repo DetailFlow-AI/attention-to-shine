@@ -5,7 +5,7 @@ import HeroBackdrop from "@/components/HeroBackdrop";
 import HeroScene from "@/components/HeroScene";
 import ScrollWords from "@/components/ScrollWords";
 import { getGoogleReviews } from "@/lib/googleReviews";
-import { findPair } from "@/lib/photos";
+import { HERO_PAIRS, TRANSFORMATION_PAIRS, type BeforeAfterPair } from "@/data/beforeAfter";
 import {
   BASE_PRICES,
   QUARTERLY_PLAN,
@@ -95,21 +95,11 @@ const features = [
 // and rebuilding — no code change. A slot only becomes a live slider once BOTH
 // halves of its pair exist; until then it renders as a placeholder.
 
-interface PairSlot {
-  label: string;
-  title?: string;
-  before?: string;
-  after?: string;
-}
+// Every pair — which photos, in what order, with what label — lives in
+// data/beforeAfter.ts, so photos can be swapped there without touching layout.
+type PairSlot = BeforeAfterPair;
 
-const HERO_DIR = "images/before-after/hero";
-const TRANSFORMATIONS_DIR = "images/before-after/transformations";
-
-// Hero: exterior-before/after.jpg and interior-before/after.jpg
-const heroBeforeAfters: PairSlot[] = [
-  { label: "Exterior", ...(findPair(HERO_DIR, "exterior") ?? {}) },
-  { label: "Interior", ...(findPair(HERO_DIR, "interior") ?? {}) },
-];
+const heroBeforeAfters: PairSlot[] = HERO_PAIRS;
 
 // The scroll scene at the top polishes the exterior, then the interior.
 const SCENE_TEXT: Record<string, { label: string; intro: string }> = {
@@ -124,12 +114,8 @@ const scenePairs = heroBeforeAfters
     ...SCENE_TEXT[pair.label],
   }));
 
-// Lower section: transformation-1..4-before/after.jpg. Only pairs that exist
-// are shown (no empty placeholders on the live site), numbered in order.
-const beforeAfters: PairSlot[] = [1, 2, 3, 4]
-  .map((n) => findPair(TRANSFORMATIONS_DIR, `transformation-${n}`))
-  .filter((pair): pair is { before: string; after: string } => Boolean(pair))
-  .map((pair, i) => ({ label: `Transformation ${i + 1}`, ...pair }));
+// The "More Transformations" row, in the order data/beforeAfter.ts lists them.
+const beforeAfters: PairSlot[] = TRANSFORMATION_PAIRS;
 
 
 // Re-render the homepage about once an hour so a new Google review shows up on
@@ -529,12 +515,12 @@ export default async function HomePage() {
                 className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] max-w-md"
               >
                 <BeforeAfterSlider
-                  beforeSrc={pair.before!}
-                  afterSrc={pair.after!}
-                  alt={pair.title ?? pair.label}
+                  beforeSrc={pair.before}
+                  afterSrc={pair.after}
+                  alt={pair.label}
                 />
                 <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
-                  {pair.title ?? pair.label}
+                  {pair.label}
                 </p>
               </div>
             ))}

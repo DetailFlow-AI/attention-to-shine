@@ -7,7 +7,10 @@ import PhotoLightbox, { type LightboxPhoto } from "@/components/PhotoLightbox";
 export interface GallerySlot {
   id: number;
   src?: string;
+  /** Short line printed under the photo. */
   caption?: string;
+  /** Longer description for Google and screen readers. */
+  alt?: string;
 }
 
 /**
@@ -69,7 +72,7 @@ export default function GalleryGrid({ slots }: { slots: GallerySlot[] }) {
                 <div className="absolute inset-0 fx-zoom">
                   <Image
                     src={slot.src}
-                    alt={slot.caption ?? "Detailing work by Attention to Shine"}
+                    alt={slot.alt ?? slot.caption ?? "Detailing work by Attention to Shine"}
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-300"

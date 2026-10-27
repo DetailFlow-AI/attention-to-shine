@@ -20,6 +20,8 @@
 // never puts them in a browser bundle. Import this module only from Server
 // Components or route handlers — never from a "use client" file.
 
+import { REVIEWS, REVIEWS_SOURCE, GOOGLE_REVIEWS_URL } from "@/data/reviews";
+
 export interface Review {
   quote: string;
   name: string;
@@ -35,8 +37,8 @@ export interface Review {
 export interface ReviewsData {
   /** "live": real reviews from Google. "unavailable": not configured or failed. */
   status: "live" | "unavailable";
-  /** Which API produced the reviews — handy when debugging a deploy. */
-  source: "business-profile" | "places" | null;
+  /** Where the reviews came from — handy when debugging a deploy. */
+  source: "business-profile" | "places" | "manual" | null;
   reviews: Review[];
   /** Overall business rating, e.g. 4.9 — null when unknown. */
   rating: number | null;
@@ -318,9 +320,46 @@ async function fromPlaces(): Promise<ReviewsData | null> {
 
 // ── Entry point ──────────────────────────────────────────────────────────────
 
+// The hand-kept list in data/reviews.ts, in the shape the page already uses.
+// No overall rating or review count is reported: those would be claims about
+// the whole Google profile, and this list is only the reviews Chris copied in.
+function fromManualList(): ReviewsData | null {
+  if (REVIEWS.length === 0) return null;
+  return {
+    status: "live",
+    source: "manual",
+    reviews: REVIEWS.map((r) => ({
+      quote: r.text,
+      name: r.name,
+      initials: initialsFor(r.name),
+      when: "",
+      rating: r.rating,
+      profilePhotoUrl: null,
+      authorUrl: null,
+    })),
+    rating: null,
+    totalRatings: null,
+    reviewsUrl: GOOGLE_REVIEWS_URL,
+  };
+}
+
 export async function getGoogleReviews(): Promise<ReviewsData> {
+  // data/reviews.ts decides: the hand-kept list, or a live pull from Google.
+  if (REVIEWS_SOURCE === "manual") {
+    const manual = fromManualList();
+    if (manual) return manual;
+  }
+
+  // Live pull. If Google is not set up or cannot be reached, fall back to the
+  // hand-kept list rather than leaving the page with no reviews at all.
   const data = (await fromBusinessProfile()) ?? (await fromPlaces());
   if (data) return data;
+
+  const manual = fromManualList();
+  if (manual) {
+    console.log("[reviews] Google unavailable — showing the list in data/reviews.ts.");
+    return manual;
+  }
 
   console.log(
     "[reviews] No Google reviews source configured or reachable — showing the link to Google only."

@@ -1,5 +1,6 @@
 import { Star, ExternalLink } from "lucide-react";
-import type { ReviewsData, Review } from "@/lib/googleReviews";
+import ReviewCard from "@/components/ReviewCard";
+import type { ReviewsData } from "@/lib/googleReviews";
 
 // Homepage reviews, straight from the Google Business Profile (see
 // lib/googleReviews.ts). Server Component: no JavaScript ships for it.
@@ -33,70 +34,8 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   );
 }
 
-function ReviewCard({ review, index }: { review: Review; index: number }) {
-  return (
-    <figure
-      data-reveal
-      style={{ "--reveal-delay": `${(index % 3) * 110}ms` } as React.CSSProperties}
-      className="card-lift flex flex-col bg-white border border-apple-gray-2 rounded-3xl p-7 w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
-    >
-      <div className="flex items-center justify-between mb-4">
-        {review.rating !== null && <Stars rating={review.rating} />}
-        <span className="text-xs font-medium text-apple-text-secondary">
-          Google
-        </span>
-      </div>
-
-      <blockquote className="flex-1 text-apple-text-primary leading-relaxed line-clamp-6 mb-6">
-        “{review.quote}”
-      </blockquote>
-
-      <figcaption className="flex items-center gap-3">
-        {review.profilePhotoUrl ? (
-          // Google-hosted avatar; a plain <img> so no image config is needed.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={review.profilePhotoUrl}
-            alt=""
-            width={40}
-            height={40}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="w-10 h-10 rounded-full object-cover"
-          />
-        ) : (
-          <span className="w-10 h-10 rounded-full bg-navy text-gold text-sm font-semibold flex items-center justify-center">
-            {review.initials}
-          </span>
-        )}
-        <span className="min-w-0">
-          {review.authorUrl ? (
-            <a
-              href={review.authorUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block font-semibold text-apple-text-primary truncate hover:text-gold-deep"
-            >
-              {review.name}
-            </a>
-          ) : (
-            <span className="block font-semibold text-apple-text-primary truncate">
-              {review.name}
-            </span>
-          )}
-          {review.when && (
-            <span className="block text-xs text-apple-text-secondary">
-              {review.when}
-            </span>
-          )}
-        </span>
-      </figcaption>
-    </figure>
-  );
-}
-
 export default function GoogleReviews({ data }: { data: ReviewsData }) {
-  const { status, source, reviews, rating, totalRatings, reviewsUrl } = data;
+  const { status, reviews, rating, totalRatings, reviewsUrl } = data;
   const live = status === "live" && reviews.length > 0;
 
   return (
@@ -143,14 +82,13 @@ export default function GoogleReviews({ data }: { data: ReviewsData }) {
             rel="noopener noreferrer"
             className="btn-primary text-base px-8 py-4"
           >
-            {live ? "See more reviews on Google" : "Read our reviews on Google"}
+            {live ? "See all reviews on Google" : "Read our reviews on Google"}
             <ExternalLink size={16} />
           </a>
           {live && (
             <p className="text-xs text-apple-text-secondary mt-4">
-              {source === "business-profile"
-                ? "Our newest reviews, straight from our Google Business Profile."
-                : "Reviews from our Google Business Profile."}
+              Real reviews from our Google Business Profile, in our customers'
+              own words.
             </p>
           )}
         </div>
