@@ -1,5 +1,4 @@
 import Link from "next/link";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import GoogleReviews from "@/components/GoogleReviews";
 import HeroBackdrop from "@/components/HeroBackdrop";
 import HeroScene from "@/components/HeroScene";
@@ -113,9 +112,6 @@ const scenePairs = heroBeforeAfters
     after: pair.after!,
     ...SCENE_TEXT[pair.label],
   }));
-
-// The "More Transformations" row, in the order data/beforeAfter.ts lists them.
-const beforeAfters: PairSlot[] = TRANSFORMATION_PAIRS;
 
 
 // Re-render the homepage about once an hour so a new Google review shows up on
@@ -497,37 +493,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── BEFORE & AFTER ── */}
+      {/* ── BEFORE & AFTER: the sliders themselves live on /gallery ── */}
       <section className="section-pad bg-white">
-        <div className="container-wide">
-          <div className="text-center mb-14" data-reveal>
-            <span className="label-tag">Before & After</span>
-            <h2 className="section-heading mb-4">More Transformations</h2>
-            <p className="section-subheading max-w-2xl mx-auto">
-              Real vehicles, real results. Drag each slider to compare the
-              vehicle before and after our detail.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
-            {beforeAfters.map((pair, i) => (
-              <div
-                key={pair.label}
-                data-reveal
-                style={{ "--reveal-delay": `${(i % 3) * 120}ms` } as React.CSSProperties}
-                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] max-w-md"
-              >
-                <BeforeAfterSlider
-                  beforeSrc={pair.before}
-                  afterSrc={pair.after}
-                  alt={pair.label}
-                />
-                <p className="text-center text-sm font-medium text-apple-text-secondary mt-4">
-                  {pair.label}
-                </p>
-              </div>
-            ))}
-          </div>
+        <div className="container-wide text-center" data-reveal>
+          <span className="label-tag">Before &amp; After</span>
+          <h2 className="section-heading mb-4">See the transformations.</h2>
+          <p className="section-subheading max-w-2xl mx-auto mb-8">
+            Drag a slider and watch the dirt disappear — {TRANSFORMATION_PAIRS.length}{" "}
+            real vehicles, before and after, over in the gallery.
+          </p>
+          <Link href="/gallery" className="btn-primary text-base px-8 py-4">
+            View the Gallery
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
 
