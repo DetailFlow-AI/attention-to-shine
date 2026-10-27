@@ -89,13 +89,13 @@ const services = [
     price: `Starting at $${QUARTERLY_PLAN.pricePerVisit} per visit`,
     intro:
       "Once your car's had its initial full detail, this keeps it looking that way — month after month, without you lifting a finger.",
-    body: `Two ways to stay on top of it. ${QUARTERLY_PLAN.name} comes out once every 3 months (${QUARTERLY_PLAN.minVisits}-visit minimum) and saves you $${QUARTERLY_ANNUAL_SAVINGS} a year against booking a full detail ${QUARTERLY_PLAN.visitsPerYear}× a year. ${MONTHLY_PLAN.name} comes out every month, starting at $${MONTHLY_PLAN.pricePerMonth}. Your car looks freshly detailed each time we leave — for a fraction of what it'd cost to keep re-detailing from scratch.`,
+    body: `Two ways to stay on top of it. ${QUARTERLY_PLAN.name} comes out once every 3 months. You start with ${QUARTERLY_PLAN.minVisits} visits, then it is up to you. Over a year that is $${QUARTERLY_ANNUAL_SAVINGS} less than booking ${QUARTERLY_PLAN.visitsPerYear} full details. ${MONTHLY_PLAN.name} comes out every month, starting at $${MONTHLY_PLAN.pricePerMonth}. Either way your car looks freshly detailed each time we leave, for far less than re-detailing it from scratch.`,
     included: [
       "Looks freshly detailed, every single visit",
       "A reserved slot — never a scramble to rebook",
       "Costs far less than repeated full details",
     ],
-    note: "This is a maintenance plan for already-clean vehicles — available only after your vehicle's first full detail with Attention to Shine.",
+    note: "Maintenance plans are exclusively for vehicles that have been recently detailed by Attention to Shine. Your first visit with us is a full detail; the plan keeps it that way afterwards.",
     gradient: "from-gold-dark to-gold",
   },
 ];

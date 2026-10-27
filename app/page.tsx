@@ -415,7 +415,10 @@ export default async function HomePage() {
       </section>
 
       {/* ── CHECKUP PLAN ── */}
-      <section className="section-pad bg-navy">
+      {/* overflow-x-clip is a backstop for the cards' slide-in: it keeps any
+          horizontal movement inside this section instead of letting it widen
+          the page. The slide distance itself is capped in globals.css. */}
+      <section className="section-pad bg-navy overflow-x-clip">
         <div className="container-wide">
           <div className="max-w-4xl mx-auto text-center">
             <span className="label-tag" data-reveal>Premium Subscription</span>
@@ -423,10 +426,10 @@ export default async function HomePage() {
               Shine Standard Maintenance
             </h2>
             <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
-              A maintenance plan for already-clean vehicles. After your initial
-              full detail, we keep it looking that way — exterior rinse, tire
-              shine, window wipe down, interior vacuum, and dashboard wipe-down
-              on a consistent schedule, so your car never slips back.
+              Maintenance plans are exclusively for vehicles we&apos;ve recently
+              detailed. We come back on a set schedule and keep your car in the
+              shape we left it — exterior rinse, tire shine, window wipe down,
+              interior vacuum, and dashboard wipe-down, every visit.
             </p>
 
             {/* The two plans slide in from either side as you scroll. */}
@@ -436,7 +439,7 @@ export default async function HomePage() {
                   plan: QUARTERLY_PLAN.name,
                   price: `$${QUARTERLY_PLAN.pricePerVisit}`,
                   freq: "/ visit",
-                  details: `${QUARTERLY_PLAN.cadence} · ${QUARTERLY_PLAN.minVisits}-visit minimum · saves $${QUARTERLY_ANNUAL_SAVINGS} a year`,
+                  details: `${QUARTERLY_PLAN.cadence} · Start with ${QUARTERLY_PLAN.minVisits} visits · $${QUARTERLY_ANNUAL_SAVINGS} cheaper a year`,
                 },
                 {
                   plan: MONTHLY_PLAN.name,
