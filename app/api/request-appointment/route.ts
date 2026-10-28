@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       service, vehicleSize, vehicleMake, vehicleColor,
-      date, time, altDate, altTime,
-      address, city, zip, condition,
+      date, time,
+      address, city, condition,
       name, email, phone, promoCode, membership,
     } = body;
 
@@ -71,10 +71,7 @@ export async function POST(req: NextRequest) {
       `Vehicle:  ${SIZE_LABELS[vehicleSize] ?? vehicleSize}${vehicleMake ? ` — ${vehicleMake}` : ""}${vehicleColor ? ` (${vehicleColor})` : ""}`,
       ``,
       `Preferred: ${date} at ${time}`,
-      altDate || altTime
-        ? `Alternate: ${altDate || date}${altTime ? ` at ${altTime}` : ""}`
-        : undefined,
-      address ? `Address:   ${address}, ${city ?? ""} ${zip ?? ""}` : undefined,
+      address ? `Address:   ${address}${city ? `, ${city}` : ""}` : undefined,
       promoCode ? `Promo:     ${promoCode}` : undefined,
       isMember(membership)
         ? `Member:    ${MEMBERSHIP_LABELS[membership as Membership]} (self-reported — verify)`

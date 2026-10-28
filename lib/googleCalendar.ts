@@ -121,6 +121,18 @@ export function resolveCalendarId(): string {
   return raw;
 }
 
+// Every calendar whose events should block booking slots: the main calendar
+// plus anything listed in GOOGLE_EXTRA_CALENDAR_IDS (comma-separated). Use it
+// when personal appointments live on a second calendar — each one has to be
+// shared with the service account for its events to be visible.
+export function resolveBusyCalendarIds(): string[] {
+  const extra = (process.env.GOOGLE_EXTRA_CALENDAR_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim().replace(/^['"]|['"]$/g, ""))
+    .filter((id) => id && id !== "primary");
+  return Array.from(new Set([resolveCalendarId(), ...extra]));
+}
+
 export interface CalendarResult {
   ok: boolean;
   error?: string;
@@ -179,40 +191,67 @@ export async function getBusyWindow(
   if (saEmail && saKey) {
     try {
       const token = await getAccessToken(saEmail, saKey);
-      const params = new URLSearchParams({
-        timeMin,
-        timeMax,
-        singleEvents: "true",
-        orderBy: "startTime",
-        maxResults: "250",
-      });
-      const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: "no-store",
-        }
-      );
-      if (!res.ok) {
-        console.error("Busy-window fetch failed:", res.status, await res.text());
-        return { configured: true, busy: [] };
+      const calendarIds = resolveBusyCalendarIds();
+      const busy: BusyInterval[] = [];
+
+      for (const id of calendarIds) {
+        // Google returns at most 250 events per response, so follow
+        // nextPageToken until the window is exhausted. Without this, a heavily
+        // booked calendar silently drops its later events and those days show
+        // as open when they are not.
+        let pageToken: string | undefined;
+        let pages = 0;
+        do {
+          const params = new URLSearchParams({
+            timeMin,
+            timeMax,
+            singleEvents: "true",
+            orderBy: "startTime",
+            maxResults: "250",
+          });
+          if (pageToken) params.set("pageToken", pageToken);
+
+          const res = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(id)}/events?${params}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              cache: "no-store",
+            }
+          );
+          if (!res.ok) {
+            // One unreachable calendar (e.g. not shared with the service
+            // account) must not wipe out the others — log it and move on.
+            console.error(
+              `Busy-window fetch failed for ${id}:`,
+              res.status,
+              await res.text()
+            );
+            break;
+          }
+
+          const json = await res.json();
+          for (const e of json.items ?? []) {
+            // Cancelled events are the only ones ignored. Everything else
+            // blocks — personal appointments included, and events marked
+            // "Free" too, because the owner can't be in two places at once.
+            if (e.status === "cancelled") continue;
+            busy.push({
+              // All-day events carry only a date. Google's end date is
+              // exclusive, so midnight-to-midnight covers the whole day.
+              start:
+                e.start?.dateTime ??
+                `${e.start?.date}T00:00:00${easternOffset(e.start?.date ?? startDate)}`,
+              end:
+                e.end?.dateTime ??
+                `${e.end?.date}T00:00:00${easternOffset(e.end?.date ?? endDate)}`,
+            });
+          }
+
+          pageToken = json.nextPageToken;
+          pages++;
+        } while (pageToken && pages < 20);
       }
-      const json = await res.json();
-      const busy = (json.items ?? [])
-        .filter(
-          (e: { status?: string; transparency?: string }) =>
-            e.status !== "cancelled" && e.transparency !== "transparent"
-        )
-        .map(
-          (e: {
-            start?: { dateTime?: string; date?: string };
-            end?: { dateTime?: string; date?: string };
-          }) => ({
-            // All-day events have only a date — they block their whole day(s)
-            start: e.start?.dateTime ?? `${e.start?.date}T00:00:00${easternOffset(e.start?.date ?? startDate)}`,
-            end: e.end?.dateTime ?? `${e.end?.date}T00:00:00${easternOffset(e.end?.date ?? endDate)}`,
-          })
-        );
+
       return { configured: true, busy };
     } catch (error) {
       console.error("Busy-window error:", error);
